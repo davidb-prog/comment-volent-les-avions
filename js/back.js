@@ -9,7 +9,7 @@ import { ALT_MAX, WEIGHT, BANK_MAX, clamp, clamp01,
 import { TAU, fitCanvas, label, drawArrow, drawCloud } from './canvas.js';
 
 const HORIZON_TILT = 0.5;   // l'horizon s'incline (en contre) de la moitié de l'inclinaison
-const ARROW_PER_FORCE = 40; // pixels de flèche par « poids d'avion » (à l'échelle 1)
+const BACK_ARROW_PER_FORCE = 40; // pixels de flèche par « poids d'avion » (à l'échelle 1)
 const TRAIL_STEP = 0.12;    // une miette de trajectoire toutes les 0,12 s
 const TRAIL_MAX = 220;      // longueur du fil de la mini-carte
 const MAP_SCALE = 0.055;    // unités du monde → pixels de la mini-carte
@@ -78,7 +78,7 @@ export class BackView {
     // ---- les deux forces du virage : le poids tire droit en bas (monde),
     //      la portance pousse perpendiculairement aux ailes (avion)
     if (!state.onGround && state.forces) {
-      const ar = ARROW_PER_FORCE * s;
+      const ar = BACK_ARROW_PER_FORCE * s;
       const liftLen = Math.min(state.forces.lift, 2) * ar;
       drawArrow(ctx, cx + Math.sin(state.bank) * 26 * s, cy - Math.cos(state.bank) * 26 * s,
         -Math.PI / 2 + state.bank, liftLen, COLOR_LIFT, 6 * s);

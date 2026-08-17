@@ -1,7 +1,8 @@
 // Helpers canvas partagés par les deux vues — repris de la série astronomie,
 // adaptés au thème clair. Aucune constante du modèle ici : de la tuyauterie.
 
-export const TAU = Math.PI * 2;
+import { TAU } from './model.js';
+export { TAU };
 
 // Ajuste le buffer du canvas à sa taille CSS (net sur écrans denses) et
 // renvoie le contexte prêt à dessiner en coordonnées CSS.

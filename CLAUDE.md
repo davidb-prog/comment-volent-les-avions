@@ -171,6 +171,9 @@ prévenir David (Settings → Pages → Source : « GitHub Actions »).
 - Textes UI et commentaires en français ; apostrophe typographique « ’ » dans les chaînes UI.
 - Commits conventionnels en français. Pas de fusion sur `main` sans feu vert explicite.
 - Un artifact Claude (page unique auto-contenue, générée par le script scratchpad
-  `build-artifact.mjs`, modèle dans l'épisode 2 : CSS inliné + modules concaténés sans
-  import/export) sert aux tests en famille — republier **au même URL** à chaque itération ;
-  noter l'URL ici dès la première publication.
+  `build-artifact.mjs` : CSS inliné + modules concaténés sans import/export, dans l'ordre
+  model → canvas → side → back → main) sert aux tests en famille — republier **au même
+  URL** à chaque itération : <https://claude.ai/code/artifact/632965ba-8789-4862-968d-0c065322f9b4>
+  (depuis une autre session : passer cette URL au paramètre `url` de l'outil Artifact).
+  Contrainte de concaténation : une seule déclaration par nom global (TAU vit dans
+  `model.js`, `canvas.js` le réimporte ; préfixer les constantes homonymes des vues).
