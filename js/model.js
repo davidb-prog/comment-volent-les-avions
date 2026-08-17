@@ -63,13 +63,18 @@ export const SPEED_KMH = 4;      // affichage parent : v = 65 → « 260 km/h »
 export const ALT_METERS = 40;    // affichage parent : alt = 60 → « 2 400 m »
 
 // Couleurs sémantiques — constantes partout (flèches, textes, boutons, histoires).
-export const COLOR_LIFT = '#3fc1a7';    // la portance : l'air costaud qui pousse en haut
-export const COLOR_WEIGHT = '#a98bff';  // le poids : la Terre qui tire en bas
-export const COLOR_THRUST = '#ff9f1c';  // la poussée : les moteurs
-export const COLOR_DRAG = '#8f9bb8';    // la traînée : l'air qui freine
+// Palette « Grand ciel de jour » choisie par David : fond clair, forces assombries
+// pour rester contrastées sur le ciel comme sur les panneaux blancs.
+export const COLOR_LIFT = '#0b8a72';    // la portance : l'air costaud qui pousse en haut
+export const COLOR_WEIGHT = '#6a4fd0';  // le poids : la Terre qui tire en bas
+export const COLOR_THRUST = '#d86f00';  // la poussée : les moteurs
+export const COLOR_DRAG = '#55617a';    // la traînée : l'air qui freine
 export const COLOR_PLANE = '#ff6b9d';   // ton avion (le rose « chez toi » de la série)
-export const COLOR_SKY = '#5fa5e8';
-export const COLOR_GRASS = '#3f9e63';
+export const COLOR_PLANE_DEEP = '#d94f80'; // l'aile et les ombres de l'avion
+export const SKY_TOP = '#7dc2f0';       // le ciel de la scène, en haut
+export const SKY_BOTTOM = '#d9eefc';    // le ciel à l'horizon
+export const COLOR_GRASS = '#69b06e';
+export const COLOR_RUNWAY = '#5c6a78';
 
 // Les 4 forces, prêtes pour les légendes et les boutons.
 export const FORCES = [
@@ -145,7 +150,7 @@ export function descentCap(alt) {
 
 // ------------------------------------------------------------------ l'état
 export function newState() {
-  return { v: 0, alt: 0, vs: 0, bank: 0, heading: 0, x: 0, y: 0, onGround: true };
+  return { v: 0, alt: 0, vs: 0, bank: 0, heading: 0, x: 0, y: 0, dist: 0, onGround: true };
 }
 
 // Un pas de simulation — pur : rend un NOUVEL état, ne touche à rien.
@@ -157,7 +162,7 @@ export function step(state, controls, dt) {
   const bankCmd = clamp(controls.bank, -1, 1);
   const n = {
     v: s.v, alt: s.alt, vs: s.vs, bank: s.bank, heading: s.heading,
-    x: s.x, y: s.y, onGround: s.onGround,
+    x: s.x, y: s.y, dist: s.dist || 0, onGround: s.onGround,
   };
 
   // --- la vitesse : poussée contre traînée (et frottements au sol)
@@ -175,6 +180,7 @@ export function step(state, controls, dt) {
   n.heading = s.heading + turnRate(n.bank, s.onGround) * dt;
   n.x = s.x + Math.sin(n.heading) * n.v * dt;
   n.y = s.y - Math.cos(n.heading) * n.v * dt;
+  n.dist = n.dist + n.v * dt; // le chemin parcouru — fait défiler le décor de côté
 
   // --- la verticale : l'excès de portance fait monter, le manque fait descendre
   const lift = s.onGround ? liftGround(n.v, stick) : liftAir(n.v, stick);
@@ -324,5 +330,7 @@ export function formatSpeed(v) {
 
 export function formatAlt(alt) {
   const m = Math.round(alt * ALT_METERS / 10) * 10;
-  return m + ' m';
+  if (m < 1000) return m + ' m';
+  const rest = m % 1000;
+  return Math.floor(m / 1000) + ' ' + (rest < 100 ? '0' : '') + (rest < 10 ? '0' : '') + rest + ' m';
 }

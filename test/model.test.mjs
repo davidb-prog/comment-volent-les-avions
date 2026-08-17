@@ -333,7 +333,14 @@ check('chaque force a sa couleur, toutes différentes (et l’avion a la sienne)
 check('« ton avion » porte le rose de la série (l’ancre « chez toi » de l’astronomie)',
   COLOR_PLANE === '#ff6b9d');
 check('vitesse et altitude parlantes pour le parent : 65 → 260 km/h, 60 → 2 400 m',
-  formatSpeed(V_CRUISE) === '260 km/h' && formatAlt(ALT_CRUISE) === '2400 m');
+  formatSpeed(V_CRUISE) === '260 km/h' && formatAlt(ALT_CRUISE) === '2 400 m' &&
+  formatAlt(10) === '400 m');
+check('le décor défile : la distance parcourue grandit avec la vitesse',
+  (() => {
+    const s0 = Object.assign(newState(), ENTRY_AIR);
+    const end = simulate(s0, HOLD(T_CRUISE, 0, 0), 5);
+    return end.dist > 4 * V_CRUISE && end.dist < 6 * V_CRUISE;
+  })());
 
 console.log('Honnêteté pédagogique');
 check('le mythe du « chemin plus long » n’apparaît NULLE PART dans le modèle',

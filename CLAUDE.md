@@ -85,9 +85,12 @@ sites d'astronomie.
   ailleurs.
 - Boucle rAF résiliente (`try/finally`), aria-labels, `prefers-reduced-motion`.
 - **Identité visuelle** : ossature graphique de la série (panneaux arrondis, typographie
-  système, boutons ronds, organisation CSS de l'épisode 2) ; la palette (notamment le fond)
-  est **propre à cet épisode** et a été choisie par David sur aperçus — voir « Palette »
-  ci-dessous une fois confirmée. Contraste accessible dans tous les cas.
+  système, boutons ronds, organisation CSS de l'épisode 2) ; palette **« Grand ciel de
+  jour »** confirmée par David (2026-08-17) : la page EST le ciel — fond dégradé bleu clair
+  (`#aed9f7 → #eaf5fd`), panneaux blancs translucides comme des nuages, texte `#1c3550`,
+  accent rose foncé `#b02a5e` (kicker, refrains). Couleurs des forces assombries pour le
+  contraste sur fond clair (elles vivent dans `model.js` : portance `#0b8a72`, poids
+  `#6a4fd0`, poussée `#d86f00`, traînée `#55617a`, avion `#ff6b9d`). Contraste accessible.
 - Commits conventionnels en français (`feat:`, `fix:`, `docs:`…), apostrophe typographique
   « ’ » dans les chaînes UI. Pas de fusion sur `main` sans feu vert explicite de David.
 

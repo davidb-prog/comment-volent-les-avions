@@ -1,0 +1,372 @@
+/* Comment volent les avions ? — épisode 1 du Petit labo de physique.
+   Palette « Grand ciel de jour » (choisie par David) : la page EST le ciel — fond bleu
+   clair, panneaux blancs comme des nuages, ossature graphique de la série astronomie.
+   Zéro dépendance. Compat mobiles anciens : pas d'inset, repli @supports pour aspect-ratio. */
+
+:root {
+  --bg: #aed9f7;
+  --bg2: #eaf5fd;
+  --surface: rgba(255, 255, 255, 0.86);
+  --surface-2: #eef6fc;
+  --border: #b5cee2;
+  --text: #1c3550;
+  --muted: #47617a;
+  --rose: #ff6b9d;
+  --rose-deep: #b02a5e;
+  --lift: #0b8a72;
+  --weight: #6a4fd0;
+  --thrust: #d86f00;
+  --drag: #55617a;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(180deg, #9fd2f5 0%, #c6e5fa 34%, #eaf5fd 100%),
+    radial-gradient(900px 500px at 80% -6%, #ffffff 0%, rgba(255, 255, 255, 0) 60%);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+}
+
+/* ---------- entête ---------- */
+
+.site-header { max-width: 900px; margin: 0 auto; padding: 38px 20px 22px; text-align: center; }
+.kicker {
+  margin: 0; color: var(--rose-deep); font-size: .8rem; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+}
+.episode {
+  display: inline-block; margin-left: 8px; padding: 1px 10px; letter-spacing: .08em;
+  border: 1px solid var(--rose-deep); border-radius: 999px; color: var(--rose-deep);
+  font-size: .72rem; vertical-align: 1px;
+}
+.site-header h1 { margin: .22em 0 .3em; font-size: clamp(2.1rem, 5.5vw, 3.1rem); line-height: 1.1; }
+.tagline { margin: 0 auto; max-width: 62ch; color: var(--muted); }
+.tagline strong { color: var(--rose-deep); }
+
+main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
+
+.panel {
+  background: linear-gradient(180deg, #ffffff, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 22px rgba(28, 53, 80, 0.08);
+}
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.hint { color: var(--muted); font-weight: 400; font-size: .78em; }
+
+/* ---------- la scène : les deux vues synchronisées ---------- */
+
+.stage-panel { padding: 12px; }
+.stage-head {
+  display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap;
+  font-size: .88rem; color: var(--muted); margin: 2px 4px 10px;
+}
+.stage-title { flex: 1 1 260px; }
+.spin-btn { margin-left: auto; padding: 5px 12px; font-size: .8rem; border-radius: 999px; }
+.stage-head .spin-btn { margin-left: 0; }
+.stage-head #btn-spin { margin-left: auto; }
+
+.views-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.view-block { min-width: 0; }
+.view-head {
+  font-weight: 800; font-size: 1.02rem; margin: 0 2px 7px;
+  display: flex; align-items: center; gap: 6px;
+}
+.view-head-side { color: var(--rose-deep); }
+.view-head-back { color: var(--weight); }
+
+.canvas-wrap { position: relative; border-radius: 12px; overflow: hidden; background: #d9eefc; }
+.ratio-side { aspect-ratio: 16 / 10; }
+.ratio-back { aspect-ratio: 1 / 1; }
+/* repli pour navigateurs sans aspect-ratio (Safari iOS < 15) : hauteurs fixes */
+@supports not (aspect-ratio: 1 / 1) {
+  .ratio-side { height: min(38vw, 470px); }
+  .ratio-back { height: min(32vw, 420px); }
+}
+.canvas-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
+
+#side-view, #back-view { touch-action: none; cursor: grab; }
+#side-view:active, #back-view:active { cursor: grabbing; }
+
+/* la petite phrase sous chaque vue : le même instant, raconté deux fois */
+.view-status {
+  margin: 8px 2px 0; font-size: .92rem; color: var(--text);
+  min-height: 2.8em;
+}
+
+/* petit rappel « glisse ici » superposé au ciel (transitoire, non cliquable) */
+.drag-hint {
+  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+  max-width: calc(100% - 20px); text-align: center;
+  background: rgba(255, 255, 255, .78);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 7px 14px; font-size: .85rem; color: var(--text);
+  pointer-events: none; opacity: 1; transition: opacity .4s;
+}
+.drag-hint.hide { opacity: 0; }
+
+/* ---------- la manette des gaz ---------- */
+
+.throttle-control { margin-top: 12px; padding: 0 4px 2px; }
+.throttle-readout {
+  display: flex; flex-wrap: wrap; gap: 2px 14px; align-items: baseline;
+  font-size: 1.02rem; margin-bottom: 4px;
+}
+.throttle-name { font-weight: 800; color: var(--thrust); }
+.gauges { color: var(--muted); font-size: .95rem; }
+.gauges strong {
+  color: var(--rose-deep); font-size: 1.15rem; font-variant-numeric: tabular-nums;
+}
+
+/* la piste du curseur raconte les gaz : moteurs coupés → plein feu */
+#throttle {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block; width: 100%; height: 44px; margin: 2px 0 0;
+  background: transparent; cursor: pointer;
+}
+#throttle::-webkit-slider-runnable-track {
+  height: 16px; border-radius: 9px; border: 1px solid var(--border);
+  background: linear-gradient(90deg,
+    #dfe9f2 0%, #ffd9a8 35%, #ffb35c 65%, #f28322 85%, #e35d13 100%);
+}
+#throttle::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 34px; height: 34px; margin-top: -10px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #ffe3c2, #ff9f1c 55%, var(--thrust));
+  border: 3px solid rgba(255, 255, 255, .95);
+  box-shadow: 0 0 14px rgba(216, 111, 0, .55), 0 2px 6px rgba(28, 53, 80, .35);
+}
+#throttle::-moz-range-track {
+  height: 16px; border-radius: 9px; border: 1px solid var(--border);
+  background: linear-gradient(90deg,
+    #dfe9f2 0%, #ffd9a8 35%, #ffb35c 65%, #f28322 85%, #e35d13 100%);
+}
+#throttle::-moz-range-thumb {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #ffe3c2, #ff9f1c 55%, var(--thrust));
+  border: 3px solid rgba(255, 255, 255, .95);
+  box-shadow: 0 0 14px rgba(216, 111, 0, .55), 0 2px 6px rgba(28, 53, 80, .35);
+}
+.slider-scale { display: flex; justify-content: space-between; color: var(--muted); font-size: .72rem; margin-top: 4px; }
+
+/* ---------- la légende des 4 forces ---------- */
+
+.legend-panel {
+  margin-top: 16px; padding: 10px 14px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
+}
+.legend-title { font-weight: 700; font-size: .92rem; margin-right: 2px; }
+.chip {
+  border-radius: 999px; padding: 4px 12px; font-size: .85rem; font-weight: 700;
+  border: 1px solid; white-space: nowrap;
+}
+.chip i { font-style: normal; font-weight: 400; font-size: .82em; opacity: .85; }
+.chip-portance { color: var(--lift); border-color: var(--lift); background: rgba(11, 138, 114, .08); }
+.chip-poids { color: var(--weight); border-color: var(--weight); background: rgba(106, 79, 208, .08); }
+.chip-poussee { color: var(--thrust); border-color: var(--thrust); background: rgba(216, 111, 0, .09); }
+.chip-trainee { color: var(--drag); border-color: var(--drag); background: rgba(85, 97, 122, .09); }
+
+/* ---------- boutons-scénarios + histoire ---------- */
+
+.scenario-panel { margin-top: 16px; padding: 14px 16px 16px; }
+.scenario-title {
+  font-weight: 700; font-size: 1.05rem; margin: 2px 2px 10px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px 12px; flex-wrap: wrap;
+}
+.scenario-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 860px) { .scenario-buttons { grid-template-columns: 1fr 1fr; } }
+
+.scn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  min-height: 72px; padding: 10px 8px; border-radius: 16px; cursor: pointer;
+  font: inherit; font-weight: 700; font-size: .95rem; text-align: center; line-height: 1.25;
+  color: var(--text); background: #ffffff; border: 1px solid var(--border);
+  transition: filter .15s, transform .05s, box-shadow .15s;
+}
+.scn:hover { filter: brightness(0.97); }
+.scn:active { transform: translateY(1px); }
+.scn.active { box-shadow: 0 0 0 3px rgba(224, 68, 124, .35); }
+.scn-emoji { font-size: 1.6rem; line-height: 1; }
+.scn-sub { font-weight: 400; font-size: .76rem; opacity: .8; }
+.scn-decollage { background: linear-gradient(180deg, #fff3e4, #ffe7cb); border-color: var(--thrust); color: #8f4a00; }
+.scn-croisiere { background: linear-gradient(180deg, #e3f4ef, #cdeae2); border-color: var(--lift); color: #075e4e; }
+.scn-virage { background: linear-gradient(180deg, #ece6fb, #ddd3f7); border-color: var(--weight); color: #4b34a5; }
+.scn-atterrissage { background: linear-gradient(180deg, #fde9f0, #fbd6e4); border-color: var(--rose-deep); color: var(--rose-deep); }
+
+.story { margin-top: 12px; }
+.story-invite { margin: 4px 2px; color: var(--muted); }
+.story-line { display: flex; gap: 10px; align-items: flex-start; margin: 9px 0; font-size: 1.03rem; }
+.story-chip {
+  flex: none; padding: 3px 11px; border-radius: 999px; font-weight: 700; font-size: .85rem;
+  white-space: nowrap;
+}
+.story-chip-cote { background: rgba(224, 68, 124, .1); color: var(--rose-deep); border: 1px solid rgba(224, 68, 124, .45); }
+.story-chip-derriere { background: rgba(106, 79, 208, .1); color: var(--weight); border: 1px solid rgba(106, 79, 208, .45); }
+.story-text { margin: 2px 0 0; }
+
+/* ---------- la grande révélation (à lire… ou à écouter) ---------- */
+
+.explain-panel { margin-top: 16px; padding: 16px 20px 18px; }
+.explain-head { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 8px; }
+.explain-head h2 { margin: 0; font-size: 1.15rem; color: var(--lift); }
+.listen-btn {
+  margin-left: auto; border-radius: 999px; padding: 8px 16px; font-weight: 700;
+  background: linear-gradient(180deg, #e3f4ef, #cdeae2); border: 1px solid var(--lift);
+  color: #075e4e;
+}
+.listen-btn[aria-pressed="true"] { background: #dfe9f2; border-color: var(--border); color: var(--text); }
+.voice-pick {
+  font-family: inherit; font-size: .85rem; font-weight: 600;
+  color: var(--muted); background: #ffffff;
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 7px 12px; max-width: 230px;
+}
+.voice-pick:focus { outline: 2px solid var(--lift); }
+.voice-hint { margin: 0 0 8px; font-size: .82rem; color: var(--muted); }
+.explain-text p { margin: .55em 0; color: #33475c; font-size: 1.02rem; line-height: 1.7; }
+.explain-text strong { color: var(--text); }
+
+/* ---------- le pont : question ouverte + la série sœur ---------- */
+
+.bridge-panel { margin-top: 16px; padding: 16px 20px; }
+.bridge-question {
+  margin: 0 0 10px; font-size: 1.05rem; color: var(--text); font-weight: 600;
+}
+.bridge-emoji { font-size: 1.4rem; margin-right: 4px; }
+.bridge-serie { margin: 0 0 8px; color: var(--muted); font-size: .95rem; }
+.bridge-links { display: flex; flex-wrap: wrap; gap: 8px 10px; }
+.bridge-links a {
+  border: 1px solid var(--border); border-radius: 999px; padding: 7px 14px;
+  color: var(--text); text-decoration: none; font-weight: 700; font-size: .92rem;
+  background: #ffffff;
+  transition: filter .15s, transform .05s;
+}
+.bridge-links a:hover { filter: brightness(0.96); }
+.bridge-links a:active { transform: translateY(1px); }
+
+/* ---------- note aux parents (repliée) ---------- */
+
+.parents { margin-top: 22px; }
+.parents summary {
+  cursor: pointer; padding: 14px 20px; font-weight: 700; color: var(--rose-deep);
+  list-style: none;
+}
+.parents summary::-webkit-details-marker { display: none; }
+.parents summary::before { content: '▸ '; }
+.parents[open] summary::before { content: '▾ '; }
+.parents ul { margin: 0; padding: 0 24px 18px 2.6em; }
+.parents li { margin: 8px 0; color: #33475c; font-size: .93rem; }
+.parents strong { color: var(--text); }
+
+/* ---------- boutons génériques ---------- */
+
+button {
+  font: inherit; color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 8px 14px; cursor: pointer;
+  transition: filter .15s, transform .05s;
+}
+button:hover { filter: brightness(0.96); }
+button:active { transform: translateY(1px); }
+
+button:focus-visible, input:focus-visible, a:focus-visible, canvas:focus-visible {
+  outline: 3px solid var(--rose-deep); outline-offset: 2px;
+}
+
+/* ---------- pied de page ---------- */
+
+.site-footer {
+  max-width: 1180px; margin: 40px auto 0; padding: 22px 20px 34px;
+  border-top: 1px solid var(--border); color: var(--muted); font-size: .88rem;
+}
+.site-footer a { color: var(--rose-deep); }
+
+/* ---------- plein écran de la scène (API native, repli iOS) ---------- */
+
+.stage-panel:fullscreen {
+  display: flex; flex-direction: column; border-radius: 0; padding: 12px 14px;
+  background: var(--bg2);
+}
+.stage-panel:fullscreen .views-grid { flex: 1; min-height: 0; align-items: stretch; }
+.stage-panel:fullscreen .view-block { display: flex; flex-direction: column; min-height: 0; }
+.stage-panel:fullscreen .canvas-wrap { flex: 1; height: auto; min-height: 0; }
+.stage-panel.fs-fallback {
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 60;
+  display: flex; flex-direction: column; border-radius: 0; margin: 0;
+  background: var(--bg2);
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.stage-panel.fs-fallback .views-grid { flex: 1; min-height: 0; align-items: stretch; }
+.stage-panel.fs-fallback .view-block { display: flex; flex-direction: column; min-height: 0; }
+.stage-panel.fs-fallback .canvas-wrap { flex: 1; height: auto; min-height: 200px; }
+@supports (aspect-ratio: 1 / 1) {
+  .stage-panel:fullscreen .canvas-wrap, .stage-panel.fs-fallback .canvas-wrap { aspect-ratio: auto; }
+}
+/* Sur mobile en plein écran, on N'étire PAS la scène (leçon de la série) :
+   on empile normalement, chaque vue garde une belle hauteur, la page défile. */
+@media (max-width: 640px) {
+  .stage-panel:fullscreen .views-grid,
+  .stage-panel.fs-fallback .views-grid { flex: none; }
+  .stage-panel:fullscreen .view-block,
+  .stage-panel.fs-fallback .view-block { display: block; }
+  .stage-panel:fullscreen .canvas-wrap,
+  .stage-panel.fs-fallback .canvas-wrap { flex: none; }
+  .stage-panel:fullscreen .ratio-side,
+  .stage-panel.fs-fallback .ratio-side { height: min(60vw, 44vh); }
+  .stage-panel:fullscreen .ratio-back,
+  .stage-panel.fs-fallback .ratio-back { height: min(80vw, 50vh); }
+  @supports (aspect-ratio: 1 / 1) {
+    .stage-panel:fullscreen .ratio-side, .stage-panel.fs-fallback .ratio-side,
+    .stage-panel:fullscreen .ratio-back, .stage-panel.fs-fallback .ratio-back { aspect-ratio: auto; }
+  }
+}
+
+/* ---------- petits écrans ---------- */
+
+/* sous 640 px : les deux vues s'empilent (le côté d'abord), rien ne recouvre les canvas */
+@media (max-width: 640px) {
+  .views-grid { grid-template-columns: 1fr; }
+  .ratio-side { aspect-ratio: 4 / 3; }
+  @supports not (aspect-ratio: 1 / 1) {
+    .ratio-side { height: min(68vw, 420px); }
+    .ratio-back { height: min(88vw, 420px); }
+  }
+  .drag-hint { bottom: 8px; font-size: .8rem; }
+  .view-status { min-height: 1.4em; }
+}
+
+@media (max-width: 480px) {
+  .gauges strong { font-size: 1.02rem; }
+  .scn { min-height: 64px; }
+  .stage-head { font-size: .82rem; }
+  .legend-panel { padding: 10px 12px; }
+  .chip { font-size: .8rem; padding: 3px 10px; }
+  .chip i { display: none; }
+}
+
+/* ---------- accessibilité : mouvement réduit ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .drag-hint { transition: none; }
+  .scn, button, .bridge-links a { transition: none; }
+  html { scroll-behavior: auto; }
+}

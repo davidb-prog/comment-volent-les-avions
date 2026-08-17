@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comment volent les avions ? — la portance expliquée aux enfants</title>
+<meta name="description" content="L’air est costaud : c’est lui qui porte les avions ! L’aile pousse l’air vers le bas, alors l’air pousse l’aile vers le haut. Décolle, vole, tourne et atterris avec les 4 flèches des forces. Épisode 1 du Petit labo de physique, à explorer en famille dès 5 ans.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛩️</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <p class="kicker">Petit labo de physique <span class="episode">épisode 1</span></p>
+  <h1>Comment volent les avions&nbsp;?</h1>
+  <p class="tagline">Un avion, c’est lourd… et pourtant ça vole ! Son secret, c’est l’air :
+    on ne le voit pas, mais il est costaud. Quand l’aile avance vite, elle pousse l’air vers
+    le bas — alors l’air la pousse vers le haut. Ton avion tient dans le ciel
+    <strong>… parce que l’air pousse !</strong></p>
+</header>
+
+<main>
+  <section class="sim" aria-labelledby="sim-title">
+    <h2 id="sim-title" class="visually-hidden">Le même vol, deux regards : de côté et de derrière</h2>
+
+    <div class="panel stage-panel" id="stage-panel">
+      <div class="stage-head">
+        <span class="stage-title">Le même vol, deux regards
+          <span class="hint">(glisse sur les images pour piloter · petit tap = pause)</span></span>
+        <button id="btn-spin" class="spin-btn" aria-pressed="true">⏸ Pause</button>
+        <button id="fs-toggle" class="spin-btn" aria-label="Basculer les deux vues en plein écran">⛶ Plein écran</button>
+      </div>
+
+      <div class="views-grid">
+        <div class="view-block">
+          <div class="view-head view-head-side">🛩️ Ton avion, vu de côté</div>
+          <div class="canvas-wrap ratio-side">
+            <canvas id="side-view" tabindex="0" aria-label="Ton avion rose vu de côté, avec ses quatre flèches de forces : la portance de l’air vers le haut, le poids vers le bas, la poussée des moteurs vers l’avant, la traînée de l’air vers l’arrière. La longueur des flèches change en direct avec la vitesse. Sur la piste, l’avion accélère et la flèche de l’air grandit ; quand elle dépasse le poids, il décolle. Faites glisser verticalement pour monter ou descendre (ou flèches haut et bas au clavier) ; un petit tap met en pause."></canvas>
+            <div class="drag-hint" id="drag-hint">👆 Glisse vers le haut : ton avion monte !</div>
+          </div>
+          <p class="view-status" id="side-status" aria-live="off">😴 Ton avion est posé. Pas de vitesse : l’air ne porte pas.</p>
+        </div>
+
+        <div class="view-block">
+          <div class="view-head view-head-back">🧭 Vu de derrière : pencher = tourner</div>
+          <div class="canvas-wrap ratio-back">
+            <canvas id="back-view" tabindex="0" aria-label="Ton avion vu de derrière : quand on penche les ailes, l’horizon s’incline et l’avion tourne du côté penché. Une petite carte vue de dessus montre la trajectoire qui s’incurve. Faites glisser horizontalement pour pencher les ailes (ou flèches gauche et droite au clavier) ; un petit tap met en pause."></canvas>
+          </div>
+          <p class="view-status" id="back-status" aria-live="off">🛣️ Les roues sur la piste, les ailes bien à plat.</p>
+        </div>
+      </div>
+
+      <div class="throttle-control">
+        <div class="throttle-readout"><span class="throttle-name">🔥 La manette des gaz</span>
+          <span class="gauges">ton avion file à <strong id="speed-out">0 km/h</strong>,
+            à <strong id="alt-out">0 m</strong> du sol</span></div>
+        <input type="range" id="throttle" min="0" max="100" step="1" value="0"
+          aria-label="La manette des gaz : pousser pour accélérer les moteurs">
+        <div class="slider-scale" aria-hidden="true">
+          <span>🐢 moteurs coupés</span><span>🔥 plein gaz !</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel legend-panel" aria-label="Les quatre forces et leurs couleurs">
+      <span class="legend-title">Les 4 flèches :</span>
+      <span class="chip chip-portance">💨 la portance <i>l’air pousse en haut</i></span>
+      <span class="chip chip-poids">🌍 le poids <i>la Terre tire en bas</i></span>
+      <span class="chip chip-poussee">🔥 la poussée <i>les moteurs poussent</i></span>
+      <span class="chip chip-trainee">🌬️ la traînée <i>l’air freine</i></span>
+    </div>
+
+    <div class="panel scenario-panel">
+      <div class="scenario-title">
+        <span>🎲 Joue à piloter :</span>
+        <button id="btn-scn-voice" class="spin-btn" aria-pressed="false"
+          aria-label="Activer la voix qui raconte chaque moment de vol choisi, vu de côté et vu de derrière">🔇 sans la voix</button>
+      </div>
+      <div class="scenario-buttons" id="scenario-buttons" role="group" aria-label="Choisir un moment du vol"></div>
+      <div id="story" class="story" aria-live="polite"></div>
+    </div>
+
+    <div class="panel explain-panel">
+      <div class="explain-head">
+        <h2>💨 L’air est costaud !</h2>
+        <button id="btn-listen" class="listen-btn" hidden>🔊 Écouter l’histoire</button>
+        <select id="voice-pick" class="voice-pick" hidden
+          aria-label="Choisir la voix qui lit l’histoire"></select>
+      </div>
+      <p id="voice-hint" class="voice-hint" hidden>💡 La voix de lecture vient de
+        l’appareil, et celles d’ici sont un peu robotiques. Pour une voix douce :
+        ouvre la page dans Chrome ou Edge, ou télécharge une voix française
+        « améliorée » dans les réglages (souvent Accessibilité → Synthèse vocale).</p>
+      <div id="explain-text" class="explain-text">
+        <p>Souffle sur ta main… tu sens ? On ne le voit pas, mais l’air est là, tout autour
+          de nous. Et quand on va vite, l’air devient costaud : sors une main par la fenêtre
+          de la voiture — il pousse fort !</p>
+        <p>L’avion, lui, a de grandes ailes. Quand il avance très vite, ses ailes poussent
+          plein d’air vers le bas. Et l’air n’est pas d’accord : il repousse les ailes vers
+          le haut ! Pousse le mur : le mur te repousse. L’aile pousse l’air, l’air pousse
+          l’aile.</p>
+        <p>C’est pour ça que l’avion court si vite sur la piste avant de s’envoler : sans
+          vitesse, l’air ne pousse pas assez fort. Mais quand l’avion va assez vite, l’air
+          pousse plus fort que le poids… et hop, il décolle !</p>
+        <p>Et pour tourner ? Pas de volant : l’avion penche ses ailes, et l’air le pousse
+          un peu de côté. Pour descendre, il ralentit ses moteurs : l’air le porte un peu
+          moins, et il glisse tout doucement vers la piste.</p>
+        <p><strong>Alors, comment volent les avions ? C’est l’air, costaud, qui les porte…
+          parce que l’air pousse !</strong></p>
+      </div>
+    </div>
+
+    <div class="panel bridge-panel">
+      <p class="bridge-question"><span class="bridge-emoji">🚀</span> Et une fusée qui monte
+        tout là-haut, là où il n’y a plus d’air du tout… qui la pousse, elle ? Ce sera une
+        autre histoire du Petit labo de physique !</p>
+      <p class="bridge-serie">En attendant, la série sœur — <strong>le Petit labo
+        d’astronomie</strong> :</p>
+      <div class="bridge-links">
+        <a href="https://davidb-prog.github.io/eclipse-explorer/">🌒 La mécanique des éclipses</a>
+        <a href="https://davidb-prog.github.io/ou-va-le-soleil/">🌅 Où va le Soleil la nuit ?</a>
+        <a href="https://davidb-prog.github.io/la-terre-tourne/">🌍 Quelle heure est-il là-bas ?</a>
+      </div>
+    </div>
+  </section>
+
+  <details class="panel parents">
+    <summary>📝 La note aux parents <span class="hint">(les petites simplifications du site)</span></summary>
+    <ul>
+      <li><strong>L’explication du site est la vraie.</strong> L’aile, inclinée et en
+        mouvement, dévie l’air vers le bas ; par action-réaction (la troisième loi de
+        Newton), l’air pousse l’aile vers le haut : c’est la <strong>portance</strong>, et
+        elle grandit à peu près comme le carré de la vitesse. L’explication complète des
+        physiciens ajoute la circulation de l’air et les différences de pression autour du
+        profil (Bernoulli) — c’est le même phénomène, vu avec d’autres outils.</li>
+      <li><strong>Le mythe à oublier :</strong> « l’air du dessus a un chemin plus long,
+        alors il accélère pour arriver en même temps que l’air du dessous ». C’est faux (rien
+        n’oblige les deux filets d’air à se retrouver — et mesuré en soufflerie, l’air du
+        dessus arrive même en avance), et ça n’explique pas le vol sur le dos. Si vous
+        l’avez appris à l’école, ce site est l’occasion de le ranger au placard.</li>
+      <li><strong>Les 4 forces</strong> portent leurs vrais noms : portance, poids, poussée,
+        traînée. En croisière stable, elles s’équilibrent deux à deux — c’est le premier
+        schéma de tout cours de pilotage, dessiné ici en flèches vivantes.</li>
+      <li><strong>Pas de décrochage dans le modèle.</strong> En vrai, une aile trop cabrée
+        « décroche » (l’air n’arrive plus à suivre l’aile, la portance s’effondre) ; ici,
+        tirer trop fort ne donne simplement… rien de plus (l’angle d’attaque est plafonné en
+        douceur). Le mot est déposé ici pour plus tard.</li>
+      <li><strong>L’atterrissage est toujours doux :</strong> près du sol, le site plafonne
+        la vitesse de descente — l’« arrondi » qu’exécute un vrai pilote est automatique.
+        Rien ne peut s’écraser : on explore sans peur, c’est voulu.</li>
+      <li><strong>Le virage :</strong> un avion tourne en penchant ses ailes (l’inclinaison),
+        car la portance penchée tire vers l’intérieur du virage — pas de volant. Détail vrai
+        aussi : en virage, la portance « verticale » diminue un peu, et l’avion descend
+        doucement si on ne tire pas légèrement — le site le montre, sans jamais punir.</li>
+      <li><strong>L’avion « se règle tout seul » en vol</strong> (manche relâché, il revient
+        porter exactement son poids) : c’est la stabilité longitudinale, très simplifiée —
+        les vrais avions bien réglés font à peu près pareil, en oscillant un peu.</li>
+      <li><strong>Vitesses et altitudes</strong> sont arrondies à hauteur d’enfant (décollage
+        vers 220 km/h, croisière vers 260 km/h, 2 400 m) — un vrai avion de ligne décolle
+        vers 250–300 km/h et croise vers 900 km/h à 11 000 m ; les proportions des flèches
+        sont gardées lisibles plutôt qu’à l’échelle.</li>
+      <li><strong>La voix qui lit l’histoire</strong> est celle de votre appareil (rien ne
+        part sur Internet), et sa qualité varie beaucoup. Le site choisit la voix française
+        la plus naturelle qu’il trouve ; le petit menu à côté du bouton 🔊 permet d’en
+        essayer une autre — le choix est retenu, et partagé avec les labos d’astronomie.</li>
+      <li>Les mots magiques à retenir : la <strong>portance</strong> — la poussée de l’air
+        vers le haut, qui grandit avec la vitesse — et l’<strong>action-réaction</strong> :
+        pousse l’air vers le bas, l’air te pousse vers le haut.</li>
+    </ul>
+  </details>
+</main>
+
+<footer class="site-footer">
+  <p>« Comment volent les avions ? » — épisode 1 du <strong>Petit labo de physique</strong>.
+    La série sœur, le Petit labo d’astronomie :
+    <a href="https://davidb-prog.github.io/eclipse-explorer/">🌒 La mécanique des éclipses</a> ·
+    <a href="https://davidb-prog.github.io/ou-va-le-soleil/">🌅 Où va le Soleil la nuit ?</a> ·
+    <a href="https://davidb-prog.github.io/la-terre-tourne/">🌍 Quelle heure est-il là-bas ?</a></p>
+</footer>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
