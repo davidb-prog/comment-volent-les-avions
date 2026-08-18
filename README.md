@@ -1,6 +1,6 @@
 # Comment volent les avions ? 🛩️
 
-Épisode 1 du **Petit labo de physique** — la série sœur du
+Un épisode du **Petit labo de physique** — la série sœur du
 [Petit labo d'astronomie](#les-labos) : un site d'une page, interactif, pour expliquer à une
 enfant de 5 ans, guidée par un parent qui lit à voix haute, comment un avion vole, décolle,
 tourne et atterrit.
@@ -55,7 +55,7 @@ du poids… l'avion décolle !
   l'appareil, phrase à phrase, pauses et relief) avec choix de voix française — **partagé
   avec les labos d'astronomie** (même clé, même origine github.io).
 - **Le pont de fin de page** : « Et une fusée, là où il n'y a plus d'air… qui la pousse ? »
-  — et la passerelle vers les 3 épisodes du Petit labo d'astronomie.
+  — et la passerelle vers les 4 épisodes du Petit labo d'astronomie.
 - **Plein écran** des deux vues (API native, repli maison pour iOS), mise en page mobile
   dédiée : sous 640 px les vues s'empilent, rien ne recouvre jamais les canvas.
 - Accessible : aria-labels descriptifs sur les deux canvas, pilotage au clavier (canvas
@@ -85,7 +85,7 @@ aucun accès DOM — et se teste sous Node, sans navigateur :
 node test/model.test.mjs
 ```
 
-**55 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
+**59 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
 (∝ v² — nulle à l'arrêt : un avion posé ne s'envole jamais tout seul) ; l'avion **décolle
 quand la portance dépasse le poids** (la vitesse de décollage est testée au point près) ;
 **en croisière stable, portance = poids et poussée = traînée** ; la **traînée freine
@@ -93,7 +93,7 @@ toujours** et, moteurs coupés, l'avion **plane** (descente plafonnée — il ne
 comme une pierre) ; **pencher les ailes = tourner**, plus on penche plus le virage est
 serré, avec un plafond doux ; près du sol, l'**arrondi est automatique** et le toucher
 **toujours doux** ; et surtout **jamais punitif** : 40 vols aux commandes aléatoires
-(graine fixe), plus de 1 000 atterrissages observés, zéro crash — depuis n'importe quel
+(graine fixe), plus de 140 atterrissages observés, zéro crash — depuis n'importe quel
 état, gaz coupés, l'avion finit posé, roues arrêtées.
 
 Le site est aussi vérifié en navigateur (Playwright/Chromium, desktop + mobile 390 px) :
@@ -133,6 +133,18 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
   et les champs de pression autour du profil (Bernoulli) — même phénomène, autres outils.
   Le **mythe du « chemin plus long au-dessus de l'aile »** (temps de transit égal), lui,
   est faux, et n'apparaît nulle part — il est signalé comme mythe dans la note aux parents.
+- **« Monter = l'air pousse plus fort que le poids »** : vrai au décollage et dès que la
+  trajectoire s'incurve vers le haut — mais en montée stabilisée, la portance revient
+  porter à peu près le poids, et c'est le **surplus de poussée** qui fait grimper l'avion.
+  Le modèle fait monter l'avion à l'excès de portance parce que c'est la course des deux
+  flèches que l'enfant lit ; la note aux parents rétablit la vérité.
+- **Gaz coupés, l'avion « plane »** en ralentissant doucement ; un vrai planeur, lui,
+  pique un peu du nez pour **garder sa vitesse** (c'est elle qui le fait voler) et suit
+  une pente régulière. La descente du site est plafonnée, jamais la vitesse entretenue.
+- **Le virage ne dépend que de l'inclinaison** dans le modèle ; en vrai, à inclinaison
+  égale, un avion **lent** tourne plus serré qu'un avion rapide (le taux de virage vaut
+  g·tan(inclinaison)/vitesse). Une variable de moins, la vérité « plus on penche, plus ça
+  tourne » reste juste.
 - **Pas de décrochage** : tirer trop fort ne donne simplement rien de plus (angle d'attaque
   plafonné en douceur). Le vrai décrochage est nommé dans la note aux parents.
 - **Atterrissage toujours doux** : la descente est plafonnée près du sol (l'arrondi est
@@ -165,7 +177,7 @@ js/side.js            vue de côté (piste, ciel, avion + pilote, 4 flèches viv
 js/back.js            vue de derrière (horizon incliné, portance penchée, mini-carte)
 js/main.js            boucle d'animation + interactions (manette, glissers, tap-pause,
                       scénarios et leur version sonore, plein écran, conteur)
-test/model.test.mjs   tests Node du modèle (55 vérifications)
+test/model.test.mjs   tests Node du modèle (59 vérifications)
 ```
 
 ## Les labos
@@ -177,9 +189,11 @@ test/model.test.mjs   tests Node du modèle (55 vérifications)
 
 **Le petit labo d'astronomie**, la série sœur :
 
-1. 🌒 [La mécanique des éclipses](https://davidb-prog.github.io/eclipse-explorer/) —
-   pourquoi la Lune change de forme, et les deux coïncidences qui fabriquent une éclipse.
+1. 🌒 [La mécanique des éclipses](https://davidb-prog.github.io/eclipse-explorer/) — les
+   deux coïncidences qui fabriquent une éclipse.
 2. 🌅 [Où va le Soleil la nuit ?](https://davidb-prog.github.io/ou-va-le-soleil/) — le
    Soleil ne bouge pas : c'est la Terre qui tourne.
 3. 🌍 [Quelle heure est-il là-bas ?](https://davidb-prog.github.io/la-terre-tourne/) — la
    Terre tourne, et il n'est pas la même heure partout.
+4. 🌙 [Pourquoi la Lune change de forme ?](https://davidb-prog.github.io/la-lune-change-de-forme/)
+   — la Lune est toujours à moitié éclairée : on en voit un côté différent chaque nuit.

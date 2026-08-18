@@ -8,7 +8,9 @@ La grande révélation : **l'air est costaud**. On ne le voit pas, mais il porte
 L'aile, en avançant vite, **pousse l'air vers le bas — alors l'air pousse l'aile vers le
 haut** (action-réaction). Pas de vitesse, pas de portance : un avion posé ne s'envole pas,
 c'est pour ça qu'il court si vite sur la piste. Refrain de l'épisode : « … parce que l'air
-pousse ! ». Kicker : « Petit labo de physique — épisode 1 ».
+pousse ! ». Kicker : « Petit labo de physique » — **sans numéro d'épisode** (convention de
+la famille depuis 2026-08 : la numérotation affichée n'est pas maintenable, l'ordre de
+publication vit dans le registre du skill petit-labo, nulle part dans l'interface).
 
 Le cœur visuel : **les 4 forces dessinées comme des flèches vivantes** accrochées à l'avion —
 portance (l'air pousse vers le haut), poids (la Terre tire vers le bas), poussée (les
@@ -21,12 +23,13 @@ va plus vite pour rattraper » (temps de transit égal) est **fausse** — elle 
 part (sauf, au choix, signalée comme mythe dans la note aux parents). L'explication du
 site : l'air dévié vers le bas + « il faut de la vitesse ».
 
-Les trois épisodes d'astronomie font référence (niveau d'exigence, conventions, codes) :
-épisode 1 <https://github.com/davidb-prog/eclipse-explorer>, épisode 2
+Les épisodes d'astronomie font référence (niveau d'exigence, conventions, codes) :
+<https://github.com/davidb-prog/eclipse-explorer>,
 <https://github.com/davidb-prog/ou-va-le-soleil> (le CLAUDE.md le plus à jour — leçons
-reprises ici), épisode 3 <https://github.com/davidb-prog/la-terre-tourne>. Clones de lecture
+reprises ici), <https://github.com/davidb-prog/la-terre-tourne>,
+<https://github.com/davidb-prog/la-lune-change-de-forme>. Clones de lecture
 dans les sessions : `/workspace/davidb-prog/<repo>`. Quand ce site sera fusionné et publié :
-rappeler à David d'ajouter des liens croisés vers ce labo dans les pieds de page des trois
+rappeler à David d'ajouter des liens croisés vers ce labo dans les pieds de page des quatre
 sites d'astronomie.
 
 ## Les codes pédagogiques de la série (notre ADN)
@@ -70,7 +73,7 @@ sites d'astronomie.
     vers la série sœur « Le petit labo d'astronomie » (liens vers les 3 épisodes).
 13. **Accessibilité** : aria-labels descriptifs sur tous les canvas, commandes au clavier,
     espace = pause, focus visibles.
-14. **En-tête** : kicker « Petit labo de physique <épisode 1> », titre-question « Comment
+14. **En-tête** : kicker « Petit labo de physique » (sans numéro), titre-question « Comment
     volent les avions ? », accroche qui se termine par « … parce que l'air pousse ! ».
 
 ## Contraintes
@@ -114,6 +117,13 @@ sites d'astronomie.
   n'importe quel état, l'avion finit posé ou en vol stable).
 - Les deux vues racontent la même chose (l'inclinaison de la vue de derrière est celle qui
   incurve la trajectoire de la mini-carte).
+
+Simplifications assumées et **documentées** (note aux parents + README) — ne pas les
+« corriger » sans en parler à David, elles sont pédagogiques : monter = excès de portance
+(en vrai, montée stabilisée = excès de poussée, portance ≈ poids) ; taux de virage
+indépendant de la vitesse (en vrai g·tan(inclinaison)/v) ; plané qui laisse fondre la
+vitesse (un vrai planeur pique du nez pour la garder) ; pas de décrochage ; arrondi
+automatique ; piste infinie.
 
 ## Invariants d'interaction (voulus par David)
 
@@ -174,10 +184,13 @@ prévenir David (Settings → Pages → Source : « GitHub Actions »).
 
 - Textes UI et commentaires en français ; apostrophe typographique « ’ » dans les chaînes UI.
 - Commits conventionnels en français. Pas de fusion sur `main` sans feu vert explicite.
-- Un artifact Claude (page unique auto-contenue, générée par le script scratchpad
-  `build-artifact.mjs` : CSS inliné + modules concaténés sans import/export, dans l'ordre
-  model → canvas → side → back → main) sert aux tests en famille — republier **au même
-  URL** à chaque itération : <https://claude.ai/code/artifact/632965ba-8789-4862-968d-0c065322f9b4>
+- Un artifact Claude (page unique auto-contenue, générée par le bundler du skill
+  petit-labo : `references/construire-page-test.mjs <racine> <sortie.html>`) sert aux
+  tests en famille — republier **au même URL** à chaque itération :
+  <https://claude.ai/code/artifact/632965ba-8789-4862-968d-0c065322f9b4>
   (depuis une autre session : passer cette URL au paramètre `url` de l'outil Artifact).
-  Contrainte de concaténation : une seule déclaration par nom global (TAU vit dans
-  `model.js`, `canvas.js` le réimporte ; préfixer les constantes homonymes des vues).
+  Contraintes du bundler : imports nommés, exports `export const|let|var|function NOM`
+  en début de ligne — donc **pas de `export class`** (écrire
+  `export const SideView = class { … };`), pas de ré-export (`export { TAU }` interdit :
+  chaque vue importe TAU directement de `model.js`), une seule déclaration par nom
+  global entre modules.
