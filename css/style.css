@@ -41,11 +41,6 @@ body {
   margin: 0; color: var(--rose-deep); font-size: .8rem; font-weight: 700;
   letter-spacing: .14em; text-transform: uppercase;
 }
-.episode {
-  display: inline-block; margin-left: 8px; padding: 1px 10px; letter-spacing: .08em;
-  border: 1px solid var(--rose-deep); border-radius: 999px; color: var(--rose-deep);
-  font-size: .72rem; vertical-align: 1px;
-}
 .site-header h1 { margin: .22em 0 .3em; font-size: clamp(2.1rem, 5.5vw, 3.1rem); line-height: 1.1; }
 .tagline { margin: 0 auto; max-width: 62ch; color: var(--muted); }
 .tagline strong { color: var(--rose-deep); }
