@@ -3,11 +3,11 @@
 // accrochées à l'avion et changent de longueur en direct : c'est le « graphe »
 // que l'enfant lit sans savoir lire. Tout est piloté par le modèle pur.
 
-import { V_MAX, ALT_MAX, WEIGHT, FLARE_ALT, clamp, clamp01,
+import { TAU, V_MAX, ALT_MAX, WEIGHT, FLARE_ALT, clamp, clamp01,
          COLOR_LIFT, COLOR_WEIGHT, COLOR_THRUST, COLOR_DRAG,
          COLOR_PLANE, COLOR_PLANE_DEEP, SKY_TOP, SKY_BOTTOM,
          COLOR_GRASS, COLOR_RUNWAY } from './model.js';
-import { TAU, fitCanvas, label, drawArrow, drawCloud } from './canvas.js';
+import { fitCanvas, label, drawArrow, drawCloud } from './canvas.js';
 
 const ARROW_PER_FORCE = 46;   // pixels de flèche par « poids d'avion » (à l'échelle 1)
 const ARROW_CAP = 2.0;        // au-delà, la flèche n'apprend plus rien : on plafonne
@@ -20,7 +20,7 @@ const CLOUDS = [
 const FLOWERS = [0.08, 0.22, 0.41, 0.55, 0.72, 0.9];
 const FLOWER_COLORS = ['#e0447c', '#6a4fd0', '#ffb54d'];
 
-export class SideView {
+export const SideView = class {
   constructor(canvas) { this.canvas = canvas; }
 
   draw(state, controls) {
@@ -238,4 +238,4 @@ export class SideView {
     ctx.beginPath(); ctx.arc(22 * s, -8.6 * s, 3.2 * s, Math.PI, 0); ctx.fill(); // ses cheveux
     ctx.restore();
   }
-}
+};

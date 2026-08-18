@@ -4,9 +4,9 @@
 // rose s'incurve derrière. La cause (pencher les ailes) vit dans un médaillon
 // « vu de derrière » : horizon incliné + avion penché, sans aucune flèche.
 
-import { ALT_MAX, clamp01, COLOR_PLANE, COLOR_PLANE_DEEP,
+import { TAU, ALT_MAX, clamp01, COLOR_PLANE, COLOR_PLANE_DEEP,
          SKY_TOP, SKY_BOTTOM, COLOR_GRASS, COLOR_RUNWAY } from './model.js';
-import { TAU, fitCanvas, label, drawCloud } from './canvas.js';
+import { fitCanvas, label, drawCloud } from './canvas.js';
 
 const HORIZON_TILT = 0.5;   // dans le médaillon, l'horizon s'incline en contre
 const TRAIL_STEP = 0.12;    // une miette de trajectoire toutes les 0,12 s
@@ -23,7 +23,7 @@ function cellHash(ix, iy) {
   return Math.abs(h ^ (h >> 16));
 }
 
-export class BackView {
+export const BackView = class {
   constructor(canvas) {
     this.canvas = canvas;
     this.trail = [];
@@ -268,4 +268,4 @@ export class BackView {
     ctx.beginPath(); ctx.arc(0, -8.8 * s, 2.6 * s, Math.PI, 0); ctx.fill();
     ctx.restore();
   }
-}
+};
