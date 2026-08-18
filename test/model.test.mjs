@@ -6,9 +6,9 @@
 
 import {
   TAU, DEG, clamp, clamp01,
-  V_MAX, V_TAKEOFF, V_CRUISE, ALT_MAX, ALT_CRUISE,
+  V_MAX, V_TAKEOFF, V_CRUISE, ALT_MAX, ALT_CRUISE, CEIL_BAND,
   WEIGHT, THRUST_MAX, ACCEL, AOA_MIN, AOA_MAX, LIFT_STICK_GAIN,
-  VS_MAX, VS_DOWN_MAX, VS_LAND, FLARE_ALT,
+  VS_MAX, VS_DOWN_MAX, VS_LAND, FLARE_ALT, climbCap,
   BANK_MAX, TURN_RATE_MAX, T_CRUISE,
   COLOR_LIFT, COLOR_WEIGHT, COLOR_THRUST, COLOR_DRAG, COLOR_PLANE,
   FORCES, thrustForce, dragForce, aoaTrim, liftGround, liftAir, forces,
@@ -183,6 +183,37 @@ check('en virage, la portance penchée tient un peu moins en l’air : ' +
       minVs = Math.min(minVs, s.vs);
     });
     return end.alt < ALT_CRUISE && minVs < -0.3 && minVs >= -VS_DOWN_MAX - 1e-6;
+  })());
+
+console.log('Le haut et le bas du cadre — plafond doux, pas de rebond');
+check('le plafond doux : pleine montée en dessous, plus rien tout en haut',
+  approx(climbCap(ALT_MAX), 0) && approx(climbCap(ALT_MAX - CEIL_BAND), VS_MAX) &&
+  climbCap(ALT_MAX - CEIL_BAND / 2) > 0 && climbCap(ALT_MAX - CEIL_BAND / 2) < VS_MAX);
+check('manche tiré à fond sans relâche : l’avion s’installe en douceur sous le plafond',
+  (() => {
+    const s0 = Object.assign(newState(), ENTRY_AIR);
+    let maxVsNearTop = 0;
+    const end = simulate(s0, HOLD(1, 1, 0), 60, (prev, s) => {
+      if (s.alt > ALT_MAX - 2) maxVsNearTop = Math.max(maxVsNearTop, s.vs);
+    });
+    return end.alt <= ALT_MAX && end.alt > ALT_MAX - 4 && maxVsNearTop < 2.5;
+  })());
+check('manche poussé vers le bas au sol : les roues restent collées, pas de rebond',
+  (() => {
+    // on arrive vite (vitesse de croisière) en poussant le manche : toucher…
+    const s0 = Object.assign(newState(), ENTRY_AIR, { alt: 12 });
+    let touched = false, bounced = false;
+    simulate(s0, HOLD(T_CRUISE, -1, 0), 20, (prev, s) => {
+      if (s.onGround) touched = true;
+      if (touched && !s.onGround) bounced = true;
+    });
+    return touched && !bounced;
+  })());
+check('…et manche relâché à cette vitesse, l’air le soulève à nouveau (c’est la révélation)',
+  (() => {
+    const s0 = Object.assign(newState(), { v: V_CRUISE, onGround: true });
+    const end = simulate(s0, HOLD(T_CRUISE, 0, 0), 3);
+    return !end.onGround;
   })());
 
 console.log('L’atterrissage — l’arrondi automatique, le toucher toujours doux');

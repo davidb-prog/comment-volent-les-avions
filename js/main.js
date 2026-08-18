@@ -27,7 +27,7 @@ const side = new SideView($('side-view'));
 const back = new BackView($('back-view'));
 
 // vitesses de réponse des commandes (unité de commande / s) : tout est doux
-const RATE = { throttle: 0.9, stick: 2.2, bank: 1.8 };
+const RATE = { throttle: 1.6, stick: 2.2, bank: 1.8 };
 
 // ---- lecture / pause : le tour d'avion automatique ----
 
@@ -308,7 +308,9 @@ function updateTexts() {
   setText('alt', $('alt-out'), formatAlt(sim.state.alt));
   setText('side', $('side-status'), statusSide(sim.state, sim.controls));
   setText('back', $('back-status'), statusBack(sim.state));
-  if (!throttleHeld) throttleEl.value = Math.round(sim.controls.throttle * 100);
+  // le curseur montre la CONSIGNE (là où on l'a mis), jamais la valeur lissée :
+  // sinon il « revient en arrière » sous le doigt (retour de David)
+  if (!throttleHeld) throttleEl.value = Math.round(sim.targets.throttle * 100);
 }
 
 // ---- boucle d'animation ----

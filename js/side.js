@@ -108,17 +108,20 @@ export class SideView {
       }
     }
 
-    // ---- ton avion (et son pilote)
-    this.plane(ctx, px, py, s, pitch, state.onGround || state.alt < FLARE_ALT);
+    // ---- ton avion (et son pilote) — la flamme du moteur suit la manette
+    const throttleNow = controls ? controls.throttle : 0;
+    this.plane(ctx, px, py, s, pitch, state.onGround || state.alt < FLARE_ALT, throttleNow);
 
     // ---- les 4 flèches des forces, accrochées à l'avion
     const forcesNow = state.forces; // posées par main.js à chaque image
     if (forcesNow) {
+      // UNE SEULE échelle pour les 4 flèches : leurs longueurs se comparent
+      // honnêtement (poussée = traînée en croisière, à l'œil nu aussi).
       const ar = ARROW_PER_FORCE * s;
       const liftLen = Math.min(forcesNow.lift, ARROW_CAP) * ar;
       const weightLen = Math.min(forcesNow.weight, ARROW_CAP) * ar;
-      const thrustLen = Math.min(forcesNow.thrust, ARROW_CAP) * ar * 1.6;
-      const dragLen = Math.min(forcesNow.drag, ARROW_CAP) * ar * 1.6;
+      const thrustLen = Math.min(forcesNow.thrust, ARROW_CAP) * ar;
+      const dragLen = Math.min(forcesNow.drag, ARROW_CAP) * ar;
       drawArrow(ctx, px + 2 * s, py - 20 * s, -Math.PI / 2, liftLen, COLOR_LIFT, 7 * s);
       drawArrow(ctx, px + 2 * s, py + 16 * s, Math.PI / 2, weightLen, COLOR_WEIGHT, 7 * s);
       drawArrow(ctx, px + 48 * s, py, 0, thrustLen, COLOR_THRUST, 7 * s);
@@ -175,10 +178,28 @@ export class SideView {
   }
 
   // Ton avion, rond et sympathique, avec son petit pilote — le nez vers la droite.
-  plane(ctx, x, y, s, pitch, wheelsOut) {
+  // `throttle` allume la flamme du réacteur : la manette des gaz répond à l'œil,
+  // même à l'arrêt (retour de David : « à quoi sert ce curseur ? »).
+  plane(ctx, x, y, s, pitch, wheelsOut, throttle) {
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(pitch);
+    // le réacteur sous l'aile, et sa flamme qui grandit avec les gaz
+    ctx.fillStyle = '#8b93a5';
+    ctx.beginPath(); ctx.ellipse(4 * s, 11 * s, 9 * s, 5.5 * s, 0, 0, TAU); ctx.fill();
+    if (throttle > 0.03) {
+      const fl = (6 + 30 * throttle) * s;
+      const flame = ctx.createLinearGradient(-5 * s, 0, -5 * s - fl, 0);
+      flame.addColorStop(0, '#ffd166');
+      flame.addColorStop(0.5, '#ff9f1c');
+      flame.addColorStop(1, 'rgba(255, 122, 28, 0)');
+      ctx.fillStyle = flame;
+      ctx.beginPath();
+      ctx.moveTo(-4 * s, 8 * s);
+      ctx.lineTo(-5 * s - fl, 11 * s);
+      ctx.lineTo(-4 * s, 14 * s);
+      ctx.closePath(); ctx.fill();
+    }
     // les roues (sorties près du sol)
     if (wheelsOut) {
       ctx.strokeStyle = COLOR_PLANE_DEEP;

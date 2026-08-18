@@ -34,8 +34,10 @@ export const ALT_MAX = 100;      // plafond doux de l'altitude affichée
 export const ALT_CRUISE = 60;    // altitude de croisière des scénarios
 
 export const WEIGHT = 1;         // le poids, étalon des 4 flèches
-export const THRUST_MAX = 0.5;   // poussée plein gaz (en poids d'avion)
-export const ACCEL = 16;         // (unités de vitesse / s) par unité de force
+// Les 4 flèches partagent UNE SEULE échelle (retour de David : proportions
+// honnêtes) : la poussée plein gaz dépasse un peu le poids pour rester lisible.
+export const THRUST_MAX = 1.2;   // poussée plein gaz (en poids d'avion)
+export const ACCEL = 7;          // (unités de vitesse / s) par unité de force
 
 // L'angle d'attaque, résumé en un facteur multiplicatif de la portance.
 // En vol, l'avion se « règle » tout seul pour porter exactement son poids
@@ -56,8 +58,10 @@ export const BANK_MAX = 40 * DEG;    // inclinaison maxi (le plafond doux du vir
 export const BANK_RESPONSE = 1.6;    // souplesse de la mise en virage (1/s)
 export const TURN_RATE_MAX = 0.42;   // vitesse de virage à pleine inclinaison (rad/s)
 
-export const ROLL_FRICTION = 0.02;   // roulement sur la piste (en poids d'avion)
-export const BRAKE_FRICTION = 0.10;  // freinage gaz coupés au sol
+export const ROLL_FRICTION = 0.05;   // roulement sur la piste (en poids d'avion)
+export const BRAKE_FRICTION = 0.25;  // freinage gaz coupés au sol
+
+export const CEIL_BAND = 15;     // épaisseur du plafond doux sous ALT_MAX
 
 export const SPEED_KMH = 4;      // affichage parent : v = 65 → « 260 km/h »
 export const ALT_METERS = 40;    // affichage parent : alt = 60 → « 2 400 m »
@@ -148,6 +152,12 @@ export function descentCap(alt) {
   return VS_LAND + (VS_DOWN_MAX - VS_LAND) * clamp01(alt / FLARE_ALT);
 }
 
+// Plafond de montée : en approchant du haut du ciel, la montée s'éteint en
+// douceur (l'air se fait trop léger) — jamais de butée brutale en haut du cadre.
+export function climbCap(alt) {
+  return VS_MAX * clamp01((ALT_MAX - alt) / CEIL_BAND);
+}
+
 // ------------------------------------------------------------------ l'état
 export function newState() {
   return { v: 0, alt: 0, vs: 0, bank: 0, heading: 0, x: 0, y: 0, dist: 0, onGround: true };
@@ -187,14 +197,18 @@ export function step(state, controls, dt) {
   if (s.onGround) {
     n.vs = 0;
     n.alt = 0;
-    // décollage : la portance dépasse le poids — l'avion quitte la piste
-    if (lift > WEIGHT) { n.onGround = false; n.vs = 0.5; }
+    // décollage : la portance dépasse le poids — l'avion quitte la piste.
+    // Manche poussé vers le bas, les roues restent collées à la piste : pas de
+    // rebond quand on se pose vite (retour de David — bas du cadre).
+    if (lift > WEIGHT && stick >= -0.05) { n.onGround = false; n.vs = 0.5; }
   } else {
     const liftUp = lift * Math.cos(n.bank); // la part de portance qui tient en l'air
     let vsTarget = VS_MAX * clamp((liftUp - WEIGHT) * VS_GAIN, -1, 1);
     vsTarget = Math.max(vsTarget, -descentCap(s.alt)); // l'arrondi automatique
+    vsTarget = Math.min(vsTarget, climbCap(s.alt));    // le plafond doux, en haut
     n.vs = s.vs + (vsTarget - s.vs) * Math.min(1, VS_RESPONSE * dt);
     n.vs = Math.max(n.vs, -descentCap(s.alt)); // même lissé, jamais plus vite que doux
+    n.vs = Math.min(n.vs, climbCap(s.alt));
     n.alt = s.alt + n.vs * dt;
     if (n.alt >= ALT_MAX) { n.alt = ALT_MAX; n.vs = Math.min(n.vs, 0); }
     if (n.alt <= 0) { n.alt = 0; n.onGround = true; n.vs = 0; n.bank = 0; }
@@ -289,10 +303,16 @@ export function statusSide(state, controls) {
     if (state.v < 2) {
       return '😴 Ton avion est posé. Pas de vitesse : l’air ne porte pas.';
     }
+    if (f.lift > WEIGHT) {
+      return '💨 À cette vitesse, l’air soulève ton avion dès que tu le laisses !';
+    }
     if (f.lift < WEIGHT * 0.55) {
       return '🏃 Il court sur la piste… la flèche de l’air grandit avec la vitesse !';
     }
     return '💨 Encore un peu… la flèche de l’air va dépasser le poids !';
+  }
+  if (state.alt > ALT_MAX - 3 && state.vs > -0.4) {
+    return '🎈 Tout en haut ! Plus haut, l’air est trop léger pour bien porter.';
   }
   if (state.alt < FLARE_ALT && state.vs < -0.4) {
     return '🪶 Tout près du sol, l’avion se redresse… toucher tout doux !';
