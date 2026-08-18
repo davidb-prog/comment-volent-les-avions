@@ -38,8 +38,9 @@ sites d'astronomie.
    d'attaque, décrochage…) va dans la note aux parents repliable et le README — jamais dans
    le chemin de l'enfant.
 3. **Le même phénomène, deux regards synchronisés** : la vue de côté (décoller, planer,
-   atterrir) et la vue de derrière (pencher = tourner), toujours d'accord entre elles, avec
-   sous chaque vue une petite **phrase d'état** qui raconte le même instant.
+   atterrir) et la carte du ciel vue de dessus (pencher = tourner — refonte « idée B »
+   choisie par David le 2026-08-18), toujours d'accord entre elles, avec sous chaque vue
+   une petite **phrase d'état** qui raconte le même instant.
 4. **Manipuler d'abord, expliquer ensuite** : geste direct sur les canvas
    (`touch-action: none`, tap = pause), grande manette des gaz, glisser haut/bas (monter /
    descendre) et gauche/droite (pencher). Jamais de théorie avant le jeu.
@@ -119,8 +120,10 @@ sites d'astronomie.
 - Vue de côté : l'avion reste à poste fixe à l'écran, le décor défile ; les 4 flèches sont
   accrochées à l'avion et changent de longueur en direct. Deux commandes maximum : la
   manette des gaz + glisser haut/bas sur le ciel (monter / descendre).
-- Vue de derrière : glisser gauche/droite penche les ailes, l'horizon s'incline, la
-  mini-carte (vue de dessus) montre la trajectoire qui s'incurve.
+- Vue du virage = **la carte vue de dessus en grand** (l'avion au centre, cap en haut, le
+  monde en tuiles — lacs, forêts, champs, pistes — qui tourne autour, la trace rose qui
+  s'incurve) ; le « pencher » (avion de dos + horizon incliné, sans aucune flèche) vit dans
+  un **médaillon** dans le coin. Glisser gauche/droite penche les ailes.
 - Les scénarios amènent l'état **en douceur, jamais en marche arrière brutale**, puis
   racontent l'instant sous les deux regards.
 - Tap sur un canvas = pause/lecture ; espace = pause ; toute commande manuelle interrompt le
@@ -140,8 +143,9 @@ sites d'astronomie.
   série)
 - `js/side.js` — vue de côté (piste, herbe, ciel, avion rond avec pilote, flèches des
   forces, décor défilant)
-- `js/back.js` — vue de derrière (horizon qui s'incline, avion vu de dos, mini-carte
-  trajectoire)
+- `js/back.js` — la carte du ciel vue de dessus (monde en tuiles déterministes qui tourne
+  autour de l'avion, trace, piste sous les roues) + médaillon « vu de derrière » (horizon
+  incliné, avion penché)
 - `js/main.js` — boucle rAF, manette des gaz, glissers, tap-pause, scénarios, plein écran
   (natif + repli iOS), conteur vocal (repris de l'épisode 2, clés `ltt-voice` /
   `ltt-scn-voice`)

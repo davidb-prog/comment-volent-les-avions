@@ -245,7 +245,7 @@ function renderStory(scn) {
   box.innerHTML = '';
   const lines = [
     { cls: 'story-chip-cote', chip: '🛩️ vu de côté', text: scn.cote },
-    { cls: 'story-chip-derriere', chip: '🧭 vu de derrière', text: scn.derriere },
+    { cls: 'story-chip-derriere', chip: '🧭 sur la carte', text: scn.derriere },
   ];
   for (const line of lines) {
     const row = document.createElement('div');
@@ -590,7 +590,7 @@ function spokenStory(scn) {
     .replace(/\s+\./g, '.').trim();
   const chunks = [{ text: 'Vu de côté…', endPara: false }];
   for (const c of sentenceChunks(clean(scn.cote), true)) chunks.push(c);
-  chunks.push({ text: 'Et maintenant, vu de derrière…', endPara: false });
+  chunks.push({ text: 'Et maintenant, sur la carte du ciel…', endPara: false });
   for (const c of sentenceChunks(clean(scn.derriere), true)) chunks.push(c);
   return chunks;
 }

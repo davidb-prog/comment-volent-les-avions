@@ -285,7 +285,7 @@ export const SCENARIOS = [
     id: 'virage', emoji: '🔄', label: 'Le virage', sub: 'penche les ailes !',
     entry: ENTRY_AIR, phases: ['virage', 'redresse'],
     cote: 'L’avion garde sa vitesse : l’air le porte toujours. Pas de volant dans un avion — pour tourner, il se penche !',
-    derriere: 'Penche les ailes : l’air pousse un peu de côté, et l’avion tourne ! Regarde la trajectoire s’incurver sur la carte. Plus tu penches, plus le virage est serré.',
+    derriere: 'Penche les ailes (regarde le médaillon !) : l’air pousse un peu de côté, et tout le paysage se met à tourner autour de ton avion. Plus tu penches, plus le virage est serré.',
   },
   {
     id: 'atterrissage', emoji: '🛬', label: 'L’atterrissage', sub: 'tout doux…',
@@ -340,7 +340,7 @@ export function statusBack(state) {
   if (deg < 22) {
     return '🔄 Penché vers la ' + side + ' : l’air pousse de côté, l’avion tourne !';
   }
-  return '🔄 Bien penché : le virage à ' + side + ' se serre — regarde la carte !';
+  return '🔄 Bien penché : le virage à ' + side + ' se serre — regarde ta trace !';
 }
 
 // ------------------------------------------------------------------ l'affichage
