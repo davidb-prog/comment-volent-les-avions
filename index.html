@@ -26,7 +26,7 @@
     <div class="panel stage-panel" id="stage-panel">
       <div class="stage-head">
         <span class="stage-title">Le même vol, deux regards
-          <span class="hint">(glisse sur les images pour piloter · petit tap = pause)</span></span>
+          <span class="hint">(pilote avec le petit cockpit — ou glisse sur les images · petit tap = pause)</span></span>
         <button id="btn-spin" class="spin-btn" aria-pressed="true">⏸ Pause</button>
         <button id="fs-toggle" class="spin-btn" aria-label="Basculer les deux vues en plein écran">⛶ Plein écran</button>
       </div>
@@ -50,24 +50,48 @@
         </div>
       </div>
 
-      <div class="throttle-control">
-        <div class="throttle-readout"><span class="throttle-name">🔥 La manette des gaz</span>
+      <div class="cockpit" id="cockpit" role="group"
+        aria-label="Le petit cockpit : les gaz, pencher pour tourner, monter et descendre">
+        <div class="cockpit-readout"><span class="cockpit-name">🧑‍✈️ Ton petit cockpit</span>
           <span class="gauges">ton avion file à <strong id="speed-out">0 km/h</strong>,
             à <strong id="alt-out">0 m</strong> du sol</span></div>
-        <input type="range" id="throttle" min="0" max="100" step="1" value="0"
-          aria-label="La manette des gaz : pousser pour accélérer les moteurs">
-        <div class="slider-scale" aria-hidden="true">
-          <span>🐢 moteurs coupés</span><span>🔥 plein gaz !</span>
+        <div class="cockpit-rows">
+          <div class="ck-group" aria-label="Les gaz des réacteurs">
+            <div class="ck-btns">
+              <button id="gaz-moins" class="ck-btn" aria-label="Moins de gaz">🐢</button>
+              <div class="gaz-gauge" aria-hidden="true"><div id="gaz-fill" class="gaz-fill"></div></div>
+              <button id="gaz-plus" class="ck-btn" aria-label="Plus de gaz">🔥</button>
+            </div>
+            <span class="ck-cap">les gaz</span>
+          </div>
+          <div class="ck-group" aria-label="Pencher les ailes pour tourner">
+            <div class="ck-btns">
+              <button id="ck-gauche" class="ck-btn ck-hold" aria-label="Pencher les ailes à gauche — maintenir appuyé pour tourner à gauche">⬅️</button>
+              <button id="ck-droite" class="ck-btn ck-hold" aria-label="Pencher les ailes à droite — maintenir appuyé pour tourner à droite">➡️</button>
+            </div>
+            <span class="ck-cap">pencher = tourner</span>
+          </div>
+          <div class="ck-group" aria-label="Monter et descendre">
+            <div class="ck-btns">
+              <button id="ck-monter" class="ck-btn ck-hold" aria-label="Monter — maintenir appuyé">⬆️</button>
+              <button id="ck-descendre" class="ck-btn ck-hold" aria-label="Descendre — maintenir appuyé">⬇️</button>
+            </div>
+            <span class="ck-cap">monter / descendre</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="panel legend-panel" aria-label="Les quatre forces et leurs couleurs">
-      <span class="legend-title">Les 4 flèches :</span>
-      <span class="chip chip-portance">💨 la portance <i>l’air pousse en haut</i></span>
-      <span class="chip chip-poids">🌍 le poids <i>la Terre tire en bas</i></span>
-      <span class="chip chip-poussee">🔥 la poussée <i>les moteurs poussent</i></span>
-      <span class="chip chip-trainee">🌬️ la traînée <i>l’air freine</i></span>
+    <div class="panel legend-panel" aria-label="Les quatre forces et leurs couleurs — appuyer sur une pastille l’explique">
+      <span class="legend-title">Les 4 flèches <span class="hint">(appuie !)</span> :</span>
+      <button class="chip chip-portance" data-force="portance">💨 la portance <i>l’air pousse en haut</i></button>
+      <button class="chip chip-poids" data-force="poids">🌍 le poids <i>la Terre tire en bas</i></button>
+      <button class="chip chip-poussee" data-force="poussee">🔥 la poussée <i>les moteurs poussent</i></button>
+      <button class="chip chip-trainee" data-force="trainee">🌬️ la traînée <i>l’air freine</i></button>
+      <div id="force-story" class="mini-story" aria-live="polite" hidden>
+        <p id="force-story-text" class="mini-story-text"></p>
+        <button id="force-listen" class="mini-listen" hidden aria-label="Écouter l’explication de cette flèche">🔊</button>
+      </div>
     </div>
 
     <div class="panel scenario-panel">
@@ -99,7 +123,7 @@
           plein d’air vers le bas. Et l’air n’est pas d’accord : il repousse les ailes vers
           le haut ! Pousse le mur : le mur te repousse. L’aile pousse l’air, l’air pousse
           l’aile.</p>
-        <p>C’est pour ça que l’avion court si vite sur la piste avant de s’envoler : sans
+        <p>C’est pour ça que l’avion roule si vite sur la piste avant de s’envoler : sans
           vitesse, l’air ne pousse pas assez fort. Mais quand l’avion va assez vite, l’air
           pousse plus fort que le poids… et hop, il décolle !</p>
         <p>Et pour tourner ? Pas de volant : l’avion penche ses ailes, et l’air le pousse
@@ -107,6 +131,20 @@
           moins, et il glisse tout doucement vers la piste.</p>
         <p><strong>Alors, comment volent les avions ? C’est l’air, costaud, qui les porte…
           parce que l’air pousse !</strong></p>
+      </div>
+    </div>
+
+    <div class="panel parts-panel">
+      <div class="parts-head">
+        <h2>🔍 Découvre ton avion</h2>
+        <span class="hint">appuie sur une pastille pour découvrir chaque pièce !</span>
+      </div>
+      <div class="parts-wrap ratio-parts" id="parts-wrap">
+        <canvas id="parts-view" aria-label="Ton avion rose en grand, posé sur la piste, vu de côté. Cinq pastilles rondes marquent ses pièces : les ailes, le réacteur, le cockpit, la queue et les roues. Appuyer sur une pastille affiche (et peut lire à voix haute) une petite explication de la pièce."></canvas>
+      </div>
+      <div id="part-story" class="mini-story part-story">
+        <p id="part-story-text" class="mini-story-text">Les ailes, le réacteur, le cockpit… chaque pièce a son petit secret. Appuie sur une pastille !</p>
+        <button id="part-listen" class="mini-listen" hidden aria-label="Écouter l’explication de cette pièce">🔊</button>
       </div>
     </div>
 
@@ -170,6 +208,11 @@
         car la portance penchée tire vers l’intérieur du virage — pas de volant. Détail vrai
         aussi : en virage, la portance « verticale » diminue un peu, et l’avion descend
         doucement si on ne tire pas légèrement — le site le montre, sans jamais punir.</li>
+      <li><strong>Et comment l’avion se penche-t-il ?</strong> Avec les
+        <strong>ailerons</strong> : de petits volets mobiles au bout des ailes. L’un se
+        lève, l’autre se baisse — une aile porte alors plus que l’autre, et l’avion
+        s’incline. Le site ne les montre pas : à 5 ans, « il penche les ailes » suffit,
+        le mot est déposé ici pour plus tard.</li>
       <li><strong>L’avion « se règle tout seul » en vol</strong> (manche relâché, il revient
         porter exactement son poids) : c’est la stabilité longitudinale, très simplifiée —
         les vrais avions bien réglés font à peu près pareil, en oscillant un peu.</li>

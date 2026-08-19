@@ -20,6 +20,68 @@ const CLOUDS = [
 const FLOWERS = [0.08, 0.22, 0.41, 0.55, 0.72, 0.9];
 const FLOWER_COLORS = ['#e0447c', '#6a4fd0', '#ffb54d'];
 
+// Ton avion vu de côté, rond et sympathique, avec son petit pilote — le nez
+// vers la droite. Partagé avec la vue « Découvre ton avion » (parts.js).
+// `throttle` allume la flamme du réacteur : la manette répond à l'œil.
+export function drawPlaneSide(ctx, x, y, s, pitch, wheelsOut, throttle) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(pitch);
+  // le réacteur sous l'aile, et sa flamme qui grandit avec les gaz
+  ctx.fillStyle = '#8b93a5';
+  ctx.beginPath(); ctx.ellipse(4 * s, 11 * s, 9 * s, 5.5 * s, 0, 0, TAU); ctx.fill();
+  if (throttle > 0.03) {
+    const fl = (6 + 30 * throttle) * s;
+    const flame = ctx.createLinearGradient(-5 * s, 0, -5 * s - fl, 0);
+    flame.addColorStop(0, '#ffd166');
+    flame.addColorStop(0.5, '#ff9f1c');
+    flame.addColorStop(1, 'rgba(255, 122, 28, 0)');
+    ctx.fillStyle = flame;
+    ctx.beginPath();
+    ctx.moveTo(-4 * s, 8 * s);
+    ctx.lineTo(-5 * s - fl, 11 * s);
+    ctx.lineTo(-4 * s, 14 * s);
+    ctx.closePath(); ctx.fill();
+  }
+  // les roues (sorties près du sol)
+  if (wheelsOut) {
+    ctx.strokeStyle = COLOR_PLANE_DEEP;
+    ctx.lineWidth = 3 * s;
+    ctx.beginPath();
+    ctx.moveTo(-8 * s, 8 * s); ctx.lineTo(-10 * s, 14 * s);
+    ctx.moveTo(14 * s, 8 * s); ctx.lineTo(16 * s, 14 * s);
+    ctx.stroke();
+    ctx.fillStyle = '#33475c';
+    ctx.beginPath(); ctx.arc(-10 * s, 15 * s, 4 * s, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(16 * s, 15 * s, 4 * s, 0, TAU); ctx.fill();
+  }
+  // la dérive (queue), derrière
+  ctx.fillStyle = COLOR_PLANE;
+  ctx.beginPath();
+  ctx.moveTo(-26 * s, -5 * s);
+  ctx.quadraticCurveTo(-36 * s, -24 * s, -44 * s, -24 * s);
+  ctx.lineTo(-38 * s, -3 * s);
+  ctx.closePath(); ctx.fill();
+  // le fuselage
+  ctx.beginPath(); ctx.ellipse(0, 0, 40 * s, 12.5 * s, 0, 0, TAU); ctx.fill();
+  // le stabilisateur et l'aile, un ton plus soutenu
+  ctx.fillStyle = COLOR_PLANE_DEEP;
+  ctx.beginPath();
+  ctx.moveTo(-28 * s, -2 * s); ctx.lineTo(-44 * s, 6 * s); ctx.lineTo(-30 * s, 7 * s);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(8 * s, -2 * s); ctx.lineTo(-14 * s, 15 * s); ctx.lineTo(0, 17 * s); ctx.lineTo(15 * s, 3 * s);
+  ctx.closePath(); ctx.fill();
+  // le hublot du pilote
+  ctx.fillStyle = '#eaf6ff';
+  ctx.beginPath(); ctx.arc(22 * s, -6 * s, 6.5 * s, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = '#ffd9b0';
+  ctx.beginPath(); ctx.arc(22 * s, -7.5 * s, 3.2 * s, 0, TAU); ctx.fill(); // le pilote
+  ctx.fillStyle = '#4a3524';
+  ctx.beginPath(); ctx.arc(22 * s, -8.6 * s, 3.2 * s, Math.PI, 0); ctx.fill(); // ses cheveux
+  ctx.restore();
+}
+
 export const SideView = class {
   constructor(canvas) { this.canvas = canvas; }
 
@@ -110,7 +172,7 @@ export const SideView = class {
 
     // ---- ton avion (et son pilote) — la flamme du moteur suit la manette
     const throttleNow = controls ? controls.throttle : 0;
-    this.plane(ctx, px, py, s, pitch, state.onGround || state.alt < FLARE_ALT, throttleNow);
+    drawPlaneSide(ctx, px, py, s, pitch, state.onGround || state.alt < FLARE_ALT, throttleNow);
 
     // ---- les 4 flèches des forces, accrochées à l'avion
     const forcesNow = state.forces; // posées par main.js à chaque image
@@ -177,65 +239,4 @@ export const SideView = class {
     ctx.beginPath(); ctx.arc(x, y - 8 * s, 1.7 * s, 0, TAU); ctx.fill();
   }
 
-  // Ton avion, rond et sympathique, avec son petit pilote — le nez vers la droite.
-  // `throttle` allume la flamme du réacteur : la manette des gaz répond à l'œil,
-  // même à l'arrêt (retour de David : « à quoi sert ce curseur ? »).
-  plane(ctx, x, y, s, pitch, wheelsOut, throttle) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(pitch);
-    // le réacteur sous l'aile, et sa flamme qui grandit avec les gaz
-    ctx.fillStyle = '#8b93a5';
-    ctx.beginPath(); ctx.ellipse(4 * s, 11 * s, 9 * s, 5.5 * s, 0, 0, TAU); ctx.fill();
-    if (throttle > 0.03) {
-      const fl = (6 + 30 * throttle) * s;
-      const flame = ctx.createLinearGradient(-5 * s, 0, -5 * s - fl, 0);
-      flame.addColorStop(0, '#ffd166');
-      flame.addColorStop(0.5, '#ff9f1c');
-      flame.addColorStop(1, 'rgba(255, 122, 28, 0)');
-      ctx.fillStyle = flame;
-      ctx.beginPath();
-      ctx.moveTo(-4 * s, 8 * s);
-      ctx.lineTo(-5 * s - fl, 11 * s);
-      ctx.lineTo(-4 * s, 14 * s);
-      ctx.closePath(); ctx.fill();
-    }
-    // les roues (sorties près du sol)
-    if (wheelsOut) {
-      ctx.strokeStyle = COLOR_PLANE_DEEP;
-      ctx.lineWidth = 3 * s;
-      ctx.beginPath();
-      ctx.moveTo(-8 * s, 8 * s); ctx.lineTo(-10 * s, 14 * s);
-      ctx.moveTo(14 * s, 8 * s); ctx.lineTo(16 * s, 14 * s);
-      ctx.stroke();
-      ctx.fillStyle = '#33475c';
-      ctx.beginPath(); ctx.arc(-10 * s, 15 * s, 4 * s, 0, TAU); ctx.fill();
-      ctx.beginPath(); ctx.arc(16 * s, 15 * s, 4 * s, 0, TAU); ctx.fill();
-    }
-    // la dérive (queue), derrière
-    ctx.fillStyle = COLOR_PLANE;
-    ctx.beginPath();
-    ctx.moveTo(-26 * s, -5 * s);
-    ctx.quadraticCurveTo(-36 * s, -24 * s, -44 * s, -24 * s);
-    ctx.lineTo(-38 * s, -3 * s);
-    ctx.closePath(); ctx.fill();
-    // le fuselage
-    ctx.beginPath(); ctx.ellipse(0, 0, 40 * s, 12.5 * s, 0, 0, TAU); ctx.fill();
-    // le stabilisateur et l'aile, un ton plus soutenu
-    ctx.fillStyle = COLOR_PLANE_DEEP;
-    ctx.beginPath();
-    ctx.moveTo(-28 * s, -2 * s); ctx.lineTo(-44 * s, 6 * s); ctx.lineTo(-30 * s, 7 * s);
-    ctx.closePath(); ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(8 * s, -2 * s); ctx.lineTo(-14 * s, 15 * s); ctx.lineTo(0, 17 * s); ctx.lineTo(15 * s, 3 * s);
-    ctx.closePath(); ctx.fill();
-    // le hublot du pilote
-    ctx.fillStyle = '#eaf6ff';
-    ctx.beginPath(); ctx.arc(22 * s, -6 * s, 6.5 * s, Math.PI, 0); ctx.fill();
-    ctx.fillStyle = '#ffd9b0';
-    ctx.beginPath(); ctx.arc(22 * s, -7.5 * s, 3.2 * s, 0, TAU); ctx.fill(); // le pilote
-    ctx.fillStyle = '#4a3524';
-    ctx.beginPath(); ctx.arc(22 * s, -8.6 * s, 3.2 * s, Math.PI, 0); ctx.fill(); // ses cheveux
-    ctx.restore();
-  }
 };

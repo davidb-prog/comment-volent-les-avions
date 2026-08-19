@@ -39,7 +39,7 @@ export const BackView = class {
     if (this.trail.length > TRAIL_MAX) this.trail.shift();
   }
 
-  draw(state) {
+  draw(state, controls) {
     const f = fitCanvas(this.canvas);
     const ctx = f.ctx, w = f.w, h = f.h;
     const s = Math.max(0.6, w / 380);
@@ -119,7 +119,7 @@ export const BackView = class {
     ctx.restore();
 
     // ---- le médaillon « vu de derrière » : la cause du virage, en vignette
-    this.medallion(ctx, w, h, s, state);
+    this.medallion(ctx, w, h, s, state, controls ? controls.throttle : 0);
 
     this.layout = { w: w, h: h, s: s, cx: cx, cy: cy, k: k };
   }
@@ -201,8 +201,11 @@ export const BackView = class {
   }
 
   // Le médaillon « vu de derrière » : horizon incliné + avion penché — la
-  // cause du virage en un coup d'œil, sans aucune flèche.
-  medallion(ctx, w, h, s, state) {
+  // cause du virage en un coup d'œil, sans aucune flèche. Deux indices disent
+  // « derrière » sans savoir lire (retour de David : la vue était ambiguë) :
+  // on voit la NUQUE du pilote (pas son visage), et l'échappement des
+  // réacteurs rougeoie face à nous quand on met les gaz.
+  medallion(ctx, w, h, s, state, throttle) {
     const r = Math.min(w, h) * 0.19;
     const mx = w - r - 10 * s, my = r + 10 * s;
     ctx.save();
@@ -222,7 +225,7 @@ export const BackView = class {
     ctx.fillStyle = COLOR_GRASS;
     ctx.fillRect(-D, hy, D * 2, D);
     ctx.rotate(state.bank * HORIZON_TILT);
-    this.planeBack(ctx, 0, r * 0.12, r / 68, state.bank);
+    this.planeBack(ctx, 0, r * 0.12, r / 68, state.bank, throttle);
     ctx.restore();
     ctx.strokeStyle = 'rgba(28, 53, 80, 0.45)';
     ctx.lineWidth = 2.5;
@@ -234,7 +237,7 @@ export const BackView = class {
     this.medLayout = { mx: mx, my: my, r: r };
   }
 
-  planeBack(ctx, x, y, s, bank) {
+  planeBack(ctx, x, y, s, bank, throttle) {
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(bank);
@@ -250,6 +253,20 @@ export const BackView = class {
     ctx.fillStyle = COLOR_PLANE_DEEP;
     ctx.beginPath(); ctx.ellipse(-30 * s, 7 * s, 7 * s, 5 * s, 0, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.ellipse(30 * s, 7 * s, 7 * s, 5 * s, 0, 0, TAU); ctx.fill();
+    // vus de derrière, leurs échappements rougeoient quand on met les gaz —
+    // l'indice que l'avion nous tourne le dos et s'éloigne
+    const th = throttle === undefined ? 0 : throttle;
+    if (th > 0.05) {
+      const glow = 0.35 + 0.65 * th;
+      for (const mx of [-30, 30]) {
+        const gr = ctx.createRadialGradient(mx * s, 7 * s, 0.5 * s, mx * s, 7 * s, 5.5 * s);
+        gr.addColorStop(0, 'rgba(255, 224, 130, ' + glow + ')');
+        gr.addColorStop(0.55, 'rgba(255, 159, 28, ' + (glow * 0.85) + ')');
+        gr.addColorStop(1, 'rgba(255, 122, 28, 0)');
+        ctx.fillStyle = gr;
+        ctx.beginPath(); ctx.ellipse(mx * s, 7 * s, 5.5 * s, 4 * s, 0, 0, TAU); ctx.fill();
+      }
+    }
     // la dérive au-dessus
     ctx.fillStyle = COLOR_PLANE;
     ctx.beginPath();
@@ -259,13 +276,13 @@ export const BackView = class {
     ctx.closePath(); ctx.fill();
     // le fuselage rond
     ctx.beginPath(); ctx.arc(0, 0, 15 * s, 0, TAU); ctx.fill();
-    // la verrière du pilote, petit dôme sur le dessus (il nous fait coucou !)
+    // la verrière du pilote… vue de derrière : on ne voit que sa NUQUE
+    // (ses cheveux, pas de visage) — c'est comme ça qu'on sait qu'il nous
+    // tourne le dos
     ctx.fillStyle = '#eaf6ff';
     ctx.beginPath(); ctx.arc(0, -7 * s, 5.5 * s, Math.PI, 0); ctx.fill();
-    ctx.fillStyle = '#ffd9b0';
-    ctx.beginPath(); ctx.arc(0, -8 * s, 2.6 * s, 0, TAU); ctx.fill();
     ctx.fillStyle = '#4a3524';
-    ctx.beginPath(); ctx.arc(0, -8.8 * s, 2.6 * s, Math.PI, 0); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, -7.6 * s, 2.8 * s, 0, TAU); ctx.fill();
     ctx.restore();
   }
 };

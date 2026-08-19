@@ -116,51 +116,75 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 }
 .drag-hint.hide { opacity: 0; }
 
-/* ---------- la manette des gaz ---------- */
+/* ---------- le petit cockpit (remplace le curseur des gaz) ----------
+   Des boutons ronds, gros comme des doigts d'enfant. Sur mobile, le cockpit
+   « flotte » : il reste collé en bas de l'écran tant que la scène est visible
+   (position: sticky dans le panneau de scène). */
 
-.throttle-control { margin-top: 12px; padding: 0 4px 2px; }
-.throttle-readout {
-  display: flex; flex-wrap: wrap; gap: 2px 14px; align-items: baseline;
-  font-size: 1.02rem; margin-bottom: 4px;
+.cockpit {
+  position: sticky; bottom: 10px; z-index: 6;
+  margin-top: 12px; padding: 8px 12px 10px;
+  background: rgba(255, 255, 255, .84);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border); border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(28, 53, 80, .16);
 }
-.throttle-name { font-weight: 800; color: var(--thrust); }
+.cockpit-readout {
+  display: flex; flex-wrap: wrap; gap: 2px 14px; align-items: baseline;
+  font-size: 1.02rem; margin-bottom: 6px;
+}
+.cockpit-name { font-weight: 800; color: var(--thrust); }
 .gauges { color: var(--muted); font-size: .95rem; }
 .gauges strong {
   color: var(--rose-deep); font-size: 1.15rem; font-variant-numeric: tabular-nums;
 }
-
-/* la piste du curseur raconte les gaz : moteurs coupés → plein feu */
-#throttle {
-  -webkit-appearance: none;
-  appearance: none;
-  display: block; width: 100%; height: 44px; margin: 2px 0 0;
-  background: transparent; cursor: pointer;
+.cockpit-rows {
+  display: flex; flex-wrap: wrap; gap: 10px 20px;
+  justify-content: space-between; align-items: flex-end;
 }
-#throttle::-webkit-slider-runnable-track {
-  height: 16px; border-radius: 9px; border: 1px solid var(--border);
-  background: linear-gradient(90deg,
-    #dfe9f2 0%, #ffd9a8 35%, #ffb35c 65%, #f28322 85%, #e35d13 100%);
+.ck-group { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1 1 140px; }
+.ck-btns { display: flex; align-items: center; gap: 8px; }
+.ck-btn {
+  width: 52px; height: 52px; border-radius: 50%; padding: 0;
+  font-size: 1.5rem; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  background: #ffffff; border: 2px solid var(--border);
+  touch-action: none;
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
 }
-#throttle::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 34px; height: 34px; margin-top: -10px; border-radius: 50%;
-  background: radial-gradient(circle at 38% 34%, #ffe3c2, #ff9f1c 55%, var(--thrust));
-  border: 3px solid rgba(255, 255, 255, .95);
-  box-shadow: 0 0 14px rgba(216, 111, 0, .55), 0 2px 6px rgba(28, 53, 80, .35);
+.ck-btn:active, .ck-btn.held {
+  background: #ffe9d2; border-color: var(--thrust);
+  -webkit-transform: scale(.95); transform: scale(.95);
 }
-#throttle::-moz-range-track {
-  height: 16px; border-radius: 9px; border: 1px solid var(--border);
-  background: linear-gradient(90deg,
-    #dfe9f2 0%, #ffd9a8 35%, #ffb35c 65%, #f28322 85%, #e35d13 100%);
+.ck-cap { font-size: .72rem; color: var(--muted); font-weight: 700; }
+.gaz-gauge {
+  width: 86px; height: 14px; border-radius: 8px;
+  border: 1px solid var(--border); background: #e8eef5; overflow: hidden;
 }
-#throttle::-moz-range-thumb {
-  width: 30px; height: 30px; border-radius: 50%;
-  background: radial-gradient(circle at 38% 34%, #ffe3c2, #ff9f1c 55%, var(--thrust));
-  border: 3px solid rgba(255, 255, 255, .95);
-  box-shadow: 0 0 14px rgba(216, 111, 0, .55), 0 2px 6px rgba(28, 53, 80, .35);
+.gaz-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #ffd9a8, #ffb35c 55%, #e35d13);
+  transition: width .2s;
 }
-.slider-scale { display: flex; justify-content: space-between; color: var(--muted); font-size: .72rem; margin-top: 4px; }
+/* sur mobile, le cockpit flottant se fait tout petit : UNE rangée de boutons
+   (une manette de jeu au ras du pouce) — jamais un panneau qui cache les vues */
+@media (max-width: 640px) {
+  .cockpit { padding: 6px 8px; bottom: 6px; }
+  .cockpit-readout { font-size: .88rem; margin-bottom: 4px; justify-content: center; }
+  .cockpit-name { display: none; }
+  .cockpit-rows { flex-wrap: nowrap; gap: 4px; justify-content: center; align-items: center; }
+  .ck-group { flex: none; flex-direction: row; gap: 4px; }
+  .ck-btns { gap: 4px; }
+  .ck-cap { display: none; }
+  .ck-btn { width: 46px; height: 46px; font-size: 1.3rem; }
+  .gaz-gauge { width: 34px; }
+}
+@media (max-width: 389px) {
+  .ck-btn { width: 42px; height: 42px; }
+  .gaz-gauge { width: 26px; }
+}
 
 /* ---------- la légende des 4 forces ---------- */
 
@@ -171,9 +195,22 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .legend-title { font-weight: 700; font-size: .92rem; margin-right: 2px; }
 .chip {
   border-radius: 999px; padding: 4px 12px; font-size: .85rem; font-weight: 700;
-  border: 1px solid; white-space: nowrap;
+  border: 1px solid; white-space: nowrap; cursor: pointer; font-family: inherit;
 }
 .chip i { font-style: normal; font-weight: 400; font-size: .82em; opacity: .85; }
+.chip[aria-pressed="true"] { box-shadow: 0 0 0 3px rgba(28, 53, 80, .18); }
+
+/* la petite explication (une flèche, une pièce…) : texte + bouton d'écoute */
+.mini-story {
+  display: flex; align-items: flex-start; gap: 10px;
+  flex: 1 1 100%; margin-top: 6px;
+}
+.mini-story-text { margin: 0; font-size: 1rem; line-height: 1.6; color: #33475c; }
+.mini-story-text strong { color: inherit; }
+.mini-listen {
+  flex: none; width: 38px; height: 38px; padding: 0; border-radius: 50%;
+  font-size: 1.05rem; display: flex; align-items: center; justify-content: center;
+}
 .chip-portance { color: var(--lift); border-color: var(--lift); background: rgba(11, 138, 114, .08); }
 .chip-poids { color: var(--weight); border-color: var(--weight); background: rgba(106, 79, 208, .08); }
 .chip-poussee { color: var(--thrust); border-color: var(--thrust); background: rgba(216, 111, 0, .09); }
@@ -239,6 +276,40 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .voice-hint { margin: 0 0 8px; font-size: .82rem; color: var(--muted); }
 .explain-text p { margin: .55em 0; color: #33475c; font-size: 1.02rem; line-height: 1.7; }
 .explain-text strong { color: var(--text); }
+
+/* ---------- « Découvre ton avion » : les pièces tapotables ---------- */
+
+.parts-panel { margin-top: 16px; padding: 14px 16px 16px; }
+.parts-head { display: flex; align-items: baseline; gap: 10px 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.parts-head h2 { margin: 0; font-size: 1.15rem; color: var(--rose-deep); }
+.parts-wrap { position: relative; border-radius: 12px; overflow: hidden; background: #d9eefc; }
+.ratio-parts { aspect-ratio: 2 / 1; }
+@supports not (aspect-ratio: 1 / 1) {
+  .ratio-parts { height: min(42vw, 400px); }
+}
+.parts-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
+.part-btn {
+  position: absolute; width: 44px; height: 44px; margin: 0; padding: 0;
+  -webkit-transform: translate(-50%, -50%); transform: translate(-50%, -50%);
+  border-radius: 50%; font-size: 1.25rem; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, .92); border: 2.5px solid;
+  box-shadow: 0 2px 8px rgba(28, 53, 80, .25);
+}
+.part-btn:active { -webkit-transform: translate(-50%, -50%) scale(.94); transform: translate(-50%, -50%) scale(.94); }
+.part-btn[aria-pressed="true"] {
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, .55), 0 2px 10px rgba(28, 53, 80, .3);
+}
+.part-story { margin-top: 12px; min-height: 2.6em; }
+
+@media (max-width: 640px) {
+  .ratio-parts { aspect-ratio: 16 / 10; }
+  @supports not (aspect-ratio: 1 / 1) {
+    .ratio-parts { height: min(58vw, 340px); }
+  }
+  .part-btn { width: 40px; height: 40px; font-size: 1.1rem; }
+}
 
 /* ---------- le pont : question ouverte + la série sœur ---------- */
 

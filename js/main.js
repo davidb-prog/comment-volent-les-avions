@@ -5,10 +5,11 @@
 // du site : le même vol, deux regards.
 
 import { clamp, clamp01, newState, step, forces, autoStep, AUTO_PHASES,
-         phaseIndex, SCENARIOS, ENTRY_GROUND, ALT_CRUISE,
+         phaseIndex, SCENARIOS, ENTRY_GROUND, ALT_CRUISE, FORCES, PARTS,
          statusSide, statusBack, formatSpeed, formatAlt } from './model.js';
 import { SideView } from './side.js';
 import { BackView } from './back.js';
+import { PartsView } from './parts.js';
 
 const $ = (id) => document.getElementById(id);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -25,6 +26,7 @@ let activeScn = null; // le scénario affiché — nul dès qu'on reprend la mai
 
 const side = new SideView($('side-view'));
 const back = new BackView($('back-view'));
+const parts = new PartsView($('parts-view'));
 
 // vitesses de réponse des commandes (unité de commande / s) : tout est doux
 const RATE = { throttle: 1.6, stick: 2.2, bank: 1.8 };
@@ -76,17 +78,60 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ---- la manette des gaz ----
+// ---- le petit cockpit (retour de David 2026-08-19 : des boutons, pas de
+// curseur — le glisser restait dur pour des doigts de 5 ans) ----
 
-const throttleEl = $('throttle');
-let throttleHeld = false;
-throttleEl.addEventListener('input', () => {
+// Les gaz : deux boutons qui montent/descendent par quarts, et une jauge qui
+// suit la consigne — y compris quand c'est le tour automatique qui pilote.
+const GAZ_STEP = 0.25;
+function nudgeThrottle(dir) {
   stopAuto();
-  sim.targets.throttle = clamp01(+throttleEl.value / 100);
-});
-throttleEl.addEventListener('pointerdown', () => { throttleHeld = true; });
-window.addEventListener('pointerup', () => { throttleHeld = false; });
-window.addEventListener('pointercancel', () => { throttleHeld = false; });
+  const cur = Math.round(sim.targets.throttle / GAZ_STEP) * GAZ_STEP;
+  sim.targets.throttle = clamp01(cur + dir * GAZ_STEP);
+}
+$('gaz-plus').addEventListener('click', () => nudgeThrottle(1));
+$('gaz-moins').addEventListener('click', () => nudgeThrottle(-1));
+
+// Monter / descendre / pencher : on MAINTIENT le bouton (comme une manette de
+// jeu) ; relâché, la commande revient au neutre en douceur — même logique que
+// le glisser sur les vues, qui reste disponible.
+function wireHold(id, press, release) {
+  const btn = $(id);
+  let held = false;
+  const down = (e) => {
+    e.preventDefault();
+    if (btn.setPointerCapture && e.pointerId !== undefined) {
+      btn.setPointerCapture(e.pointerId);
+    }
+    held = true;
+    btn.classList.add('held');
+    stopAuto();
+    press();
+  };
+  const up = () => {
+    if (!held) return;
+    held = false;
+    btn.classList.remove('held');
+    release();
+  };
+  btn.addEventListener('pointerdown', down);
+  btn.addEventListener('pointerup', up);
+  btn.addEventListener('pointercancel', up);
+  btn.addEventListener('contextmenu', (e) => e.preventDefault()); // appui long mobile
+  btn.addEventListener('keydown', (e) => {
+    if ((e.key === ' ' || e.key === 'Enter') && !held) {
+      e.preventDefault(); held = true; btn.classList.add('held'); stopAuto(); press();
+    }
+  });
+  btn.addEventListener('keyup', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') up();
+  });
+  btn.addEventListener('blur', up);
+}
+wireHold('ck-monter', () => { sim.targets.stick = 0.8; }, () => { sim.targets.stick = 0; });
+wireHold('ck-descendre', () => { sim.targets.stick = -0.8; }, () => { sim.targets.stick = 0; });
+wireHold('ck-gauche', () => { sim.targets.bank = -0.8; }, () => { sim.targets.bank = 0; });
+wireHold('ck-droite', () => { sim.targets.bank = 0.8; }, () => { sim.targets.bank = 0; });
 
 function hideHint() {
   const hint = $('drag-hint');
@@ -308,9 +353,10 @@ function updateTexts() {
   setText('alt', $('alt-out'), formatAlt(sim.state.alt));
   setText('side', $('side-status'), statusSide(sim.state, sim.controls));
   setText('back', $('back-status'), statusBack(sim.state));
-  // le curseur montre la CONSIGNE (là où on l'a mis), jamais la valeur lissée :
-  // sinon il « revient en arrière » sous le doigt (retour de David)
-  if (!throttleHeld) throttleEl.value = Math.round(sim.targets.throttle * 100);
+  // la jauge des gaz suit la CONSIGNE — celle des boutons, du scénario ou du
+  // tour automatique : l'enfant voit toujours combien les moteurs poussent
+  const pct = Math.round(sim.targets.throttle * 100) + '%';
+  if (cache.gaz !== pct) { cache.gaz = pct; $('gaz-fill').style.width = pct; }
 }
 
 // ---- boucle d'animation ----
@@ -380,7 +426,9 @@ function frame(ms) {
     sim.state.forces = forces(sim.state, sim.controls);
     side.draw(sim.state, sim.controls);
     back.remember(sim.state, dt);
-    back.draw(sim.state);
+    back.draw(sim.state, sim.controls);
+    parts.draw(reduceMotion ? 0 : ms);
+    placePartButtons();
     updateTexts();
   } finally {
     // la boucle survit à un raté de rendu ponctuel (canvas en cours de layout…)
@@ -583,21 +631,104 @@ scnVoiceBtn.addEventListener('click', () => {
 
 const EMOJI_RE = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/gu;
 
+// retirer un émoji laisse un espace orphelin devant le point final — et un
+// « . » isolé se fait lire « point » par certaines voix : on le recolle
+function cleanSpoken(t) {
+  return t.replace(EMOJI_RE, '').replace(/\s+/g, ' ').replace(/\s+\./g, '.').trim();
+}
+
 function spokenStory(scn) {
-  // retirer un émoji laisse un espace orphelin devant le point final — et un
-  // « . » isolé se fait lire « point » par certaines voix : on le recolle
-  const clean = (t) => t.replace(EMOJI_RE, '').replace(/\s+/g, ' ')
-    .replace(/\s+\./g, '.').trim();
   const chunks = [{ text: 'Vu de côté…', endPara: false }];
-  for (const c of sentenceChunks(clean(scn.cote), true)) chunks.push(c);
+  for (const c of sentenceChunks(cleanSpoken(scn.cote), true)) chunks.push(c);
   chunks.push({ text: 'Et maintenant, sur la carte du ciel…', endPara: false });
-  for (const c of sentenceChunks(clean(scn.derriere), true)) chunks.push(c);
+  for (const c of sentenceChunks(cleanSpoken(scn.derriere), true)) chunks.push(c);
   return chunks;
 }
 
 function tellScenario() {
   if (narrator && scnVoiceOn && activeScn) {
     narrator.speak(spokenStory(activeScn));
+  }
+}
+
+// ---- une petite explication à lire ET à écouter : le patron commun des
+// pastilles des 4 flèches et des pièces de l'avion. Le texte s'affiche tout de
+// suite ; la voix le lit si le parent a activé le conteur (bouton 🔇/🔊), et
+// le petit bouton 🔊 à côté du texte relit à la demande. ----
+
+function speakInfo(text) {
+  if (narrator) narrator.speak(sentenceChunks(cleanSpoken(text), true));
+}
+
+function wireInfoBox(boxId, textId, listenId) {
+  const box = $(boxId), textEl = $(textId), listenBtn = $(listenId);
+  let current = null; // le texte parlé de l'explication affichée
+  if (narrator) {
+    listenBtn.hidden = false;
+    listenBtn.addEventListener('click', () => { if (current) speakInfo(current); });
+  }
+  return function show(emoji, label, color, text) {
+    box.hidden = false;
+    textEl.innerHTML = '';
+    const strong = document.createElement('strong');
+    strong.textContent = emoji + ' ' + label + ' — ';
+    strong.style.color = color;
+    textEl.appendChild(strong);
+    textEl.appendChild(document.createTextNode(text));
+    current = label + '. ' + text;
+    if (scnVoiceOn) speakInfo(current);
+  };
+}
+
+// -- les 4 flèches : chaque pastille de la légende s'explique --
+const showForceStory = wireInfoBox('force-story', 'force-story-text', 'force-listen');
+const forceChips = document.querySelectorAll('.legend-panel .chip');
+for (const chip of forceChips) {
+  chip.setAttribute('aria-pressed', 'false');
+  chip.addEventListener('click', () => {
+    const force = FORCES.filter((f) => f.id === chip.getAttribute('data-force'))[0];
+    if (!force) return;
+    for (const other of forceChips) {
+      other.setAttribute('aria-pressed', other === chip ? 'true' : 'false');
+    }
+    showForceStory(force.emoji, force.label, force.color, force.story);
+  });
+}
+
+// -- « Découvre ton avion » : une pastille-bouton sur chaque pièce --
+const showPartStory = wireInfoBox('part-story', 'part-story-text', 'part-listen');
+const partsWrap = $('parts-wrap');
+const partButtons = {};
+for (const part of PARTS) {
+  const btn = document.createElement('button');
+  btn.className = 'part-btn';
+  btn.textContent = part.emoji;
+  btn.style.borderColor = part.color;
+  btn.setAttribute('aria-pressed', 'false');
+  btn.setAttribute('aria-label', part.label + ' — écouter son explication');
+  btn.addEventListener('click', () => {
+    parts.selected = part.id;
+    for (const id in partButtons) {
+      partButtons[id].setAttribute('aria-pressed', id === part.id ? 'true' : 'false');
+    }
+    showPartStory(part.emoji, part.label, part.color, part.text);
+  });
+  partsWrap.appendChild(btn);
+  partButtons[part.id] = btn;
+}
+
+// Repose les pastilles sur le dessin quand la taille du cadre change.
+let partsSize = '';
+function placePartButtons() {
+  if (!parts.layout) return;
+  const sig = parts.layout.w + 'x' + parts.layout.h;
+  if (sig === partsSize) return;
+  partsSize = sig;
+  for (const part of PARTS) {
+    const spot = parts.spotAt(part.id);
+    if (!spot) continue;
+    partButtons[part.id].style.left = spot.x + 'px';
+    partButtons[part.id].style.top = spot.y + 'px';
   }
 }
 
