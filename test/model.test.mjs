@@ -14,7 +14,7 @@ import {
   FORCES, thrustForce, dragForce, aoaTrim, liftGround, liftAir, forces,
   turnRate, descentCap, newState, step,
   AUTO_PHASES, phaseIndex, autoStep,
-  ENTRY_GROUND, ENTRY_AIR, SCENARIOS,
+  ENTRY_GROUND, ENTRY_AIR, SCENARIOS, PARTS,
   statusSide, statusBack, formatSpeed, formatAlt,
 } from '../js/model.js';
 
@@ -330,6 +330,37 @@ check('le virage raconte « pas de volant : on penche »',
   SCENARIOS[2].cote.indexOf('volant') !== -1);
 check('l’atterrissage promet le toucher tout doux',
   SCENARIOS[3].cote.indexOf('doux') !== -1);
+check('les histoires sont COURTES : une phrase par regard (retour de David)',
+  SCENARIOS.every((s) => s.cote.length <= 120 && s.derriere.length <= 120));
+check('le scénario du virage RESTE dans le virage : la dernière phase garde les ' +
+  'ailes penchées (la trace incurvée reste visible pendant qu’on la raconte)',
+  (() => {
+    const last = SCENARIOS[2].phases[SCENARIOS[2].phases.length - 1];
+    return AUTO_PHASES[phaseIndex(last)].bank > 0;
+  })());
+check('un avion ne « court » pas : sur la piste, il ROULE (partout dans les textes)',
+  (() => {
+    let all = statusSide({ v: 30, alt: 0, vs: 0, bank: 0, onGround: true },
+      { throttle: 1, stick: 0, bank: 0 });
+    for (const scn of SCENARIOS) all += scn.cote + scn.derriere;
+    return all.indexOf('roule') !== -1 && all.indexOf('court') === -1;
+  })());
+
+console.log('Les pastilles qui expliquent — les 4 flèches et les pièces de l’avion');
+check('chaque force a sa petite histoire à lire et à écouter',
+  FORCES.every((f) => typeof f.story === 'string' && f.story.length > 40));
+check('cinq pièces de l’avion : ailes, réacteur, cockpit, queue, roues',
+  PARTS.length === 5 &&
+  ['ailes', 'reacteurs', 'cockpit', 'queue', 'roues']
+    .every((id) => PARTS.some((p) => p.id === id)));
+check('chaque pièce a son émoji, son nom, sa couleur et son explication',
+  PARTS.every((p) => p.emoji && p.label && p.color && p.text && p.text.length > 40));
+check('les ailes racontent la révélation (pousser l’air), le réacteur la poussée',
+  (() => {
+    const ailes = PARTS.filter((p) => p.id === 'ailes')[0];
+    const reac = PARTS.filter((p) => p.id === 'reacteurs')[0];
+    return ailes.text.indexOf('pouss') !== -1 && reac.text.indexOf('souffle') !== -1;
+  })());
 
 console.log('Les phrases d’état — le même instant, deux regards d’accord');
 check('posé à l’arrêt : « pas de vitesse, l’air ne porte pas »',
@@ -378,7 +409,8 @@ check('le mythe du « chemin plus long » n’apparaît NULLE PART dans le modè
   (() => {
     let all = '';
     for (const scn of SCENARIOS) all += scn.label + scn.sub + scn.cote + scn.derriere;
-    for (const f of FORCES) all += f.label + f.sub;
+    for (const f of FORCES) all += f.label + f.sub + f.story;
+    for (const p of PARTS) all += p.label + p.text;
     const states = [
       statusSide(newState(), { throttle: 0, stick: 0, bank: 0 }),
       statusSide({ v: 70, alt: 30, vs: 5, bank: 0, onGround: false }, { throttle: 1, stick: 0.5, bank: 0 }),
@@ -391,7 +423,8 @@ check('apostrophes typographiques « ’ » partout dans les chaînes UI (jamais
   (() => {
     let all = '';
     for (const scn of SCENARIOS) all += scn.label + scn.sub + scn.cote + scn.derriere;
-    for (const f of FORCES) all += f.label + f.sub;
+    for (const f of FORCES) all += f.label + f.sub + f.story;
+    for (const p of PARTS) all += p.label + p.text;
     all += statusSide(newState(), { throttle: 0, stick: 0, bank: 0 });
     all += statusBack(newState());
     return all.indexOf("'") === -1;

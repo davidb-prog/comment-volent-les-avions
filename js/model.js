@@ -80,16 +80,36 @@ export const SKY_BOTTOM = '#d9eefc';    // le ciel à l'horizon
 export const COLOR_GRASS = '#69b06e';
 export const COLOR_RUNWAY = '#5c6a78';
 
-// Les 4 forces, prêtes pour les légendes et les boutons.
+// Les 4 forces, prêtes pour les légendes et les boutons. Chaque pastille se
+// tape : `story` est la petite explication écrite (et lue à voix haute).
 export const FORCES = [
   { id: 'portance', emoji: '💨', label: 'la portance', color: COLOR_LIFT,
-    sub: 'l’air pousse en haut' },
+    sub: 'l’air pousse en haut',
+    story: 'La portance, c’est la poussée de l’air sous les ailes. Plus ton avion va vite, plus l’air pousse fort vers le haut. À l’arrêt ? Plus rien du tout !' },
   { id: 'poids', emoji: '🌍', label: 'le poids', color: COLOR_WEIGHT,
-    sub: 'la Terre tire en bas' },
+    sub: 'la Terre tire en bas',
+    story: 'Le poids, c’est la Terre qui tire tout vers le bas — l’avion, toi, le ballon que tu lances. Pour voler, il faut que l’air pousse aussi fort que la Terre tire.' },
   { id: 'poussee', emoji: '🔥', label: 'la poussée', color: COLOR_THRUST,
-    sub: 'les moteurs poussent' },
+    sub: 'les moteurs poussent',
+    story: 'La poussée, c’est la force du réacteur : il souffle l’air très fort vers l’arrière, alors l’avion file vers l’avant. Pousse l’air… l’air te pousse !' },
   { id: 'trainee', emoji: '🌬️', label: 'la traînée', color: COLOR_DRAG,
-    sub: 'l’air freine' },
+    sub: 'l’air freine',
+    story: 'La traînée, c’est l’air qui freine tout ce qui avance — comme le vent qui te retient quand tu cours très vite. Plus ça va vite, plus l’air freine.' },
+];
+
+// Les pièces de l'avion — le tour du propriétaire (« Découvre ton avion »).
+// Chaque pièce se tape sur le dessin : petite explication écrite et lue.
+export const PARTS = [
+  { id: 'ailes', emoji: '🪶', label: 'les ailes', color: COLOR_LIFT,
+    text: 'Les ailes, c’est le grand secret : en avançant vite, elles poussent l’air vers le bas — alors l’air les pousse vers le haut, et ton avion est porté !' },
+  { id: 'reacteurs', emoji: '🔥', label: 'le réacteur', color: COLOR_THRUST,
+    text: 'Le réacteur, c’est le moteur de l’avion : il avale l’air devant et le souffle très fort derrière — et l’avion file en avant. Encore l’air qui pousse !' },
+  { id: 'cockpit', emoji: '🧑‍✈️', label: 'le cockpit', color: COLOR_PLANE_DEEP,
+    text: 'Le cockpit, c’est la petite maison du pilote, tout à l’avant. C’est là qu’il tient le manche et pousse la manette des gaz.' },
+  { id: 'queue', emoji: '🪁', label: 'la queue', color: COLOR_WEIGHT,
+    text: 'La queue et sa grande dérive gardent l’avion bien droit dans le vent — comme les plumes au bout d’une flèche.' },
+  { id: 'roues', emoji: '🛞', label: 'les roues', color: COLOR_DRAG,
+    text: 'Les roues servent à rouler sur la piste. En vol, hop, elles se replient sous le ventre — comme les pattes d’un oiseau !' },
 ];
 
 // ------------------------------------------------------------------ les forces
@@ -268,30 +288,34 @@ export function autoStep(auto, state, dt) {
 export const ENTRY_GROUND = { v: 0, alt: 0, vs: 0, bank: 0, onGround: true };
 export const ENTRY_AIR = { v: V_CRUISE, alt: ALT_CRUISE, vs: 0, bank: 0, onGround: false };
 
+// Histoires COURTES (retour de David 2026-08-19) : une seule phrase par regard,
+// sans redite — la voix finit avant que l'image ne change. Le virage n'a pas de
+// phase « redresse » : la dernière phase se prolonge, l'avion RESTE dans son
+// virage et la trace incurvée reste visible pendant qu'on la raconte.
 export const SCENARIOS = [
   {
     id: 'decollage', emoji: '🛫', label: 'Le décollage', sub: 'plein gaz !',
     entry: ENTRY_GROUND, phases: ['roule', 'montee', 'croisiere'],
-    cote: 'Les moteurs poussent fort, ton avion court de plus en plus vite… Regarde la flèche de l’air grandir ! Quand elle dépasse le poids : hop, l’air le porte, il s’envole !',
-    derriere: 'Les ailes restent bien à plat, l’horizon bien droit : ton avion file tout droit, droit vers le ciel.',
+    cote: 'Ton avion roule de plus en plus vite… et quand la flèche de l’air dépasse le poids : hop, il s’envole !',
+    derriere: 'Ailes bien à plat, cap tout droit : la piste file sous les roues.',
   },
   {
     id: 'croisiere', emoji: '✈️', label: 'La croisière', sub: 'tout en équilibre',
     entry: ENTRY_AIR, phases: ['croisiere'],
-    cote: 'Tout est en équilibre : l’air porte autant que la Terre tire, les moteurs poussent autant que l’air freine. Les 4 flèches se répondent — l’avion vole droit, tranquille.',
-    derriere: 'Les ailes à plat, l’horizon posé bien à plat aussi : pas de virage, on se laisse porter.',
+    cote: 'Les 4 flèches se répondent deux à deux : tout est en équilibre, ton avion vole droit.',
+    derriere: 'Ailes à plat : ta trace reste toute droite sur la carte.',
   },
   {
     id: 'virage', emoji: '🔄', label: 'Le virage', sub: 'penche les ailes !',
-    entry: ENTRY_AIR, phases: ['virage', 'redresse'],
-    cote: 'L’avion garde sa vitesse : l’air le porte toujours. Pas de volant dans un avion — pour tourner, il se penche !',
-    derriere: 'Penche les ailes (regarde le médaillon !) : l’air pousse un peu de côté, et tout le paysage se met à tourner autour de ton avion. Plus tu penches, plus le virage est serré.',
+    entry: ENTRY_AIR, phases: ['virage'],
+    cote: 'Pas de volant dans un avion : pour tourner, il penche les ailes !',
+    derriere: 'Regarde le médaillon : penché, l’air pousse de côté — et ta trace s’incurve sur la carte.',
   },
   {
     id: 'atterrissage', emoji: '🛬', label: 'L’atterrissage', sub: 'tout doux…',
     entry: ENTRY_AIR, phases: ['descente', 'arrondi', 'freinage', 'attente'],
-    cote: 'On réduit les moteurs : l’avion ralentit, l’air porte un peu moins, alors il descend doucement… tout près du sol, il se redresse — et pose ses roues tout doux.',
-    derriere: 'Les ailes bien à plat pour se poser : l’horizon est droit, la piste arrive tout droit devant.',
+    cote: 'Moteurs tout doux : l’air porte un peu moins, ton avion descend… et se pose en douceur.',
+    derriere: 'Ailes bien à plat : la piste arrive tout droit devant.',
   },
 ];
 
@@ -307,7 +331,7 @@ export function statusSide(state, controls) {
       return '💨 À cette vitesse, l’air soulève ton avion dès que tu le laisses !';
     }
     if (f.lift < WEIGHT * 0.55) {
-      return '🏃 Il court sur la piste… la flèche de l’air grandit avec la vitesse !';
+      return '🏁 Il roule sur la piste… la flèche de l’air grandit avec la vitesse !';
     }
     return '💨 Encore un peu… la flèche de l’air va dépasser le poids !';
   }
