@@ -44,16 +44,20 @@ sites d'astronomie.
    atterrir) et la carte du ciel vue de dessus (pencher = tourner — refonte « idée B »
    choisie par David le 2026-08-18), toujours d'accord entre elles, avec sous chaque vue
    une petite **phrase d'état** qui raconte le même instant.
-4. **Manipuler d'abord, expliquer ensuite** : geste direct sur les canvas
-   (`touch-action: none`, tap = pause), grande manette des gaz, glisser haut/bas (monter /
-   descendre) et gauche/droite (pencher). Jamais de théorie avant le jeu.
+4. **Manipuler d'abord, expliquer ensuite** : le **petit cockpit** à boutons ronds
+   (🐢/🔥 gaz + jauge, ⬅️/➡️ pencher, ⬆️/⬇️ monter — on MAINTIENT, relâché = neutre ;
+   choisi par David le 2026-08-19 à la place du curseur des gaz, trop dur pour des doigts
+   de 5 ans), plus le geste direct sur les canvas (`touch-action: none`, tap = pause,
+   glissers, flèches du clavier). Jamais de théorie avant le jeu.
 5. **Le phénomène vit tout seul** (lecture automatique douce), pause d'un petit tap ou
    espace, le pilotage manuel reprend la main dès qu'on touche une commande. Avec
    `prefers-reduced-motion`, rien ne bouge tout seul.
-6. **Boutons-scénarios avec micro-histoires** : 🛫 le décollage, ✈️ la croisière, 🔄 le
-   virage, 🛬 l'atterrissage — le site amène l'état en douceur (jamais de marche arrière
-   brutale), puis raconte le même instant sous les deux regards (deux lignes à puces
-   colorées, le patron des épisodes 2 et 3).
+6. **Boutons-scénarios avec micro-histoires COURTES** : 🛫 le décollage, ✈️ la croisière,
+   🔄 le virage, 🛬 l'atterrissage — le site amène l'état en douceur (jamais de marche
+   arrière brutale), puis raconte le même instant sous les deux regards en **une phrase
+   par regard** (retour de David 2026-08-19 : les histoires longues et redondantes
+   lassaient). Le scénario du virage **reste dans le virage** (pas de phase « redresse ») :
+   la trace incurvée reste visible pendant qu'on la raconte.
 7. **La boîte-révélation à lire ET à écouter** : conteur vocal repris tel quel de
    l'épisode 2 (`ou-va-le-soleil/js/main.js`, bloc « Écouter l'histoire ») — score des voix
    françaises, menu de voix, lecture phrase à phrase avec pauses et relief — et la **même
@@ -128,12 +132,26 @@ automatique ; piste infinie.
 ## Invariants d'interaction (voulus par David)
 
 - Vue de côté : l'avion reste à poste fixe à l'écran, le décor défile ; les 4 flèches sont
-  accrochées à l'avion et changent de longueur en direct. Deux commandes maximum : la
-  manette des gaz + glisser haut/bas sur le ciel (monter / descendre).
+  accrochées à l'avion et changent de longueur en direct. Glisser haut/bas sur le ciel
+  (monter / descendre) reste possible, mais la commande principale est le cockpit.
+- **Le petit cockpit** (2026-08-19, remplace le curseur des gaz) : boutons 🐢/🔥 par
+  quarts + jauge qui suit la consigne (même en automatique), boutons à MAINTENIR pour
+  pencher/monter/descendre. `position: sticky` en bas du panneau de scène : il « flotte »
+  pendant qu'on regarde les vues. Sur mobile ≤ 640 px il devient UNE rangée compacte
+  (barre < 135 px de haut, testée) — jamais un panneau qui recouvre les canvas.
 - Vue du virage = **la carte vue de dessus en grand** (l'avion au centre, cap en haut, le
   monde en tuiles — lacs, forêts, champs, pistes — qui tourne autour, la trace rose qui
   s'incurve) ; le « pencher » (avion de dos + horizon incliné, sans aucune flèche) vit dans
-  un **médaillon** dans le coin. Glisser gauche/droite penche les ailes.
+  un **médaillon** dans le coin. Glisser gauche/droite penche les ailes. Le médaillon dit
+  « derrière » sans savoir lire (2026-08-19) : on voit la **nuque** du pilote (jamais son
+  visage) et l'**échappement des réacteurs rougeoie** quand la manette des gaz est poussée.
+- **Vocabulaire** : sur la piste l'avion **roule**, il ne « court » jamais (testé) —
+  retour de David 2026-08-19.
+- **Les pastilles qui expliquent** (2026-08-19) : les 4 pastilles de la légende et les
+  5 pièces de « 🔍 Découvre ton avion » (🪶 ailes, 🔥 réacteur, 🧑‍✈️ cockpit, 🪁 queue,
+  🛞 roues) affichent une petite histoire à lire, et à écouter (🔊, conteur commun).
+  Textes dans `model.js` (FORCES[].story, PARTS[].text), positions dans `parts.js`
+  (PART_SPOTS) — l'anneau de sélection entoure la pastille, pas la pièce entière.
 - Les scénarios amènent l'état **en douceur, jamais en marche arrière brutale**, puis
   racontent l'instant sous les deux regards.
 - Tap sur un canvas = pause/lecture ; espace = pause ; toute commande manuelle interrompt le
@@ -151,14 +169,16 @@ automatique ; piste infinie.
   cap, trajectoire), scénarios et textes
 - `js/canvas.js` — helpers canvas partagés (fitCanvas, étiquettes à halo — repris de la
   série)
-- `js/side.js` — vue de côté (piste, herbe, ciel, avion rond avec pilote, flèches des
-  forces, décor défilant)
+- `js/side.js` — vue de côté (piste, herbe, ciel, avion rond avec pilote — `drawPlaneSide`
+  exporté, partagé avec parts.js —, flèches des forces, décor défilant)
 - `js/back.js` — la carte du ciel vue de dessus (monde en tuiles déterministes qui tourne
   autour de l'avion, trace, piste sous les roues) + médaillon « vu de derrière » (horizon
-  incliné, avion penché)
-- `js/main.js` — boucle rAF, manette des gaz, glissers, tap-pause, scénarios, plein écran
-  (natif + repli iOS), conteur vocal (repris de l'épisode 2, clés `ltt-voice` /
-  `ltt-scn-voice`)
+  incliné, avion penché de dos : nuque du pilote, échappements rougeoyants)
+- `js/parts.js` — « Découvre ton avion » : l'avion en grand (dessin de side.js), ancres
+  PART_SPOTS des pastilles, anneau de sélection
+- `js/main.js` — boucle rAF, petit cockpit (boutons gaz/pencher/monter, jauge), glissers,
+  tap-pause, scénarios, pastilles des forces et des pièces, plein écran (natif + repli
+  iOS), conteur vocal (repris de l'épisode 2, clés `ltt-voice` / `ltt-scn-voice`)
 - `test/model.test.mjs` — tests Node du modèle (zéro dépendance)
 
 ## Vérification navigateur

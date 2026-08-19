@@ -25,18 +25,20 @@ du poids… l'avion décolle !
     (l'air pousse en haut), 🌍 le **poids** (la Terre tire en bas), 🔥 la **poussée** (les
     moteurs), 🌬️ la **traînée** (l'air freine). Chaque force garde sa couleur partout —
     flèches, légende, boutons, histoires.
-  - **🧭 Vu de derrière : pencher = tourner** (canvas) : on penche les ailes, l'horizon
-    s'incline, la portance penchée pousse de côté — et la **mini-carte vue de dessus**
-    montre la trajectoire qui s'incurve. Plus on penche, plus le virage est serré (avec un
-    plafond doux).
+  - **🧭 La carte du ciel : pencher = tourner** (canvas) : l'avion au centre, cap en haut,
+    le monde qui tourne autour et la trace rose qui s'incurve ; le « pencher » vit dans un
+    médaillon « vu de derrière » — sans ambiguïté même sans savoir lire : on voit la
+    **nuque** du pilote (pas son visage) et l'**échappement des réacteurs** qui rougeoie
+    quand on met les gaz. Plus on penche, plus le virage est serré (avec un plafond doux).
 - Sous chaque vue, une **petite phrase d'état** raconte le même instant deux fois (« 💨
   L'air pousse plus fort que le poids : ton avion monte ! » / « 🔄 Penché vers la droite :
   l'air pousse de côté, l'avion tourne ! »).
-- **Deux commandes, pas une de plus** : la grande **manette des gaz** 🔥 (la piste du
-  curseur va des moteurs coupés au plein feu) et le **geste direct sur les vues** — glisser
-  vers le haut/bas sur la vue de côté pour monter/descendre, glisser à gauche/droite sur la
-  vue de derrière pour pencher (flèches du clavier aussi). Relâche : tout revient au neutre,
-  en douceur.
+- **Le petit cockpit** 🧑‍✈️ : des boutons ronds gros comme des doigts d'enfant — 🐢/🔥 les
+  gaz (avec leur jauge, qui suit aussi le pilote automatique), ⬅️/➡️ pencher pour tourner,
+  ⬆️/⬇️ monter et descendre (on **maintient** le bouton ; relâché, tout revient au neutre
+  en douceur). Sur mobile, le cockpit **flotte au ras du pouce** : une petite barre collée
+  en bas de l'écran tant que les vues sont visibles. Le geste direct reste possible :
+  glisser sur les vues, flèches du clavier.
 - **Le vol vit tout seul** : un tour d'avion complet en boucle — décollage, montée,
   croisière, virage, descente, atterrissage, freinage… et ça recommence. Petit tap sur une
   vue = pause ; espace = pause ; toute commande manuelle rend la main à l'enfant.
@@ -45,9 +47,20 @@ du poids… l'avion décolle !
 
 - **Quatre boutons-scénarios** : 🛫 *Le décollage*, ✈️ *La croisière*, 🔄 *Le virage*, 🛬
   *L'atterrissage*. L'avion **glisse en douceur** vers le moment choisi (jamais de marche
-  arrière brutale), le joue pour de vrai, puis une micro-histoire raconte le même instant
-  **vu de côté puis vu de derrière**. Comme dans la série astronomie, le jeu existe **avec
-  ou sans la voix** (bouton 🔇/🔊, choix retenu d'une visite à l'autre).
+  arrière brutale), le joue pour de vrai, puis une micro-histoire **courte** — une phrase
+  par regard — raconte le même instant vu de côté puis sur la carte. Le virage **reste
+  dans le virage** tant qu'on ne reprend pas la main : la trace incurvée reste visible
+  pendant qu'on la raconte. Comme dans la série astronomie, le jeu existe **avec ou sans
+  la voix** (bouton 🔇/🔊, choix retenu d'une visite à l'autre).
+- **Les 4 pastilles s'expliquent** : appuyer sur une pastille de la légende (💨 la
+  portance, 🌍 le poids, 🔥 la poussée, 🌬️ la traînée) affiche sa petite histoire — à
+  lire, et à écouter d'un appui sur 🔊.
+- **🔍 Découvre ton avion** : l'avion en grand, posé sur la piste, avec une pastille
+  tapotable sur chaque pièce — 🪶 les ailes, 🔥 le réacteur, 🧑‍✈️ le cockpit, 🪁 la
+  queue, 🛞 les roues. Chaque pièce a son explication écrite et sonore (le réacteur
+  souffle l'air vers l'arrière… encore l'air qui pousse !).
+
+![Découvre ton avion : les pièces tapotables](docs/screenshot-pieces.png)
 - **La boîte « 💨 L'air est costaud ! »** : la grande révélation en cinq petits paragraphes
   à lire à voix haute — souffle sur ta main, pousse le mur, l'aile pousse l'air et l'air
   pousse l'aile — qui se referment sur le refrain de l'épisode : *… parce que l'air
@@ -85,7 +98,7 @@ aucun accès DOM — et se teste sous Node, sans navigateur :
 node test/model.test.mjs
 ```
 
-**59 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
+**66 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
 (∝ v² — nulle à l'arrêt : un avion posé ne s'envole jamais tout seul) ; l'avion **décolle
 quand la portance dépasse le poids** (la vitesse de décollage est testée au point près) ;
 **en croisière stable, portance = poids et poussée = traînée** ; la **traînée freine
@@ -174,10 +187,13 @@ js/model.js           modèle de vol pur (forces, intégration, tour automatique
                       scénarios, couleurs sémantiques) — testable sous Node
 js/canvas.js          helpers canvas partagés (fitCanvas, flèches, étiquettes à halo)
 js/side.js            vue de côté (piste, ciel, avion + pilote, 4 flèches vivantes)
-js/back.js            vue de derrière (horizon incliné, portance penchée, mini-carte)
-js/main.js            boucle d'animation + interactions (manette, glissers, tap-pause,
-                      scénarios et leur version sonore, plein écran, conteur)
-test/model.test.mjs   tests Node du modèle (59 vérifications)
+js/back.js            la carte du ciel + médaillon « vu de derrière » (nuque du pilote,
+                      échappements qui rougeoient)
+js/parts.js           « Découvre ton avion » : l'avion en grand, pastilles des pièces
+js/main.js            boucle d'animation + interactions (petit cockpit, glissers,
+                      tap-pause, scénarios et leur version sonore, pastilles des forces
+                      et des pièces, plein écran, conteur)
+test/model.test.mjs   tests Node du modèle (66 vérifications)
 ```
 
 ## Les labos
