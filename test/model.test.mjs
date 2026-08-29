@@ -1,34 +1,31 @@
 // Tests du modèle — zéro dépendance : `node test/model.test.mjs`
-// Vérifie les vérités du site : portance ∝ v² (nulle à l'arrêt), vitesse de
-// décollage précise, équilibre de croisière, traînée qui freine, planer moteurs
-// coupés, pencher = tourner (plafond doux), toucher toujours doux, jamais de
-// crash — et l'absence du mythe du « chemin plus long ».
+// Les vérités de l'épisode : la portance grandit avec la vitesse (nulle à
+// l'arrêt), l'avion s'envole quand elle atteint le poids (vitesse de décollage
+// précise), vitesse réduite = il plane et descend doucement, toucher toujours
+// doux, jamais punitif — et le grand curseur suffit à tout faire.
 
 import {
-  TAU, DEG, clamp, clamp01,
-  V_MAX, V_TAKEOFF, V_CRUISE, ALT_MAX, ALT_CRUISE, CEIL_BAND,
-  WEIGHT, THRUST_MAX, ACCEL, AOA_MIN, AOA_MAX, LIFT_STICK_GAIN,
-  VS_MAX, VS_DOWN_MAX, VS_LAND, FLARE_ALT, climbCap,
-  BANK_MAX, TURN_RATE_MAX, T_CRUISE,
-  COLOR_LIFT, COLOR_WEIGHT, COLOR_THRUST, COLOR_DRAG, COLOR_PLANE,
-  FORCES, thrustForce, dragForce, aoaTrim, liftGround, liftAir, forces,
-  turnRate, descentCap, newState, step,
-  AUTO_PHASES, phaseIndex, autoStep,
-  ENTRY_GROUND, ENTRY_AIR, SCENARIOS, PARTS,
-  statusSide, statusBack, formatSpeed, formatAlt,
+  TAU, borne, borne01,
+  VITESSE_MAX, VITESSE_DECOLLAGE, POIDS, ALTITUDE_MAX,
+  VZ_MONTEE_MAX, VZ_DESCENTE_MAX, VZ_SOL, ALT_ARRONDI, BANDE_PLAFOND,
+  REPERE_DECOLLAGE, TOUR_DUREE,
+  COULEUR_AIR, COULEUR_POIDS, COULEUR_AVION,
+  portance, plafondDescente, plafondMontee, etatInitial, pas,
+  cibleAuto, MOMENTS, etapeMoment, phraseEtat, PIECES,
+  formatVitesse, formatAltitude,
 } from '../js/model.js';
 
-let failed = 0;
-let passed = 0;
-function check(name, cond, detail) {
-  if (cond) { passed++; console.log('  ✓ ' + name); }
-  else { failed++; console.error('  ✗ ' + name + (detail === undefined ? '' : ' — ' + detail)); }
+let rates = 0;
+let reussis = 0;
+function verifie(nom, cond, detail) {
+  if (cond) { reussis++; console.log('  ✓ ' + nom); }
+  else { rates++; console.error('  ✗ ' + nom + (detail === undefined ? '' : ' — ' + detail)); }
 }
-const approx = (a, b, eps) => Math.abs(a - b) <= (eps === undefined ? 1e-9 : eps);
+const proche = (a, b, eps) => Math.abs(a - b) <= (eps === undefined ? 1e-9 : eps);
 
 // un générateur pseudo-aléatoire à graine : les tests sont reproductibles
-function mulberry32(seed) {
-  let a = seed >>> 0;
+function mulberry32(graine) {
+  let a = graine >>> 0;
   return function () {
     a = (a + 0x6d2b79f5) >>> 0;
     let t = a;
@@ -39,400 +36,280 @@ function mulberry32(seed) {
 }
 
 const DT = 1 / 30;
-function simulate(state, controlsOf, seconds, onStep) {
-  let s = state;
-  const steps = Math.round(seconds / DT);
-  for (let i = 0; i < steps; i++) {
-    const prev = s;
-    s = step(s, controlsOf(i * DT, s), DT);
-    if (onStep) onStep(prev, s, i * DT);
+function simule(etat, cibleDe, secondes, aChaquePas) {
+  let e = etat;
+  const n = Math.round(secondes / DT);
+  for (let i = 0; i < n; i++) {
+    const avant = e;
+    e = pas(e, cibleDe(i * DT, e), DT);
+    if (aChaquePas) aChaquePas(avant, e, i * DT);
   }
-  return s;
+  return e;
 }
-const HOLD = (throttle, stick, bank) => () => ({ throttle: throttle, stick: stick, bank: bank });
+const TIENT = (cible) => () => cible;
 
 console.log('La portance grandit avec la vitesse (∝ v²) — nulle à l’arrêt');
-check('à l’arrêt, portance nulle : un avion posé n’est pas porté du tout',
-  liftGround(0, 0) === 0 && liftGround(0, 1) === 0);
-check('portance ∝ v² sur la piste : doubler la vitesse la multiplie par 4',
-  approx(liftGround(40, 0), 4 * liftGround(20, 0)) &&
-  approx(liftGround(30, 0) / liftGround(10, 0), 9));
-check('un avion posé ne s’envole jamais tout seul (moteurs coupés, il ne bouge pas)',
+verifie('à l’arrêt, portance nulle : un avion posé n’est pas porté du tout',
+  portance(0) === 0);
+verifie('portance ∝ v² : doubler la vitesse la multiplie par 4',
+  proche(portance(40), 4 * portance(20)) && proche(portance(30) / portance(10), 9));
+verifie('à VITESSE_DECOLLAGE pile, portance = poids exactement',
+  proche(portance(VITESSE_DECOLLAGE), POIDS));
+verifie('en dessous : portance < poids ; au-dessus : portance > poids',
+  portance(VITESSE_DECOLLAGE - 5) < POIDS && portance(VITESSE_DECOLLAGE + 5) > POIDS);
+verifie('curseur à zéro : un avion posé ne bouge pas, ne s’envole jamais tout seul',
   (() => {
-    const end = simulate(newState(), HOLD(0, 1, 0), 10);
-    return end.onGround && end.v === 0 && end.alt === 0;
-  })());
-check('la flèche de portance ne dépend que de la vitesse au roulage (manche neutre)',
-  approx(forces({ v: 30, alt: 0, onGround: true }, { throttle: 1, stick: 0, bank: 0 }).lift,
-    liftGround(30, 0)));
-
-console.log('La vitesse de décollage — la portance dépasse le poids');
-check('à V_TAKEOFF pile (manche neutre), portance = poids exactement',
-  approx(liftGround(V_TAKEOFF, 0), WEIGHT));
-check('en dessous : portance < poids ; au-dessus : portance > poids',
-  liftGround(V_TAKEOFF - 5, 0) < WEIGHT && liftGround(V_TAKEOFF + 5, 0) > WEIGHT);
-check('plein gaz depuis l’arrêt : l’avion décolle, et pile autour de V_TAKEOFF',
-  (() => {
-    let liftoffV = -1;
-    simulate(newState(), HOLD(1, 0, 0), 30, (prev, s) => {
-      if (prev.onGround && !s.onGround && liftoffV < 0) liftoffV = s.v;
-    });
-    return liftoffV >= V_TAKEOFF - 0.5 && liftoffV <= V_TAKEOFF + 3;
-  })());
-check('tirer le manche fait décoller un peu plus tôt (la rotation), jamais plus tard',
-  (() => {
-    let v1 = -1;
-    simulate(newState(), HOLD(1, 0.5, 0), 30, (prev, s) => {
-      if (prev.onGround && !s.onGround && v1 < 0) v1 = s.v;
-    });
-    return v1 > 0 && v1 < V_TAKEOFF;
+    const fin = simule(etatInitial(), TIENT(0), 10);
+    return fin.auSol && fin.v === 0 && fin.alt === 0;
   })());
 
-console.log('La croisière stable — portance = poids et poussée = traînée');
-check('à V_CRUISE avec la poussée de croisière : poussée = traînée exactement',
-  approx(thrustForce(T_CRUISE), dragForce(V_CRUISE)));
-check('en vol stabilisé à V_CRUISE (manche neutre) : portance = poids exactement',
-  approx(liftAir(V_CRUISE, 0), WEIGHT));
-check('l’équilibre tient : 30 s de croisière sans bouger ni vitesse ni altitude',
+console.log('Le grand curseur — un seul geste, tout en découle');
+verifie('curseur à fond depuis l’arrêt : l’avion décolle, pile autour de la vitesse de décollage',
   (() => {
-    const s0 = Object.assign(newState(), ENTRY_AIR, { heading: 0, x: 0, y: 0 });
-    const end = simulate(s0, HOLD(T_CRUISE, 0, 0), 30);
-    return approx(end.v, V_CRUISE, 0.5) && approx(end.alt, ALT_CRUISE, 0.5) &&
-      Math.abs(end.vs) < 0.2 && !end.onGround;
+    let vEnvol = -1;
+    simule(etatInitial(), TIENT(1), 30, (avant, e) => {
+      if (avant.auSol && !e.auSol && vEnvol < 0) vEnvol = e.v;
+    });
+    return vEnvol >= VITESSE_DECOLLAGE - 1 && vEnvol <= VITESSE_DECOLLAGE + 2;
   })());
-check('le réglage automatique en vol : à toute vitesse de croisière raisonnable, ' +
-  'manche neutre = portance ≈ poids (l’avion se règle tout seul)',
+verifie('le repère « il s’envole » du curseur est exactement la vitesse de décollage',
+  proche(REPERE_DECOLLAGE, VITESSE_DECOLLAGE / VITESSE_MAX));
+verifie('curseur pile sur le repère : l’avion vole en équilibre (les deux flèches égales)',
   (() => {
-    for (let v = 50; v <= 105; v += 5) {
-      if (!approx(liftAir(v, 0), WEIGHT, 0.02)) return false;
+    const depuisLArret = simule(etatInitial(), TIENT(REPERE_DECOLLAGE), 40);
+    if (depuisLArret.auSol) return false; // à la vitesse pile, l'air le soulève
+    // en vol : une fois la vitesse calée sur le repère, l'altitude ne bouge plus
+    const a30 = simule({ v: 80, alt: 60, vz: 0, auSol: false, distance: 0 },
+      TIENT(REPERE_DECOLLAGE), 30);
+    const a40 = simule(a30, TIENT(REPERE_DECOLLAGE), 10);
+    return !a40.auSol && proche(a40.alt, a30.alt, 1) && Math.abs(a40.vz) < 0.3;
+  })());
+verifie('curseur à fond : il grimpe, puis s’installe en douceur sous le plafond (l’air trop léger)',
+  (() => {
+    const fin = simule(etatInitial(), TIENT(1), 60);
+    return !fin.auSol && fin.alt > ALTITUDE_MAX - 5 && fin.alt <= ALTITUDE_MAX;
+  })());
+verifie('curseur réduit en vol : il descend doucement — il PLANE, il ne tombe pas',
+  (() => {
+    const e0 = { v: 80, alt: ALTITUDE_MAX, vz: 0, auSol: false, distance: 0 };
+    let vzMini = 0;
+    const fin = simule(e0, TIENT(0.3), 30, (avant, e) => {
+      vzMini = Math.min(vzMini, e.vz);
+    });
+    return fin.alt < ALTITUDE_MAX && vzMini < -0.5 && vzMini >= -VZ_DESCENTE_MAX - 1e-6;
+  })());
+verifie('curseur à zéro depuis n’importe où : l’avion finit posé, roues arrêtées',
+  (() => {
+    const alea = mulberry32(42);
+    for (let essai = 0; essai < 12; essai++) {
+      const e0 = {
+        v: alea() * VITESSE_MAX, alt: 5 + alea() * 95,
+        vz: VZ_MONTEE_MAX * (alea() * 2 - 1), auSol: false, distance: 0,
+      };
+      const fin = simule(e0, TIENT(0), 120);
+      if (!fin.auSol || fin.v >= 2) return false;
     }
     return true;
-  })());
-
-console.log('La traînée freine toujours, et grandit avec la vitesse');
-check('traînée nulle à l’arrêt, croissante ensuite',
-  dragForce(0) === 0 && dragForce(40) > dragForce(20) && dragForce(80) > dragForce(40));
-check('plein gaz, poussée = traînée pile à V_MAX (la vitesse plafonne toute seule)',
-  approx(thrustForce(1), dragForce(V_MAX)));
-check('moteurs coupés en croisière : l’avion RALENTIT et descend doucement — il plane',
-  (() => {
-    const s0 = Object.assign(newState(), ENTRY_AIR);
-    let ok = true;
-    let minVs = 0;
-    const end = simulate(s0, HOLD(0, 0, 0), 20, (prev, s) => {
-      if (s.v > prev.v + 1e-9) ok = false;         // il ne peut que ralentir
-      minVs = Math.min(minVs, s.vs);
-    });
-    return ok && end.v < V_CRUISE && minVs < -0.5 && minVs >= -VS_DOWN_MAX - 1e-6;
-  })());
-check('il ne tombe JAMAIS comme une pierre : descente plafonnée à VS_DOWN_MAX partout',
-  (() => {
-    const s0 = Object.assign(newState(), ENTRY_AIR, { alt: ALT_MAX });
-    let ok = true;
-    simulate(s0, HOLD(0, -1, 0), 60, (prev, s) => {
-      if (s.vs < -VS_DOWN_MAX - 1e-6) ok = false;
-    });
-    return ok;
-  })());
-check('moteurs coupés, l’histoire finit bien : posé, roues arrêtées',
-  (() => {
-    const s0 = Object.assign(newState(), ENTRY_AIR, { alt: ALT_MAX });
-    const end = simulate(s0, HOLD(0, 0, 0), 120);
-    return end.onGround && end.v < 2;
-  })());
-
-console.log('Pencher les ailes = tourner (la portance penchée, pas un volant)');
-check('ailes à plat : aucune envie de tourner', turnRate(0, false) === 0);
-check('au sol, pencher ne fait pas tourner (il faut voler !)',
-  turnRate(BANK_MAX, true) === 0);
-check('plus on penche, plus le virage est serré (strictement croissant)',
-  (() => {
-    let prev = 0;
-    for (let b = 0.1; b <= 1; b += 0.1) {
-      const r = turnRate(b * BANK_MAX, false);
-      if (r <= prev) return false;
-      prev = r;
-    }
-    return true;
-  })());
-check('le plafond doux : pencher « trop » ne tourne jamais plus fort qu’à BANK_MAX',
-  approx(turnRate(BANK_MAX, false), TURN_RATE_MAX) &&
-  approx(turnRate(BANK_MAX * 2, false), TURN_RATE_MAX) &&
-  approx(turnRate(-BANK_MAX * 3, false), -TURN_RATE_MAX));
-check('pencher à gauche tourne à gauche, à droite tourne à droite',
-  turnRate(-0.3, false) < 0 && turnRate(0.3, false) > 0);
-check('les deux regards sont d’accord : le cap ne change QUE si les ailes sont penchées',
-  (() => {
-    const s0 = Object.assign(newState(), ENTRY_AIR);
-    const straight = simulate(s0, HOLD(T_CRUISE, 0, 0), 10);
-    const turning = simulate(s0, HOLD(T_CRUISE, 0.3, 0.6), 10);
-    return approx(straight.heading, 0, 1e-6) && Math.abs(turning.heading) > 0.5;
-  })());
-check('la trajectoire s’incurve : en virage tenu, l’avion revient vers son cap + un tour',
-  (() => {
-    const s0 = Object.assign(newState(), ENTRY_AIR);
-    const end = simulate(s0, HOLD(T_CRUISE + 0.06, 0.3, 1), 30);
-    return end.heading > TAU * 0.8 && !end.onGround;
-  })());
-check('en virage, la portance penchée tient un peu moins en l’air : ' +
-  'sans tirer le manche, l’avion descend doucement (et jamais brutalement)',
-  (() => {
-    const s0 = Object.assign(newState(), ENTRY_AIR);
-    let minVs = 0;
-    const end = simulate(s0, HOLD(T_CRUISE, 0, 1), 12, (prev, s) => {
-      minVs = Math.min(minVs, s.vs);
-    });
-    return end.alt < ALT_CRUISE && minVs < -0.3 && minVs >= -VS_DOWN_MAX - 1e-6;
-  })());
-
-console.log('Le haut et le bas du cadre — plafond doux, pas de rebond');
-check('le plafond doux : pleine montée en dessous, plus rien tout en haut',
-  approx(climbCap(ALT_MAX), 0) && approx(climbCap(ALT_MAX - CEIL_BAND), VS_MAX) &&
-  climbCap(ALT_MAX - CEIL_BAND / 2) > 0 && climbCap(ALT_MAX - CEIL_BAND / 2) < VS_MAX);
-check('manche tiré à fond sans relâche : l’avion s’installe en douceur sous le plafond',
-  (() => {
-    const s0 = Object.assign(newState(), ENTRY_AIR);
-    let maxVsNearTop = 0;
-    const end = simulate(s0, HOLD(1, 1, 0), 60, (prev, s) => {
-      if (s.alt > ALT_MAX - 2) maxVsNearTop = Math.max(maxVsNearTop, s.vs);
-    });
-    return end.alt <= ALT_MAX && end.alt > ALT_MAX - 4 && maxVsNearTop < 2.5;
-  })());
-check('manche poussé vers le bas au sol : les roues restent collées, pas de rebond',
-  (() => {
-    // on arrive vite (vitesse de croisière) en poussant le manche : toucher…
-    const s0 = Object.assign(newState(), ENTRY_AIR, { alt: 12 });
-    let touched = false, bounced = false;
-    simulate(s0, HOLD(T_CRUISE, -1, 0), 20, (prev, s) => {
-      if (s.onGround) touched = true;
-      if (touched && !s.onGround) bounced = true;
-    });
-    return touched && !bounced;
-  })());
-check('…et manche relâché à cette vitesse, l’air le soulève à nouveau (c’est la révélation)',
-  (() => {
-    const s0 = Object.assign(newState(), { v: V_CRUISE, onGround: true });
-    const end = simulate(s0, HOLD(T_CRUISE, 0, 0), 3);
-    return !end.onGround;
   })());
 
 console.log('L’atterrissage — l’arrondi automatique, le toucher toujours doux');
-check('le plafond de descente se resserre près du sol : VS_DOWN_MAX là-haut, VS_LAND au ras',
-  approx(descentCap(0), VS_LAND) && approx(descentCap(FLARE_ALT), VS_DOWN_MAX) &&
-  descentCap(FLARE_ALT / 2) > VS_LAND && descentCap(FLARE_ALT / 2) < VS_DOWN_MAX);
-check('gaz réduits depuis la croisière : l’avion descend, se pose, et le toucher est doux',
+verifie('le plafond de descente se resserre près du sol : doux là-haut, très doux au ras',
+  proche(plafondDescente(0), VZ_SOL) && proche(plafondDescente(ALT_ARRONDI), VZ_DESCENTE_MAX) &&
+  plafondDescente(ALT_ARRONDI / 2) > VZ_SOL && plafondDescente(ALT_ARRONDI / 2) < VZ_DESCENTE_MAX);
+verifie('le plafond doux en haut : pleine montée en dessous, plus rien tout en haut',
+  proche(plafondMontee(ALTITUDE_MAX), 0) &&
+  proche(plafondMontee(ALTITUDE_MAX - BANDE_PLAFOND), VZ_MONTEE_MAX));
+verifie('vitesse réduite depuis le plein vol : il descend, se pose, et le toucher est doux',
   (() => {
-    const s0 = Object.assign(newState(), ENTRY_AIR);
-    let touchVs = null;
-    const end = simulate(s0, HOLD(0.05, -0.2, 0), 90, (prev, s) => {
-      if (!prev.onGround && s.onGround && touchVs === null) touchVs = prev.vs;
+    const e0 = { v: 80, alt: 60, vz: 0, auSol: false, distance: 0 };
+    let vzToucher = null;
+    const fin = simule(e0, TIENT(0.2), 90, (avant, e) => {
+      if (!avant.auSol && e.auSol && vzToucher === null) vzToucher = avant.vz;
     });
-    return end.onGround && touchVs !== null && Math.abs(touchVs) <= VS_LAND + 0.3;
+    return fin.auSol && vzToucher !== null && Math.abs(vzToucher) <= VZ_SOL + 0.3;
   })());
 
-console.log('Jamais punitif — aucune combinaison de commandes ne produit de crash');
+console.log('Jamais punitif — aucun geste au curseur ne produit de crash');
 {
-  const rand = mulberry32(20260817);
-  let okAlt = true, okNaN = true, okTouch = true, landings = 0;
-  for (let run = 0; run < 40; run++) {
-    const airborne = rand() < 0.75;
-    const alt = airborne ? 5 + rand() * 95 : 0;
-    let s = {
-      v: rand() * 110,
-      alt: alt,
-      vs: airborne ? -descentCap(alt) + rand() * (VS_MAX + descentCap(alt)) : 0,
-      bank: (rand() * 2 - 1) * BANK_MAX,
-      heading: rand() * TAU,
-      x: 0, y: 0,
-      onGround: !airborne,
+  const alea = mulberry32(20260819);
+  let okAlt = true, okNombres = true, okToucher = true, atterrissages = 0;
+  for (let vol = 0; vol < 40; vol++) {
+    const enVol = alea() < 0.75;
+    const alt = enVol ? 5 + alea() * 95 : 0;
+    let e = {
+      v: alea() * VITESSE_MAX, alt: alt,
+      vz: enVol ? -plafondDescente(alt) + alea() * (VZ_MONTEE_MAX + plafondDescente(alt)) : 0,
+      auSol: !enVol, distance: 0,
     };
-    let controls = { throttle: rand(), stick: rand() * 2 - 1, bank: rand() * 2 - 1 };
-    let nextChange = 0;
-    simulate(s, (t) => {
-      if (t >= nextChange) {
-        controls = { throttle: rand(), stick: rand() * 2 - 1, bank: rand() * 2 - 1 };
-        nextChange = t + 0.5 + rand() * 2.5;
+    let cible = alea();
+    let prochainChangement = 0;
+    simule(e, (t) => {
+      if (t >= prochainChangement) {
+        cible = alea();
+        prochainChangement = t + 0.4 + alea() * 2.5;
       }
-      return controls;
-    }, 60, (prev, cur) => {
-      if (cur.alt < 0) okAlt = false;
-      if (!isFinite(cur.v) || !isFinite(cur.alt) || !isFinite(cur.vs) ||
-          !isFinite(cur.bank) || !isFinite(cur.heading)) okNaN = false;
-      if (!prev.onGround && cur.onGround) {
-        landings++;
-        if (Math.abs(prev.vs) > VS_LAND + 0.3) okTouch = false;
+      return cible;
+    }, 60, (avant, apres) => {
+      if (apres.alt < 0) okAlt = false;
+      if (!isFinite(apres.v) || !isFinite(apres.alt) || !isFinite(apres.vz)) okNombres = false;
+      if (!avant.auSol && apres.auSol) {
+        atterrissages++;
+        if (Math.abs(avant.vz) > VZ_SOL + 0.3) okToucher = false;
       }
     });
   }
-  check('40 vols aux commandes folles (graine fixe) : l’altitude ne passe jamais sous le sol', okAlt);
-  check('aucune valeur ne part en vrille (pas de NaN, pas d’infini)', okNaN);
-  check('CHAQUE retour au sol est un toucher doux (' + landings + ' atterrissages observés)',
-    okTouch && landings > 0);
+  verifie('40 vols au curseur fou (graine fixe) : l’altitude ne passe jamais sous le sol', okAlt);
+  verifie('aucune valeur ne part en vrille (pas de NaN, pas d’infini)', okNombres);
+  verifie('CHAQUE retour au sol est un toucher doux (' + atterrissages + ' atterrissages observés)',
+    okToucher && atterrissages > 0);
 }
-check('depuis n’importe quel état, gaz coupés : l’avion finit posé, roues arrêtées',
+
+console.log('La lecture automatique — le tour d’avion vit tout seul, en boucle');
+{
+  let e = etatInitial();
+  let decolle = false, toutEnHaut = false, redescendu = false, repose = false, arrete = false;
+  for (let t = 0; t < TOUR_DUREE; t += DT) {
+    const avant = e;
+    e = pas(e, cibleAuto(t), DT);
+    if (!e.auSol) decolle = true;
+    if (e.alt > ALTITUDE_MAX - 10) toutEnHaut = true;
+    if (toutEnHaut && e.alt < ALTITUDE_MAX / 2) redescendu = true;
+    if (decolle && !avant.auSol && e.auSol) repose = true;
+    if (repose && e.auSol && e.v < 2) arrete = true;
+  }
+  verifie('en un tour : il décolle', decolle);
+  verifie('il monte tout en haut', toutEnHaut);
+  verifie('il redescend', redescendu);
+  verifie('il se pose', repose);
+  verifie('il s’arrête — prêt à recommencer', arrete);
+  verifie('le tour reboucle proprement (la cible revient à zéro aux deux bouts)',
+    proche(cibleAuto(0), 0) && proche(cibleAuto(TOUR_DUREE - 0.01), 0, 0.01) &&
+    proche(cibleAuto(TOUR_DUREE + 3), cibleAuto(3), 1e-9));
+}
+
+console.log('Les trois moments — le curseur guidé, une phrase chacun');
+verifie('trois moments : décollage, plein vol, atterrissage',
+  MOMENTS.length === 3 && MOMENTS[0].id === 'decollage' &&
+  MOMENTS[1].id === 'vol' && MOMENTS[2].id === 'atterrissage');
+verifie('chaque moment a son émoji, son sous-titre et UNE phrase courte (pas de pavé)',
+  MOMENTS.every((m) => m.emoji && m.sub && m.phrase.length > 40 && m.phrase.length <= 140));
+verifie('le décollage raconte la course des flèches (dépasser le poids)',
+  MOMENTS[0].phrase.indexOf('dépasse') !== -1);
+verifie('le plein vol raconte l’équilibre des deux flèches',
+  MOMENTS[1].phrase.indexOf('égales') !== -1);
+verifie('l’atterrissage promet le toucher tout doux',
+  MOMENTS[2].phrase.indexOf('doux') !== -1);
+verifie('le moment décollage fait vraiment décoller, même depuis le plein vol (en se posant d’abord — jamais de marche arrière)',
   (() => {
-    const rand = mulberry32(42);
-    for (let run = 0; run < 12; run++) {
-      const s0 = {
-        v: rand() * 110, alt: 5 + rand() * 95, vs: VS_MAX * (rand() * 2 - 1),
-        bank: (rand() * 2 - 1) * BANK_MAX, heading: rand() * TAU,
-        x: 0, y: 0, onGround: false,
-      };
-      const end = simulate(s0, HOLD(0, 0, 0), 120);
-      if (!end.onGround || end.v >= 2) return false;
+    for (const depart of [etatInitial(), { v: 80, alt: 90, vz: 0, auSol: false, distance: 0 }]) {
+      let e = depart;
+      let indice = 0;
+      let sEstPose = depart.auSol;
+      let aDecolleApres = false;
+      for (let t = 0; t < 120; t += DT) {
+        const r = etapeMoment(MOMENTS[0], indice, e);
+        indice = r.indice;
+        const avant = e;
+        e = pas(e, r.cible, DT);
+        if (e.auSol) sEstPose = true;
+        if (sEstPose && avant.auSol && !e.auSol) aDecolleApres = true;
+      }
+      if (!aDecolleApres || e.auSol) return false;
     }
     return true;
   })());
-
-console.log('Le tour d’avion automatique — le phénomène vit tout seul, en boucle');
-{
-  let s = newState();
-  let auto = { index: 0, t: 0 };
-  let tookOff = false, cruised = false, banked = false, landedBack = false, looped = false;
-  let phase = AUTO_PHASES[0];
-  for (let t = 0; t < 400; t += DT) {
-    const r = autoStep(auto, s, DT);
-    auto = r.auto; phase = r.phase;
-    const prev = s;
-    s = step(s, { throttle: phase.throttle, stick: phase.stick, bank: phase.bank }, DT);
-    if (!s.onGround) tookOff = true;
-    if (s.alt >= ALT_CRUISE - 1) cruised = true;
-    if (Math.abs(s.bank) > 15 * DEG) banked = true;
-    if (tookOff && !prev.onGround && s.onGround) landedBack = true;
-    if (landedBack && phase.id === 'montee') { looped = true; break; }
-  }
-  check('l’avion décolle tout seul', tookOff);
-  check('il atteint l’altitude de croisière', cruised);
-  check('il penche les ailes pour son virage', banked);
-  check('il revient se poser', landedBack);
-  check('et le tour recommence (la boucle du spectacle)', looped);
-}
-check('chaque phase du tour a une fin garantie (dur ou maxDur) — pas de blocage possible',
-  AUTO_PHASES.every((p) => p.dur !== undefined || p.maxDur !== undefined));
-
-console.log('Les scénarios — quatre moments, deux regards à chaque fois');
-check('quatre scénarios : décollage, croisière, virage, atterrissage',
-  SCENARIOS.length === 4 &&
-  SCENARIOS[0].id === 'decollage' && SCENARIOS[1].id === 'croisiere' &&
-  SCENARIOS[2].id === 'virage' && SCENARIOS[3].id === 'atterrissage');
-check('chaque scénario part d’un état d’entrée valide et joue des phases connues',
-  SCENARIOS.every((scn) =>
-    (scn.entry === ENTRY_GROUND || scn.entry === ENTRY_AIR) &&
-    scn.phases.length > 0 && scn.phases.every((id) => phaseIndex(id) >= 0)));
-check('chaque histoire a sa version « de côté » ET sa version « de derrière »',
-  SCENARIOS.every((s) => s.cote.length > 40 && s.derriere.length > 40));
-check('le décollage raconte la course des flèches (l’air qui dépasse le poids)',
-  SCENARIOS[0].cote.indexOf('dépasse') !== -1);
-check('la croisière raconte l’équilibre des 4 flèches',
-  SCENARIOS[1].cote.indexOf('équilibre') !== -1);
-check('le virage raconte « pas de volant : on penche »',
-  (SCENARIOS[2].cote + SCENARIOS[2].derriere).indexOf('penche') !== -1 &&
-  SCENARIOS[2].cote.indexOf('volant') !== -1);
-check('l’atterrissage promet le toucher tout doux',
-  SCENARIOS[3].cote.indexOf('doux') !== -1);
-check('les histoires sont COURTES : une phrase par regard (retour de David)',
-  SCENARIOS.every((s) => s.cote.length <= 120 && s.derriere.length <= 120));
-check('le scénario du virage RESTE dans le virage : la dernière phase garde les ' +
-  'ailes penchées (la trace incurvée reste visible pendant qu’on la raconte)',
+verifie('le moment plein vol installe l’équilibre : altitude stable, flèches égales',
   (() => {
-    const last = SCENARIOS[2].phases[SCENARIOS[2].phases.length - 1];
-    return AUTO_PHASES[phaseIndex(last)].bank > 0;
+    let e = etatInitial();
+    let indice = 0;
+    for (let t = 0; t < 90; t += DT) {
+      const r = etapeMoment(MOMENTS[1], indice, e);
+      indice = r.indice;
+      e = pas(e, r.cible, DT);
+    }
+    return !e.auSol && proche(portance(e.v), POIDS, 0.05) && Math.abs(e.vz) < 0.5;
   })());
-check('un avion ne « court » pas : sur la piste, il ROULE (partout dans les textes)',
+verifie('le moment atterrissage finit posé, roues arrêtées',
   (() => {
-    let all = statusSide({ v: 30, alt: 0, vs: 0, bank: 0, onGround: true },
-      { throttle: 1, stick: 0, bank: 0 });
-    for (const scn of SCENARIOS) all += scn.cote + scn.derriere;
-    return all.indexOf('roule') !== -1 && all.indexOf('court') === -1;
+    let e = { v: 80, alt: 90, vz: 0, auSol: false, distance: 0 };
+    let indice = 0;
+    for (let t = 0; t < 120; t += DT) {
+      const r = etapeMoment(MOMENTS[2], indice, e);
+      indice = r.indice;
+      e = pas(e, r.cible, DT);
+    }
+    return e.auSol && e.v < 2;
   })());
 
-console.log('Les pastilles qui expliquent — les 4 flèches et les pièces de l’avion');
-check('chaque force a sa petite histoire à lire et à écouter',
-  FORCES.every((f) => typeof f.story === 'string' && f.story.length > 40));
-check('cinq pièces de l’avion : ailes, réacteur, cockpit, queue, roues',
-  PARTS.length === 5 &&
+console.log('La phrase d’état — ce que l’air fait, à chaque instant');
+verifie('posé à l’arrêt : « pas de vitesse, l’air ne le porte pas »',
+  phraseEtat(etatInitial()).indexOf('l’air ne le porte pas') !== -1);
+verifie('au roulage, l’avion ROULE (il ne « court » jamais) et la flèche grandit',
+  (() => {
+    const ph = phraseEtat({ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 });
+    return ph.indexOf('roule') !== -1 && ph.indexOf('grandir') !== -1 &&
+      ph.indexOf('court') === -1;
+  })());
+verifie('en montée : l’air pousse plus fort que le poids',
+  phraseEtat({ v: 80, alt: 40, vz: 5, auSol: false, distance: 0 }).indexOf('monte') !== -1);
+verifie('vitesse réduite : il plane, il ne tombe pas',
+  phraseEtat({ v: 40, alt: 50, vz: -4, auSol: false, distance: 0 }).indexOf('plane') !== -1);
+verifie('en équilibre : les deux flèches sont égales',
+  phraseEtat({ v: VITESSE_DECOLLAGE, alt: 50, vz: 0, auSol: false, distance: 0 })
+    .indexOf('égales') !== -1);
+
+console.log('Les pièces de l’avion — cinq histoires à taper');
+verifie('cinq pièces : ailes, réacteur, cockpit, queue, roues',
+  PIECES.length === 5 &&
   ['ailes', 'reacteurs', 'cockpit', 'queue', 'roues']
-    .every((id) => PARTS.some((p) => p.id === id)));
-check('chaque pièce a son émoji, son nom, sa couleur et son explication',
-  PARTS.every((p) => p.emoji && p.label && p.color && p.text && p.text.length > 40));
-check('les ailes racontent la révélation (pousser l’air), le réacteur la poussée',
+    .every((id) => PIECES.some((p) => p.id === id)));
+verifie('chaque pièce a son émoji, son nom, sa couleur et son explication',
+  PIECES.every((p) => p.emoji && p.label && p.couleur && p.texte && p.texte.length > 40));
+verifie('les ailes racontent la révélation (pousser l’air), le réacteur souffle',
   (() => {
-    const ailes = PARTS.filter((p) => p.id === 'ailes')[0];
-    const reac = PARTS.filter((p) => p.id === 'reacteurs')[0];
-    return ailes.text.indexOf('pouss') !== -1 && reac.text.indexOf('souffle') !== -1;
+    const ailes = PIECES.filter((p) => p.id === 'ailes')[0];
+    const reacteur = PIECES.filter((p) => p.id === 'reacteurs')[0];
+    return ailes.texte.indexOf('pouss') !== -1 && reacteur.texte.indexOf('souffle') !== -1;
   })());
-
-console.log('Les phrases d’état — le même instant, deux regards d’accord');
-check('posé à l’arrêt : « pas de vitesse, l’air ne porte pas »',
-  statusSide(newState(), { throttle: 0, stick: 0, bank: 0 }).indexOf('l’air ne porte pas') !== -1);
-check('au roulage : la flèche de l’air grandit',
-  statusSide({ v: 30, alt: 0, vs: 0, bank: 0, onGround: false ? 0 : true },
-    { throttle: 1, stick: 0, bank: 0 }).indexOf('grandit') !== -1);
-check('en montée : l’air pousse plus fort que le poids',
-  statusSide({ v: 70, alt: 30, vs: 5, bank: 0, onGround: false },
-    { throttle: 0.8, stick: 0.5, bank: 0 }).indexOf('monte') !== -1);
-check('moteurs réduits : il plane, il ne tombe pas',
-  statusSide({ v: 50, alt: 50, vs: -4, bank: 0, onGround: false },
-    { throttle: 0, stick: 0, bank: 0 }).indexOf('plane') !== -1);
-check('vue de derrière : à plat = tout droit, penché = ça tourne (du bon côté)',
-  statusBack({ v: 65, alt: 60, vs: 0, bank: 0, onGround: false }).indexOf('droit') !== -1 &&
-  statusBack({ v: 65, alt: 60, vs: 0, bank: 0.3, onGround: false }).indexOf('droite') !== -1 &&
-  statusBack({ v: 65, alt: 60, vs: 0, bank: -0.3, onGround: false }).indexOf('gauche') !== -1);
 
 console.log('Couleurs sémantiques et affichage');
-check('chaque force a sa couleur, toutes différentes (et l’avion a la sienne)',
+verifie('l’air, le poids et l’avion ont chacun leur couleur, toutes différentes',
+  COULEUR_AIR !== COULEUR_POIDS && COULEUR_AIR !== COULEUR_AVION &&
+  COULEUR_POIDS !== COULEUR_AVION);
+verifie('« ton avion » porte le rose de la série (l’ancre « chez toi »)',
+  COULEUR_AVION === '#ff6b9d');
+verifie('vitesse et altitude parlantes pour le parent : 55 → 220 km/h, 100 → 4 000 m',
+  formatVitesse(VITESSE_DECOLLAGE) === '220 km/h' &&
+  formatAltitude(ALTITUDE_MAX) === '4 000 m' && formatAltitude(10) === '400 m');
+verifie('le décor défile : la distance parcourue grandit avec la vitesse',
   (() => {
-    const cols = [COLOR_LIFT, COLOR_WEIGHT, COLOR_THRUST, COLOR_DRAG, COLOR_PLANE];
-    const seen = {};
-    for (const c of cols) {
-      if (seen[c]) return false;
-      seen[c] = true;
-    }
-    return FORCES.length === 4 && FORCES[0].color === COLOR_LIFT &&
-      FORCES[1].color === COLOR_WEIGHT && FORCES[2].color === COLOR_THRUST &&
-      FORCES[3].color === COLOR_DRAG;
-  })());
-check('« ton avion » porte le rose de la série (l’ancre « chez toi » de l’astronomie)',
-  COLOR_PLANE === '#ff6b9d');
-check('vitesse et altitude parlantes pour le parent : 65 → 260 km/h, 60 → 2 400 m',
-  formatSpeed(V_CRUISE) === '260 km/h' && formatAlt(ALT_CRUISE) === '2 400 m' &&
-  formatAlt(10) === '400 m');
-check('le décor défile : la distance parcourue grandit avec la vitesse',
-  (() => {
-    const s0 = Object.assign(newState(), ENTRY_AIR);
-    const end = simulate(s0, HOLD(T_CRUISE, 0, 0), 5);
-    return end.dist > 4 * V_CRUISE && end.dist < 6 * V_CRUISE;
+    const e0 = { v: 60, alt: 50, vz: 0, auSol: false, distance: 0 };
+    const fin = simule(e0, TIENT(0.6), 5);
+    return fin.distance > 4 * 60 && fin.distance < 6.5 * 60;
   })());
 
 console.log('Honnêteté pédagogique');
-check('le mythe du « chemin plus long » n’apparaît NULLE PART dans le modèle',
+verifie('le mythe du « chemin plus long » n’apparaît NULLE PART dans les textes',
   (() => {
-    let all = '';
-    for (const scn of SCENARIOS) all += scn.label + scn.sub + scn.cote + scn.derriere;
-    for (const f of FORCES) all += f.label + f.sub + f.story;
-    for (const p of PARTS) all += p.label + p.text;
-    const states = [
-      statusSide(newState(), { throttle: 0, stick: 0, bank: 0 }),
-      statusSide({ v: 70, alt: 30, vs: 5, bank: 0, onGround: false }, { throttle: 1, stick: 0.5, bank: 0 }),
-      statusBack({ v: 65, alt: 60, vs: 0, bank: 0.4, onGround: false }),
-    ];
-    all += states.join('');
-    return all.indexOf('plus long') === -1 && all.indexOf('rattrap') === -1;
+    let tout = '';
+    for (const m of MOMENTS) tout += m.label + m.sub + m.phrase;
+    for (const p of PIECES) tout += p.label + p.texte;
+    tout += phraseEtat(etatInitial());
+    tout += phraseEtat({ v: 80, alt: 40, vz: 5, auSol: false, distance: 0 });
+    return tout.indexOf('plus long') === -1 && tout.indexOf('rattrap') === -1;
   })());
-check('apostrophes typographiques « ’ » partout dans les chaînes UI (jamais le « \' » droit)',
+verifie('apostrophes typographiques « ’ » partout dans les chaînes UI (jamais le « \' » droit)',
   (() => {
-    let all = '';
-    for (const scn of SCENARIOS) all += scn.label + scn.sub + scn.cote + scn.derriere;
-    for (const f of FORCES) all += f.label + f.sub + f.story;
-    for (const p of PARTS) all += p.label + p.text;
-    all += statusSide(newState(), { throttle: 0, stick: 0, bank: 0 });
-    all += statusBack(newState());
-    return all.indexOf("'") === -1;
+    let tout = '';
+    for (const m of MOMENTS) tout += m.label + m.sub + m.phrase;
+    for (const p of PIECES) tout += p.label + p.texte;
+    tout += phraseEtat(etatInitial());
+    return tout.indexOf("'") === -1;
   })());
 
 console.log('');
-if (failed > 0) {
-  console.error(failed + ' test(s) en échec, ' + passed + ' réussi(s).');
+if (rates > 0) {
+  console.error(rates + ' test(s) en échec, ' + reussis + ' réussi(s).');
   process.exit(1);
 }
-console.log('Tous les tests passent (' + passed + ').');
+console.log('Tous les tests passent (' + reussis + ').');

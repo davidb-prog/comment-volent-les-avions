@@ -1,81 +1,72 @@
 # Comment volent les avions ? 🛩️
 
-Un épisode du **Petit labo de physique** — la série sœur du
-[Petit labo d'astronomie](#les-labos) : un site d'une page, interactif, pour expliquer à une
-enfant de 5 ans, guidée par un parent qui lit à voix haute, comment un avion vole, décolle,
-tourne et atterrit.
+Premier épisode du **Petit labo de physique** — la série sœur du
+[Petit labo d'astronomie](#la-série) : un site d'une page, interactif, pour expliquer à une
+enfant de 5 ans, guidée par un parent qui lit à voix haute, pourquoi les avions volent.
 
 La grande révélation : **l'air est costaud**. On ne le voit pas, mais c'est lui qui porte
-les avions ! L'aile, en avançant vite, **pousse l'air vers le bas — alors l'air pousse
-l'aile vers le haut** (action-réaction). Pas de vitesse, pas de portance : c'est pour ça
-qu'un avion posé ne s'envole pas, et qu'il court si vite sur la piste avant de décoller.
+les avions ! L'aile, en avançant vite, pousse l'air vers le bas — alors l'air pousse
+l'aile vers le haut (action-réaction). **Pas de vitesse, pas d'envol** : c'est pour ça
+qu'un avion posé ne s'envole pas, et qu'il roule si vite sur la piste avant de décoller.
 
-Tout le site tient dans une idée : **les 4 forces dessinées comme des flèches vivantes** —
-le « graphe » que l'enfant lit sans savoir lire. Quand la flèche de l'air dépasse la flèche
-du poids… l'avion décolle !
+Tout l'épisode tient dans UN geste : **le grand curseur de vitesse**. L'enfant pousse la
+vitesse, et tout découle — la flèche de l'air grandit, dépasse le poids, l'avion décolle ;
+on recule, il plane et se pose tout doux. La course des **deux flèches** (l'air qui
+pousse, le poids qui tire) est le « graphe » que l'enfant lit sans savoir lire.
 
-![Le site en croisière : les 4 flèches en équilibre, vu de côté et vu de derrière](docs/screenshot.png)
+![En plein vol : les deux flèches égales, le curseur pile sur le repère d'envol](docs/screenshot.png)
 
 ## Fonctionnalités
 
-- **Deux vues synchronisées en permanence** sur le même vol :
-  - **🛩️ Ton avion, vu de côté** (canvas) : la piste, l'herbe, le grand ciel de jour — ton
-    avion rose (avec son petit pilote) reste à poste fixe pendant que le décor défile. Les
-    **4 flèches** accrochées à l'avion changent de longueur en direct : 💨 la **portance**
-    (l'air pousse en haut), 🌍 le **poids** (la Terre tire en bas), 🔥 la **poussée** (les
-    moteurs), 🌬️ la **traînée** (l'air freine). Chaque force garde sa couleur partout —
-    flèches, légende, boutons, histoires.
-  - **🧭 La carte du ciel : pencher = tourner** (canvas) : l'avion au centre, cap en haut,
-    le monde qui tourne autour et la trace rose qui s'incurve ; le « pencher » vit dans un
-    médaillon « vu de derrière » — sans ambiguïté même sans savoir lire : on voit la
-    **nuque** du pilote (pas son visage) et l'**échappement des réacteurs** qui rougeoie
-    quand on met les gaz. Plus on penche, plus le virage est serré (avec un plafond doux).
-- Sous chaque vue, une **petite phrase d'état** raconte le même instant deux fois (« 💨
-  L'air pousse plus fort que le poids : ton avion monte ! » / « 🔄 Penché vers la droite :
-  l'air pousse de côté, l'avion tourne ! »).
-- **Le petit cockpit** 🧑‍✈️ : des boutons ronds gros comme des doigts d'enfant — 🐢/🔥 les
-  gaz (avec leur jauge, qui suit aussi le pilote automatique), ⬅️/➡️ pencher pour tourner,
-  ⬆️/⬇️ monter et descendre (on **maintient** le bouton ; relâché, tout revient au neutre
-  en douceur). Sur mobile, le cockpit **flotte au ras du pouce** : une petite barre collée
-  en bas de l'écran tant que les vues sont visibles. Le geste direct reste possible :
-  glisser sur les vues, flèches du clavier.
-- **Le vol vit tout seul** : un tour d'avion complet en boucle — décollage, montée,
-  croisière, virage, descente, atterrissage, freinage… et ça recommence. Petit tap sur une
-  vue = pause ; espace = pause ; toute commande manuelle rend la main à l'enfant.
+- **UNE vue, UN geste** (refonte de 2026-08-19, après essai en famille : deux vues et
+  leurs gestes croisés perdaient l'enfant) :
+  - **la vue de côté** (canvas) : la piste, l'herbe, le grand ciel de jour — ton avion
+    rose (avec son petit pilote) reste à poste fixe pendant que le décor défile. Deux
+    flèches accrochées à l'avion : 🟢 **l'air pousse** (elle grandit avec la vitesse — ∝ v²,
+    nulle à l'arrêt) et 🟣 **le poids tire** (elle ne change jamais). Quand l'avion va
+    vite, des filets d'air déviés vers le bas s'échappent derrière l'aile — la cause de
+    la portance, dessinée.
+  - **le grand curseur de vitesse**, pleine largeur, avec le repère **« ✨ ici, il
+    s'envole ! »** posé pile sur la vitesse de décollage du modèle. Sous la vue, une
+    petite **phrase d'état** raconte chaque instant (« Il roule… regarde la flèche de
+    l'air grandir ! »).
+- **La lecture automatique** (bouton ⏸/▶ aux libellés empilés, patron de la famille) :
+  un tour complet — décollage, plein vol, atterrissage — en ~85 s, en boucle, le curseur
+  bougeant tout seul. Toucher le curseur rend la main à l'enfant. Un tap sur la vue ne
+  déclenche **rien** (règle de la famille : pas d'action en douce).
+- **Trois boutons-moments** : 🛫 *Le décollage*, ✈️ *En plein vol*, 🛬 *L'atterrissage*.
+  Le curseur glisse tout seul au bon endroit — toujours vers l'avant : s'il faut se poser
+  d'abord, l'avion se pose pour de vrai — puis **une phrase** (une seule !) raconte
+  l'instant, à lire et à écouter (bouton 🔇/🔊 de la famille, choix retenu).
+- Le moment **En plein vol** pose le curseur PILE sur le repère d'envol : les deux
+  flèches deviennent égales sous les yeux de l'enfant — l'équilibre du vol, incarné par
+  le geste.
 
-![Le décollage : l'avion court sur la piste et la flèche de la portance grandit](docs/screenshot-decollage.png)
+![Le décollage : l'avion roule vite, la flèche de l'air grandit](docs/screenshot-decollage.png)
 
-- **Quatre boutons-scénarios** : 🛫 *Le décollage*, ✈️ *La croisière*, 🔄 *Le virage*, 🛬
-  *L'atterrissage*. L'avion **glisse en douceur** vers le moment choisi (jamais de marche
-  arrière brutale), le joue pour de vrai, puis une micro-histoire **courte** — une phrase
-  par regard — raconte le même instant vu de côté puis sur la carte. Le virage **reste
-  dans le virage** tant qu'on ne reprend pas la main : la trace incurvée reste visible
-  pendant qu'on la raconte. Comme dans la série astronomie, le jeu existe **avec ou sans
-  la voix** (bouton 🔇/🔊, choix retenu d'une visite à l'autre).
-- **Les 4 pastilles s'expliquent** : appuyer sur une pastille de la légende (💨 la
-  portance, 🌍 le poids, 🔥 la poussée, 🌬️ la traînée) affiche sa petite histoire — à
-  lire, et à écouter d'un appui sur 🔊.
-- **🔍 Découvre ton avion** : l'avion en grand, posé sur la piste, avec une pastille
-  tapotable sur chaque pièce — 🪶 les ailes, 🔥 le réacteur, 🧑‍✈️ le cockpit, 🪁 la
-  queue, 🛞 les roues. Chaque pièce a son explication écrite et sonore (le réacteur
-  souffle l'air vers l'arrière… encore l'air qui pousse !).
+- **« 💡 Pourquoi les avions volent ? »** : la grande révélation en cinq petits
+  paragraphes à lire à voix haute — souffle sur ta main, pousse le mur, l'aile pousse
+  l'air et l'air pousse l'aile — refermés sur le refrain : *… parce que l'air pousse !*
+  À lire… ou à **écouter** (conteur de la famille : synthèse vocale de l'appareil, phrase
+  à phrase, pauses et relief — rien ne part sur Internet).
+- **« 🔍 Découvre ton avion »** : l'avion en grand, cinq pastilles à taper — 🪶 les
+  ailes, 🔥 le réacteur, 🧑‍✈️ le cockpit, 🪁 la queue, 🛞 les roues — chacune avec sa
+  petite histoire écrite, relue à la demande par le bouton 🔊 (jamais de voix au tap,
+  règle de la famille).
+- **Le pont de fin de page** : « Et une fusée, là où il n'y a plus d'air… qui la
+  pousse ? » — et la passerelle vers les épisodes d'astronomie, chacun avec le médaillon
+  SVG de sa carte du portail.
+- **La marque de la famille** : titres en Baloo 2 auto-hébergée, fiole de la série
+  physique (le nuage au trait d'avion) à côté du kicker, pied de page harmonisé avec la
+  fiole maître vers <https://petit-labo.fr/>, carte de partage `docs/og.png` et socle SEO
+  complet (canonique petit-labo.fr, JSON-LD `LearningResource`).
 
 ![Découvre ton avion : les pièces tapotables](docs/screenshot-pieces.png)
-- **La boîte « 💨 L'air est costaud ! »** : la grande révélation en cinq petits paragraphes
-  à lire à voix haute — souffle sur ta main, pousse le mur, l'aile pousse l'air et l'air
-  pousse l'aile — qui se referment sur le refrain de l'épisode : *… parce que l'air
-  pousse !* À lire… ou à **écouter** : le conteur de la série (synthèse vocale de
-  l'appareil, phrase à phrase, pauses et relief) avec choix de voix française — **partagé
-  avec les labos d'astronomie** (même clé, même origine github.io).
-- **Le pont de fin de page** : « Et une fusée, là où il n'y a plus d'air… qui la pousse ? »
-  — et la passerelle vers les 4 épisodes du Petit labo d'astronomie.
-- **Plein écran** des deux vues (API native, repli maison pour iOS), mise en page mobile
-  dédiée : sous 640 px les vues s'empilent, rien ne recouvre jamais les canvas.
-- Accessible : aria-labels descriptifs sur les deux canvas, pilotage au clavier (canvas
-  focusables, flèches), espace = pause, `prefers-reduced-motion` respecté (rien ne bouge
-  tout seul), focus visibles.
 
-![Le virage : l'horizon s'incline et la trajectoire s'incurve sur la mini-carte](docs/screenshot-virage.png)
+- Accessible : aria-labels descriptifs sur les canvas, curseur au clavier, espace =
+  pause, `prefers-reduced-motion` respecté (rien ne bouge tout seul), focus visibles,
+  page verrouillée contre les pincements-zooms d'enfant (les zooms d'accessibilité du
+  système restent utilisables).
 
 ## Lancer en local
 
@@ -91,125 +82,108 @@ puis ouvrir <http://localhost:8000>.
 
 ## Tests
 
-Le modèle de vol (forces, décollage, croisière, virage, atterrissage, scénarios) est pur —
-aucun accès DOM — et se teste sous Node, sans navigateur :
+Le modèle de vol est pur — aucun accès DOM — et se teste sous Node, sans navigateur :
 
 ```bash
 node test/model.test.mjs
 ```
 
-**66 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
-(∝ v² — nulle à l'arrêt : un avion posé ne s'envole jamais tout seul) ; l'avion **décolle
-quand la portance dépasse le poids** (la vitesse de décollage est testée au point près) ;
-**en croisière stable, portance = poids et poussée = traînée** ; la **traînée freine
-toujours** et, moteurs coupés, l'avion **plane** (descente plafonnée — il ne tombe jamais
-comme une pierre) ; **pencher les ailes = tourner**, plus on penche plus le virage est
-serré, avec un plafond doux ; près du sol, l'**arrondi est automatique** et le toucher
-**toujours doux** ; et surtout **jamais punitif** : 40 vols aux commandes aléatoires
-(graine fixe), plus de 140 atterrissages observés, zéro crash — depuis n'importe quel
-état, gaz coupés, l'avion finit posé, roues arrêtées.
+**45 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
+(∝ v² — nulle à l'arrêt : un avion posé ne s'envole jamais tout seul) ; l'avion
+**s'envole quand elle atteint le poids** (la vitesse de décollage est testée au point
+près, et le repère du curseur est posé dessus) ; **curseur réduit, il plane** (descente
+plafonnée — il ne tombe jamais comme une pierre) ; le **toucher est toujours doux**
+(l'arrondi est automatique) ; **jamais punitif** : 40 vols au curseur fou (graine fixe),
+zéro crash ; la **lecture automatique** boucle proprement (décolle, monte, se pose,
+s'arrête) ; et les textes tiennent leurs promesses (l'avion **roule**, il ne « court »
+jamais ; pas de mythe ; apostrophes typographiques).
 
-Le site est aussi vérifié en navigateur (Playwright/Chromium, desktop + mobile 390 px) :
-zéro erreur console, sondes de pixels (ciel, herbe, piste, la flèche de portance qui
-grandit avec la vitesse), glissers sur les deux vues, tap-pause, scénarios, manette des
-gaz, plein écran natif **et** repli iOS, `prefers-reduced-motion`, captures examinées aux
-moments clés (posé, décollage, croisière, virage, atterrissage).
+Le site est aussi vérifié en navigateur (Playwright/Chromium — desktop,
+`prefers-reduced-motion`, mobile tactile 390 px) : structure, geste-signature, invariants
+d'interaction, sondes de pixels, zéro erreur console.
 
 ## Déployer sur GitHub Pages
 
 Le workflow `.github/workflows/deploy-pages.yml` publie le site à chaque push sur `main`.
-Dans les réglages du repo : **Settings → Pages → Source : « GitHub Actions »**
-(le workflow tente aussi de l'activer automatiquement au premier run).
+Dans les réglages du repo : **Settings → Pages → Source : « GitHub Actions »**.
+À la publication, côté portail (`davidb-prog.github.io`) : ajouter l'épisode à
+`sitemap.xml`, sa carte au portail, et l'entrée `comment-volent-les-avions` au registre
+de `tools/build-og.mjs` (la carte `docs/og.png` d'ici a été générée avec la fiole
+« physique » ajoutée au gabarit `tools/og.html` — patch à reporter dans le portail).
 
 ## Le modèle
 
 Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constantes) :
 
-- **Les forces**, en « poids d'avion » (la flèche du poids sert d'étalon) : portance
-  = (v/V_TAKEOFF)² × facteur d'angle d'attaque ; traînée ∝ v² (poussée = traînée pile à
-  V_MAX plein gaz) ; poussée = manette × poussée maxi.
-- **En vol, l'avion se règle tout seul** pour porter exactement son poids (stabilité
-  longitudinale simplifiée) ; le manche ajoute ou retire de l'angle — avec un **plafond
-  doux** : pas de décrochage dans le modèle.
-- **Le virage** : la vitesse de virage suit la tangente de l'inclinaison (plafonnée à
-  40°) ; la portance penchée tient un peu moins en l'air — vrai aussi en vrai.
-- **L'arrondi automatique** : la vitesse de descente est plafonnée près du sol
-  (`descentCap`), le toucher est toujours doux — c'est le « jamais punitif » de la série.
-- **Le tour automatique** : une liste de phases (`AUTO_PHASES`) avec leurs commandes
-  cibles et leurs conditions de fin, jouée en boucle — et rejouée par morceaux par les
-  scénarios.
+- **La portance** en « poids d'avion » : `(v / VITESSE_DECOLLAGE)²` — égale au poids
+  pile à la vitesse de décollage, qui est aussi le repère du curseur.
+- **Le curseur est la seule commande** : la vitesse glisse vers sa consigne, l'excès (ou
+  le manque) de portance fait monter (ou descendre), avec l'arrondi automatique près du
+  sol et le plafond doux en haut du ciel.
+- **La lecture automatique** est une fonction pure `cibleAuto(t)` : la position du
+  curseur à chaque instant d'un tour de 85 s.
+- **Les moments** sont de petites étapes de curseur (`MOMENTS`), jouées en douceur et
+  toujours vers l'avant.
 
 ## Ce que le site simplifie
 
+- **Deux flèches seulement.** En vrai, quatre forces s'équilibrent en vol : l'air qui
+  porte, le poids, la poussée des moteurs, la traînée de l'air qui freine. La course
+  air/poids raconte l'essentiel à 5 ans ; l'équilibre complet viendra dans un autre
+  épisode.
 - **L'explication du site est la vraie** (l'air dévié vers le bas + action-réaction, la
-  portance en v²), mais elle n'est pas complète : les physiciens ajoutent la circulation
-  et les champs de pression autour du profil (Bernoulli) — même phénomène, autres outils.
-  Le **mythe du « chemin plus long au-dessus de l'aile »** (temps de transit égal), lui,
-  est faux, et n'apparaît nulle part — il est signalé comme mythe dans la note aux parents.
-- **« Monter = l'air pousse plus fort que le poids »** : vrai au décollage et dès que la
-  trajectoire s'incurve vers le haut — mais en montée stabilisée, la portance revient
-  porter à peu près le poids, et c'est le **surplus de poussée** qui fait grimper l'avion.
-  Le modèle fait monter l'avion à l'excès de portance parce que c'est la course des deux
-  flèches que l'enfant lit ; la note aux parents rétablit la vérité.
-- **Gaz coupés, l'avion « plane »** en ralentissant doucement ; un vrai planeur, lui,
-  pique un peu du nez pour **garder sa vitesse** (c'est elle qui le fait voler) et suit
-  une pente régulière. La descente du site est plafonnée, jamais la vitesse entretenue.
-- **Le virage ne dépend que de l'inclinaison** dans le modèle ; en vrai, à inclinaison
-  égale, un avion **lent** tourne plus serré qu'un avion rapide (le taux de virage vaut
-  g·tan(inclinaison)/vitesse). Une variable de moins, la vérité « plus on penche, plus ça
-  tourne » reste juste.
-- **Pas de décrochage** : tirer trop fort ne donne simplement rien de plus (angle d'attaque
-  plafonné en douceur). Le vrai décrochage est nommé dans la note aux parents.
-- **Atterrissage toujours doux** : la descente est plafonnée près du sol (l'arrondi est
-  automatique) ; rien ne peut s'écraser — l'enfant explore sans peur, c'est voulu.
-- **Le virage est coordonné tout seul** (pas de palonnier, pas de dérapage) et les ailes
-  reviennent à plat quand on relâche — un vrai avion garde son inclinaison.
-- **Vitesses et altitudes arrondies à hauteur d'enfant** : décollage vers 220 km/h,
-  croisière 260 km/h à 2 400 m — un avion de ligne décolle vers 250–300 km/h et croise
-  vers 900 km/h à 11 000 m. Les proportions des flèches sont gardées lisibles plutôt qu'à
-  l'échelle.
-- **En vol, manche relâché, l'avion porte pile son poids** (auto-réglage instantané) ; les
-  vrais avions font à peu près pareil… en oscillant un peu.
-- **La piste est infinie** (toujours là pour se poser, où qu'on soit) et le monde défile
-  en boucle : il y a toujours une piste sous l'avion — jamais punitif, là aussi.
-- **La voix de lecture** est celle de l'appareil (rien ne part sur Internet) : sa qualité
-  varie beaucoup. Le site note les voix françaises disponibles et prend la plus naturelle ;
-  le choix est partagé avec les labos d'astronomie (même origine GitHub Pages).
+  portance en v²), mais pas complète : les physiciens ajoutent la circulation et les
+  champs de pression autour du profil (Bernoulli) — même phénomène, autres outils. Le
+  **mythe du « chemin plus long au-dessus de l'aile »** (temps de transit égal), lui, est
+  faux et n'apparaît nulle part — il est signalé comme mythe dans la note aux parents.
+- **« Monter = l'air pousse plus fort que le poids »** : vrai au décollage et quand la
+  trajectoire s'incurve ; en montée stabilisée, c'est le surplus de poussée qui fait
+  grimper (portance ≈ poids). La course des deux flèches reste la meilleure image à
+  hauteur d'enfant.
+- **Le curseur règle la vitesse directement** — un vrai pilote pousse une manette de gaz
+  et la vitesse suit avec de l'inertie.
+- **Jamais de crash** : descente plafonnée partout (il plane), arrondi automatique près
+  du sol, pas de décrochage. L'enfant explore sans peur, c'est voulu.
+- **Gaz coupés, le site laisse l'avion ralentir en descendant** ; un vrai planeur pique
+  un peu du nez pour garder sa vitesse — c'est elle qui le fait voler.
+- **Vitesses et altitudes à hauteur d'enfant** : décollage vers 220 km/h, plafond du
+  dessin 4 000 m — un vrai avion de ligne décolle vers 250–300 km/h et croise vers
+  900 km/h à 11 000 m.
+- **La piste est infinie** (toujours là pour se poser) et le monde défile en boucle.
+- **Le virage n'est pas dans cet épisode** : pencher les ailes pour tourner est une
+  deuxième idée à part entière — elle aura son propre épisode.
 
 ## Structure
 
 ```
-index.html            page unique (deux vues synchronisées, manette des gaz, scénarios,
-                      révélation, pont vers l'astronomie, note aux parents)
-css/style.css         palette « Grand ciel de jour », ossature de la série, responsive
-                      (bascule mobile ≤ 640 px), aucune lib
-js/model.js           modèle de vol pur (forces, intégration, tour automatique,
-                      scénarios, couleurs sémantiques) — testable sous Node
+index.html            page unique (vue de côté, grand curseur, moments, révélation,
+                      pièces de l'avion, pont vers l'astronomie, note aux parents)
+css/style.css         palette « Grand ciel de jour », Baloo 2 auto-hébergée,
+                      ossature de la famille, bascule mobile ≤ 640 px
+js/model.js           modèle pur (portance, intégration, lecture auto, moments,
+                      pièces, couleurs sémantiques) — testable sous Node
 js/canvas.js          helpers canvas partagés (fitCanvas, flèches, étiquettes à halo)
-js/side.js            vue de côté (piste, ciel, avion + pilote, 4 flèches vivantes)
-js/back.js            la carte du ciel + médaillon « vu de derrière » (nuque du pilote,
-                      échappements qui rougeoient)
-js/parts.js           « Découvre ton avion » : l'avion en grand, pastilles des pièces
-js/main.js            boucle d'animation + interactions (petit cockpit, glissers,
-                      tap-pause, scénarios et leur version sonore, pastilles des forces
-                      et des pièces, plein écran, conteur)
-test/model.test.mjs   tests Node du modèle (66 vérifications)
+js/vue-cote.js        LA vue (piste, ciel, avion + pilote, les deux flèches,
+                      filets d'air déviés) — dessineAvionCote partagé
+js/vue-pieces.js      « Découvre ton avion » : l'avion en grand, ancres des pastilles
+js/main.js            boucle rAF, curseur maître, lecture auto, moments, pièces,
+                      conteur vocal de la famille (clé petit-labo-son)
+test/model.test.mjs   tests Node du modèle (45 vérifications)
+assets/fonts/         Baloo 2 auto-hébergée (woff2, licence OFL — copiée du portail)
+docs/                 captures + carte de partage og.png
 ```
 
-## Les labos
+## La série
 
-**Le petit labo de physique** :
+**Le Petit labo de physique** ✈️ :
 
-1. 🛩️ **Comment volent les avions ?** (ce site) — l'air est costaud : l'aile pousse l'air
-   vers le bas, l'air porte l'avion.
+1. 🛩️ **Comment volent les avions ?** (ce site) — l'air est costaud : quand l'avion va
+   vite, l'air le porte.
 
-**Le petit labo d'astronomie**, la série sœur :
+**Le Petit labo d'astronomie** 🔭, la série sœur :
+[Où va le Soleil la nuit ?](https://petit-labo.fr/ou-va-le-soleil/) ·
+[Quelle heure est-il là-bas ?](https://petit-labo.fr/la-terre-tourne/) ·
+[Pourquoi la Lune change de forme ?](https://petit-labo.fr/la-lune-change-de-forme/) ·
+[La mécanique des éclipses](https://petit-labo.fr/eclipse-explorer/)
 
-1. 🌒 [La mécanique des éclipses](https://davidb-prog.github.io/eclipse-explorer/) — les
-   deux coïncidences qui fabriquent une éclipse.
-2. 🌅 [Où va le Soleil la nuit ?](https://davidb-prog.github.io/ou-va-le-soleil/) — le
-   Soleil ne bouge pas : c'est la Terre qui tourne.
-3. 🌍 [Quelle heure est-il là-bas ?](https://davidb-prog.github.io/la-terre-tourne/) — la
-   Terre tourne, et il n'est pas la même heure partout.
-4. 🌙 [Pourquoi la Lune change de forme ?](https://davidb-prog.github.io/la-lune-change-de-forme/)
-   — la Lune est toujours à moitié éclairée : on en voit un côté différent chaque nuit.
+Tous les épisodes : <https://petit-labo.fr/>

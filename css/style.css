@@ -1,9 +1,22 @@
-/* Comment volent les avions ? — épisode 1 du Petit labo de physique.
+/* Comment volent les avions ? — premier épisode du Petit labo de physique.
    Palette « Grand ciel de jour » (choisie par David) : la page EST le ciel — fond bleu
-   clair, panneaux blancs comme des nuages, ossature graphique de la série astronomie.
-   Zéro dépendance. Compat mobiles anciens : pas d'inset, repli @supports pour aspect-ratio. */
+   clair, panneaux blancs comme des nuages, ossature graphique de la famille.
+   Zéro dépendance. Compat mobiles anciens : pas d'inset, repli @supports pour
+   aspect-ratio. Seuil mobile unique de l'épisode : 640 px. */
+
+/* la rondeur des titres de la famille : Baloo 2 auto-hébergée (charte du
+   portail — assets/fonts/, licence OFL) ; le corps du texte reste en pile
+   système, choix assumé de la charte */
+@font-face {
+  font-family: "Baloo 2";
+  src: url("../assets/fonts/baloo2-latin.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
+  --titres: "Baloo 2", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
   --bg: #aed9f7;
   --bg2: #eaf5fd;
   --surface: rgba(255, 255, 255, 0.86);
@@ -13,15 +26,19 @@
   --muted: #47617a;
   --rose: #ff6b9d;
   --rose-deep: #b02a5e;
-  --lift: #0b8a72;
-  --weight: #6a4fd0;
-  --thrust: #d86f00;
-  --drag: #55617a;
+  --air: #0b8a72;        /* l'air qui pousse (la flèche verte) */
+  --poids: #6a4fd0;      /* le poids qui tire (la flèche violette) */
+  --feu: #d86f00;        /* la flamme, les accents chauds */
+  --or-explication: #a06f00; /* l'« or » de la famille, assombri pour le fond clair */
   --radius: 14px;
 }
 
 * { box-sizing: border-box; }
 
+/* la page se manipule, elle ne se sélectionne pas (verrou anti-gestes
+   d'enfant, charte de la famille) ; le doigt fait défiler mais ni pincement
+   ni double-tap ne zooment */
+* { touch-action: pan-x pan-y; }
 body {
   margin: 0;
   background-color: var(--bg);
@@ -32,20 +49,28 @@ body {
   color: var(--text);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.55;
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
+input { -webkit-user-select: auto; user-select: auto; }
 
 /* ---------- entête ---------- */
 
 .site-header { max-width: 900px; margin: 0 auto; padding: 38px 20px 22px; text-align: center; }
+/* le kicker porte la fiole de la série (le nuage au trait d'avion) à côté de
+   son texte, comme le portail porte la fiole maître à côté de son nom */
 .kicker {
   margin: 0; color: var(--rose-deep); font-size: .8rem; font-weight: 700;
   letter-spacing: .14em; text-transform: uppercase;
+  display: flex; align-items: center; justify-content: center; gap: 9px;
 }
+.kicker-fiole { width: 24px; height: 24px; flex: none; }
 .site-header h1 { margin: .22em 0 .3em; font-size: clamp(2.1rem, 5.5vw, 3.1rem); line-height: 1.1; }
 .tagline { margin: 0 auto; max-width: 62ch; color: var(--muted); }
 .tagline strong { color: var(--rose-deep); }
 
-main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
+main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; }
 
 .panel {
   background: linear-gradient(180deg, #ffffff, var(--surface));
@@ -57,238 +82,177 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .hint { color: var(--muted); font-weight: 400; font-size: .78em; }
 
-/* ---------- la scène : les deux vues synchronisées ---------- */
+/* la voix des titres : Baloo 2 sur tout ce qui titre la page — jamais sur le
+   corps du texte ni sur les boutons (leur font: inherit doit rester la pile
+   système, taille partagée par toute la famille) */
+.site-header h1, .kicker, .scene-titre, .curseur-nom, .moments-titre > span,
+.explication-tete h2, .pieces-tete h2,
+.parents summary { font-family: var(--titres); }
 
-.stage-panel { padding: 12px; }
-.stage-head {
+/* ---------- la scène : la vue de côté + le grand curseur ---------- */
+
+.scene-panel { padding: 12px 12px 14px; }
+.scene-tete {
   display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap;
-  font-size: .88rem; color: var(--muted); margin: 2px 4px 10px;
+  margin: 2px 4px 10px;
 }
-.stage-title { flex: 1 1 260px; }
-.spin-btn { margin-left: auto; padding: 5px 12px; font-size: .8rem; border-radius: 999px; }
-.stage-head .spin-btn { margin-left: 0; }
-.stage-head #btn-spin { margin-left: auto; }
+.scene-titre { font-size: 1.15rem; font-weight: 800; color: var(--rose-deep); }
 
-.views-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
+/* les boutons ⏸/▶ et 🔇/🔊 de la famille : libellés empilés (largeur stable),
+   rangés à droite, surbrillance verte quand c'est actif */
+.petit-btn { margin-left: auto; padding: 5px 12px; font-size: .8rem; border-radius: 999px; }
+.lecture-btn, .son-btn { display: inline-grid; align-items: center; justify-items: center; }
+.lecture-btn > span, .son-btn > span { grid-row: 1; grid-column: 1; white-space: nowrap; }
+.lecture-btn[aria-pressed="true"] .lecture-off,
+.lecture-btn[aria-pressed="false"] .lecture-on,
+.son-btn[aria-pressed="true"] .son-off,
+.son-btn[aria-pressed="false"] .son-on { visibility: hidden; }
+.lecture-btn[aria-pressed="true"], .son-btn[aria-pressed="true"] {
+  border-color: var(--air);
+  box-shadow: 0 0 0 2px rgba(11, 138, 114, .28);
 }
-
-.view-block { min-width: 0; }
-.view-head {
-  font-weight: 800; font-size: 1.02rem; margin: 0 2px 7px;
-  display: flex; align-items: center; gap: 6px;
-}
-.view-head-side { color: var(--rose-deep); }
-.view-head-back { color: var(--weight); }
 
 .canvas-wrap { position: relative; border-radius: 12px; overflow: hidden; background: #d9eefc; }
-.ratio-side { aspect-ratio: 16 / 10; }
-.ratio-back { aspect-ratio: 1 / 1; }
-/* repli pour navigateurs sans aspect-ratio (Safari iOS < 15) : hauteurs fixes */
+.ratio-cote { aspect-ratio: 16 / 8; }
 @supports not (aspect-ratio: 1 / 1) {
-  .ratio-side { height: min(38vw, 470px); }
-  .ratio-back { height: min(32vw, 420px); }
+  .ratio-cote { height: min(46vw, 460px); }
 }
 .canvas-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
 
-#side-view, #back-view { touch-action: none; cursor: grab; }
-#side-view:active, #back-view:active { cursor: grabbing; }
+/* la petite phrase sous la vue : ce que l'air fait, à cet instant */
+.phrase-etat { margin: 10px 4px 4px; font-size: 1rem; color: var(--text); min-height: 1.6em; }
 
-/* la petite phrase sous chaque vue : le même instant, raconté deux fois */
-.view-status {
-  margin: 8px 2px 0; font-size: .92rem; color: var(--text);
-  min-height: 2.8em;
-}
+/* ---------- LE geste : le grand curseur de vitesse ---------- */
 
-/* petit rappel « glisse ici » superposé au ciel (transitoire, non cliquable) */
-.drag-hint {
-  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
-  max-width: calc(100% - 20px); text-align: center;
-  background: rgba(255, 255, 255, .78);
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
-  border: 1px solid var(--border); border-radius: 999px;
-  padding: 7px 14px; font-size: .85rem; color: var(--text);
-  pointer-events: none; opacity: 1; transition: opacity .4s;
-}
-.drag-hint.hide { opacity: 0; }
-
-/* ---------- le petit cockpit (remplace le curseur des gaz) ----------
-   Des boutons ronds, gros comme des doigts d'enfant. Sur mobile, le cockpit
-   « flotte » : il reste collé en bas de l'écran tant que la scène est visible
-   (position: sticky dans le panneau de scène). */
-
-.cockpit {
-  position: sticky; bottom: 10px; z-index: 6;
-  margin-top: 12px; padding: 8px 12px 10px;
-  background: rgba(255, 255, 255, .84);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  border: 1px solid var(--border); border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(28, 53, 80, .16);
-}
-.cockpit-readout {
+.curseur-bloc { margin-top: 8px; padding: 0 4px 2px; }
+.curseur-titre {
   display: flex; flex-wrap: wrap; gap: 2px 14px; align-items: baseline;
-  font-size: 1.02rem; margin-bottom: 6px;
+  font-size: 1.02rem; margin-bottom: 26px;
 }
-.cockpit-name { font-weight: 800; color: var(--thrust); }
+.curseur-nom { font-weight: 800; color: var(--feu); font-size: 1.02rem; }
 .gauges { color: var(--muted); font-size: .95rem; }
 .gauges strong {
-  color: var(--rose-deep); font-size: 1.15rem; font-variant-numeric: tabular-nums;
+  color: var(--rose-deep); font-size: 1.12rem; font-variant-numeric: tabular-nums;
 }
-.cockpit-rows {
-  display: flex; flex-wrap: wrap; gap: 10px 20px;
-  justify-content: space-between; align-items: flex-end;
+
+.curseur-piste { position: relative; }
+/* le repère « ici, il s'envole ! » — posé par main.js pile sur la vitesse de
+   décollage du modèle (le drapeau au-dessus, le trait à travers la piste) */
+.repere-envol {
+  position: absolute; top: -24px; left: 55%;
+  /* piège connu : absolute + left 50 % replie le contenu — width max-content */
+  width: -webkit-max-content; width: max-content;
+  -webkit-transform: translateX(-50%); transform: translateX(-50%);
+  pointer-events: none; text-align: center;
 }
-.ck-group { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1 1 140px; }
-.ck-btns { display: flex; align-items: center; gap: 8px; }
-.ck-btn {
-  width: 52px; height: 52px; border-radius: 50%; padding: 0;
-  font-size: 1.5rem; line-height: 1;
-  display: flex; align-items: center; justify-content: center;
-  background: #ffffff; border: 2px solid var(--border);
+.repere-envol i {
+  display: block;
+  font-style: normal; font-size: .78rem; font-weight: 700; color: var(--air);
+  background: rgba(255, 255, 255, .85); border: 1px solid var(--air);
+  border-radius: 999px; padding: 1px 9px;
+}
+.repere-envol::after {
+  content: ''; position: absolute; left: 50%; top: 22px; height: 34px;
+  border-left: 3px dashed var(--air); margin-left: -1.5px; opacity: .75;
+}
+
+/* la piste du curseur raconte la vitesse : posé → ça roule → ÇA VOLE
+   (le vert de l'air s'installe après le repère d'envol, ~55 %) */
+#curseur {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block; width: 100%; height: 52px; margin: 0;
+  background: transparent; cursor: pointer;
   touch-action: none;
-  -webkit-user-select: none; user-select: none;
-  -webkit-touch-callout: none;
 }
-.ck-btn:active, .ck-btn.held {
-  background: #ffe9d2; border-color: var(--thrust);
-  -webkit-transform: scale(.95); transform: scale(.95);
+#curseur::-webkit-slider-runnable-track {
+  height: 20px; border-radius: 11px; border: 1px solid var(--border);
+  background: linear-gradient(90deg,
+    #dfe9f2 0%, #cfe4ee 40%, #bfe4da 54%, #7fd0ba 58%, #3aa88c 100%);
 }
-.ck-cap { font-size: .72rem; color: var(--muted); font-weight: 700; }
-.gaz-gauge {
-  width: 86px; height: 14px; border-radius: 8px;
-  border: 1px solid var(--border); background: #e8eef5; overflow: hidden;
+#curseur::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 42px; height: 42px; margin-top: -12px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #ffd3e2, #ff6b9d 55%, #d94f80);
+  border: 3px solid rgba(255, 255, 255, .95);
+  box-shadow: 0 0 12px rgba(255, 107, 157, .55), 0 2px 6px rgba(28, 53, 80, .35);
 }
-.gaz-fill {
-  height: 100%; width: 0%;
-  background: linear-gradient(90deg, #ffd9a8, #ffb35c 55%, #e35d13);
-  transition: width .2s;
+#curseur::-moz-range-track {
+  height: 20px; border-radius: 11px; border: 1px solid var(--border);
+  background: linear-gradient(90deg,
+    #dfe9f2 0%, #cfe4ee 40%, #bfe4da 54%, #7fd0ba 58%, #3aa88c 100%);
 }
-/* sur mobile, le cockpit flottant se fait tout petit : UNE rangée de boutons
-   (une manette de jeu au ras du pouce) — jamais un panneau qui cache les vues */
-@media (max-width: 640px) {
-  .cockpit { padding: 6px 8px; bottom: 6px; }
-  .cockpit-readout { font-size: .88rem; margin-bottom: 4px; justify-content: center; }
-  .cockpit-name { display: none; }
-  .cockpit-rows { flex-wrap: nowrap; gap: 4px; justify-content: center; align-items: center; }
-  .ck-group { flex: none; flex-direction: row; gap: 4px; }
-  .ck-btns { gap: 4px; }
-  .ck-cap { display: none; }
-  .ck-btn { width: 46px; height: 46px; font-size: 1.3rem; }
-  .gaz-gauge { width: 34px; }
+#curseur::-moz-range-thumb {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #ffd3e2, #ff6b9d 55%, #d94f80);
+  border: 3px solid rgba(255, 255, 255, .95);
+  box-shadow: 0 0 12px rgba(255, 107, 157, .55), 0 2px 6px rgba(28, 53, 80, .35);
 }
-@media (max-width: 389px) {
-  .ck-btn { width: 42px; height: 42px; }
-  .gaz-gauge { width: 26px; }
+.curseur-legende {
+  display: flex; justify-content: space-between;
+  color: var(--muted); font-size: .78rem; margin-top: 2px;
 }
 
-/* ---------- la légende des 4 forces ---------- */
+/* ---------- les trois boutons-moments + la phrase racontée ---------- */
 
-.legend-panel {
-  margin-top: 16px; padding: 10px 14px;
-  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
-}
-.legend-title { font-weight: 700; font-size: .92rem; margin-right: 2px; }
-.chip {
-  border-radius: 999px; padding: 4px 12px; font-size: .85rem; font-weight: 700;
-  border: 1px solid; white-space: nowrap; cursor: pointer; font-family: inherit;
-}
-.chip i { font-style: normal; font-weight: 400; font-size: .82em; opacity: .85; }
-.chip[aria-pressed="true"] { box-shadow: 0 0 0 3px rgba(28, 53, 80, .18); }
-
-/* la petite explication (une flèche, une pièce…) : texte + bouton d'écoute */
-.mini-story {
-  display: flex; align-items: flex-start; gap: 10px;
-  flex: 1 1 100%; margin-top: 6px;
-}
-.mini-story-text { margin: 0; font-size: 1rem; line-height: 1.6; color: #33475c; }
-.mini-story-text strong { color: inherit; }
-.mini-listen {
-  flex: none; width: 38px; height: 38px; padding: 0; border-radius: 50%;
-  font-size: 1.05rem; display: flex; align-items: center; justify-content: center;
-}
-.chip-portance { color: var(--lift); border-color: var(--lift); background: rgba(11, 138, 114, .08); }
-.chip-poids { color: var(--weight); border-color: var(--weight); background: rgba(106, 79, 208, .08); }
-.chip-poussee { color: var(--thrust); border-color: var(--thrust); background: rgba(216, 111, 0, .09); }
-.chip-trainee { color: var(--drag); border-color: var(--drag); background: rgba(85, 97, 122, .09); }
-
-/* ---------- boutons-scénarios + histoire ---------- */
-
-.scenario-panel { margin-top: 16px; padding: 14px 16px 16px; }
-.scenario-title {
+.moments-panel { margin-top: 16px; padding: 14px 16px 16px; }
+.moments-titre {
   font-weight: 700; font-size: 1.05rem; margin: 2px 2px 10px;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 8px 12px; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap;
 }
-.scenario-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-@media (max-width: 860px) { .scenario-buttons { grid-template-columns: 1fr 1fr; } }
+.moments-boutons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 
-.scn {
+.moment {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
   min-height: 72px; padding: 10px 8px; border-radius: 16px; cursor: pointer;
   font: inherit; font-weight: 700; font-size: .95rem; text-align: center; line-height: 1.25;
   color: var(--text); background: #ffffff; border: 1px solid var(--border);
   transition: filter .15s, transform .05s, box-shadow .15s;
 }
-.scn:hover { filter: brightness(0.97); }
-.scn:active { transform: translateY(1px); }
-.scn.active { box-shadow: 0 0 0 3px rgba(224, 68, 124, .35); }
-.scn-emoji { font-size: 1.6rem; line-height: 1; }
-.scn-sub { font-weight: 400; font-size: .76rem; opacity: .8; }
-.scn-decollage { background: linear-gradient(180deg, #fff3e4, #ffe7cb); border-color: var(--thrust); color: #8f4a00; }
-.scn-croisiere { background: linear-gradient(180deg, #e3f4ef, #cdeae2); border-color: var(--lift); color: #075e4e; }
-.scn-virage { background: linear-gradient(180deg, #ece6fb, #ddd3f7); border-color: var(--weight); color: #4b34a5; }
-.scn-atterrissage { background: linear-gradient(180deg, #fde9f0, #fbd6e4); border-color: var(--rose-deep); color: var(--rose-deep); }
+.moment:hover { filter: brightness(0.97); }
+.moment:active { transform: translateY(1px); }
+.moment.actif { box-shadow: 0 0 0 3px rgba(224, 68, 124, .35); }
+.moment-emoji { font-size: 1.6rem; line-height: 1; }
+.moment-sub { font-weight: 400; font-size: .76rem; opacity: .8; }
+.moment-decollage { background: linear-gradient(180deg, #fff3e4, #ffe7cb); border-color: var(--feu); color: #8f4a00; }
+.moment-vol { background: linear-gradient(180deg, #e3f4ef, #cdeae2); border-color: var(--air); color: #075e4e; }
+.moment-atterrissage { background: linear-gradient(180deg, #fde9f0, #fbd6e4); border-color: var(--rose-deep); color: var(--rose-deep); }
 
-.story { margin-top: 12px; }
-.story-invite { margin: 4px 2px; color: var(--muted); }
-.story-line { display: flex; gap: 10px; align-items: flex-start; margin: 9px 0; font-size: 1.03rem; }
-.story-chip {
-  flex: none; padding: 3px 11px; border-radius: 999px; font-weight: 700; font-size: .85rem;
-  white-space: nowrap;
+.histoire { margin-top: 12px; min-height: 2.4em; }
+.histoire-invite { margin: 4px 2px; color: var(--muted); }
+.histoire-phrase {
+  margin: 4px 2px; font-size: 1.05rem; color: #33475c;
+  border-left: 4px solid var(--border); padding-left: 12px;
 }
-.story-chip-cote { background: rgba(224, 68, 124, .1); color: var(--rose-deep); border: 1px solid rgba(224, 68, 124, .45); }
-.story-chip-derriere { background: rgba(106, 79, 208, .1); color: var(--weight); border: 1px solid rgba(106, 79, 208, .45); }
-.story-text { margin: 2px 0 0; }
 
-/* ---------- la grande révélation (à lire… ou à écouter) ---------- */
+/* ---------- la grande explication (à lire… ou à écouter) ---------- */
 
-.explain-panel { margin-top: 16px; padding: 16px 20px 18px; }
-.explain-head { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 8px; }
-.explain-head h2 { margin: 0; font-size: 1.15rem; color: var(--lift); }
-.listen-btn {
+.explication-panel { margin-top: 16px; padding: 16px 20px 18px; }
+.explication-tete { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 8px; }
+.explication-tete h2 { margin: 0; font-size: 1.15rem; color: var(--or-explication); }
+.ecouter-btn {
   margin-left: auto; border-radius: 999px; padding: 8px 16px; font-weight: 700;
-  background: linear-gradient(180deg, #e3f4ef, #cdeae2); border: 1px solid var(--lift);
+  background: linear-gradient(180deg, #e3f4ef, #cdeae2); border: 1px solid var(--air);
   color: #075e4e;
 }
-.listen-btn[aria-pressed="true"] { background: #dfe9f2; border-color: var(--border); color: var(--text); }
-.voice-pick {
-  font-family: inherit; font-size: .85rem; font-weight: 600;
-  color: var(--muted); background: #ffffff;
-  border: 1px solid var(--border); border-radius: 999px;
-  padding: 7px 12px; max-width: 230px;
-}
-.voice-pick:focus { outline: 2px solid var(--lift); }
-.voice-hint { margin: 0 0 8px; font-size: .82rem; color: var(--muted); }
-.explain-text p { margin: .55em 0; color: #33475c; font-size: 1.02rem; line-height: 1.7; }
-.explain-text strong { color: var(--text); }
+.ecouter-btn[aria-pressed="true"] { background: #dfe9f2; border-color: var(--border); color: var(--text); }
+.conseil-voix { margin: 0 0 8px; font-size: .82rem; color: var(--muted); }
+.explication-texte p { margin: .55em 0; color: #33475c; font-size: 1.02rem; line-height: 1.7; }
+.explication-texte strong { color: var(--text); }
 
 /* ---------- « Découvre ton avion » : les pièces tapotables ---------- */
 
-.parts-panel { margin-top: 16px; padding: 14px 16px 16px; }
-.parts-head { display: flex; align-items: baseline; gap: 10px 12px; flex-wrap: wrap; margin-bottom: 10px; }
-.parts-head h2 { margin: 0; font-size: 1.15rem; color: var(--rose-deep); }
-.parts-wrap { position: relative; border-radius: 12px; overflow: hidden; background: #d9eefc; }
-.ratio-parts { aspect-ratio: 2 / 1; }
+.pieces-panel { margin-top: 16px; padding: 14px 16px 16px; }
+.pieces-tete { display: flex; align-items: baseline; gap: 10px 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.pieces-tete h2 { margin: 0; font-size: 1.15rem; color: var(--rose-deep); }
+.pieces-cadre { position: relative; border-radius: 12px; overflow: hidden; background: #d9eefc; }
+.ratio-pieces { aspect-ratio: 2 / 1; }
 @supports not (aspect-ratio: 1 / 1) {
-  .ratio-parts { height: min(42vw, 400px); }
+  .ratio-pieces { height: min(42vw, 400px); }
 }
-.parts-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
-.part-btn {
+.pieces-cadre canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
+.piece-btn {
   position: absolute; width: 44px; height: 44px; margin: 0; padding: 0;
   -webkit-transform: translate(-50%, -50%); transform: translate(-50%, -50%);
   border-radius: 50%; font-size: 1.25rem; line-height: 1;
@@ -296,52 +260,64 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 20px 60px; }
   background: rgba(255, 255, 255, .92); border: 2.5px solid;
   box-shadow: 0 2px 8px rgba(28, 53, 80, .25);
 }
-.part-btn:active { -webkit-transform: translate(-50%, -50%) scale(.94); transform: translate(-50%, -50%) scale(.94); }
-.part-btn[aria-pressed="true"] {
+.piece-btn:active { -webkit-transform: translate(-50%, -50%) scale(.94); transform: translate(-50%, -50%) scale(.94); }
+.piece-btn[aria-pressed="true"] {
   background: #ffffff;
   box-shadow: 0 0 0 4px rgba(255, 255, 255, .55), 0 2px 10px rgba(28, 53, 80, .3);
 }
-.part-story { margin-top: 12px; min-height: 2.6em; }
 
-@media (max-width: 640px) {
-  .ratio-parts { aspect-ratio: 16 / 10; }
-  @supports not (aspect-ratio: 1 / 1) {
-    .ratio-parts { height: min(58vw, 340px); }
-  }
-  .part-btn { width: 40px; height: 40px; font-size: 1.1rem; }
+/* la petite explication d'une pièce : texte + bouton d'écoute à la demande */
+.mini-histoire { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; min-height: 2.6em; }
+.mini-histoire-texte { margin: 0; font-size: 1rem; line-height: 1.6; color: #33475c; }
+.mini-histoire-texte strong { color: inherit; }
+.mini-ecouter {
+  flex: none; width: 38px; height: 38px; padding: 0; border-radius: 50%;
+  font-size: 1.05rem; display: flex; align-items: center; justify-content: center;
 }
 
 /* ---------- le pont : question ouverte + la série sœur ---------- */
 
-.bridge-panel { margin-top: 16px; padding: 16px 20px; }
-.bridge-question {
-  margin: 0 0 10px; font-size: 1.05rem; color: var(--text); font-weight: 600;
+.pont-panel { margin-top: 16px; padding: 16px 20px; }
+.pont-question { margin: 0 0 10px; font-size: 1.05rem; color: var(--text); font-weight: 600; }
+.pont-emoji { font-size: 1.4rem; margin-right: 4px; }
+.pont-serie { margin: 0 0 8px; color: var(--muted); font-size: .95rem; }
+.pont-liens {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 8px 22px;
 }
-.bridge-emoji { font-size: 1.4rem; margin-right: 4px; }
-.bridge-serie { margin: 0 0 8px; color: var(--muted); font-size: .95rem; }
-.bridge-links { display: flex; flex-wrap: wrap; gap: 8px 10px; }
-.bridge-links a {
-  border: 1px solid var(--border); border-radius: 999px; padding: 7px 14px;
-  color: var(--text); text-decoration: none; font-weight: 700; font-size: .92rem;
-  background: #ffffff;
-  transition: filter .15s, transform .05s;
+/* les liens d'épisodes portent leur médaillon (le soulignement reste sur le
+   titre seul, pas sur la vignette) */
+.pont-liens a { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text); font-weight: 700; font-size: .92rem; }
+.pont-liens .ep-titre { text-decoration: underline; }
+.ep-medaillon {
+  flex: none; width: 30px; height: 30px; border-radius: 9px;
+  background: #070b17; border: 1px solid var(--border);
+  display: inline-flex; align-items: center; justify-content: center;
 }
-.bridge-links a:hover { filter: brightness(0.96); }
-.bridge-links a:active { transform: translateY(1px); }
+.ep-medaillon svg { width: 26px; height: 26px; display: block; }
 
 /* ---------- note aux parents (repliée) ---------- */
 
 .parents { margin-top: 22px; }
 .parents summary {
-  cursor: pointer; padding: 14px 20px; font-weight: 700; color: var(--rose-deep);
+  cursor: pointer; padding: 14px 20px; font-weight: 700; color: var(--or-explication);
   list-style: none;
 }
 .parents summary::-webkit-details-marker { display: none; }
 .parents summary::before { content: '▸ '; }
 .parents[open] summary::before { content: '▾ '; }
-.parents ul { margin: 0; padding: 0 24px 18px 2.6em; }
+.parents h3 {
+  margin: 6px 24px 2px; font-family: var(--titres); font-size: 1rem;
+  font-weight: 700; color: var(--air);
+}
+.parents ul { margin: 0; padding: 0 24px 14px 2.6em; }
 .parents li { margin: 8px 0; color: #33475c; font-size: .93rem; }
 .parents strong { color: var(--text); }
+/* le mot de la fin, hors listes : ce qu'un parent retient s'il ne lit qu'une ligne */
+.parents-mot {
+  margin: 2px 24px 18px; padding-top: 12px; border-top: 1px solid var(--border);
+  color: #33475c; font-size: .93rem;
+}
 
 /* ---------- boutons génériques ---------- */
 
@@ -354,85 +330,50 @@ button {
 button:hover { filter: brightness(0.96); }
 button:active { transform: translateY(1px); }
 
-button:focus-visible, input:focus-visible, a:focus-visible, canvas:focus-visible {
+button:focus-visible, input:focus-visible, a:focus-visible {
   outline: 3px solid var(--rose-deep); outline-offset: 2px;
 }
 
-/* ---------- pied de page ---------- */
+/* ---------- pied de page harmonisé de la famille ---------- */
 
 .site-footer {
-  max-width: 1180px; margin: 40px auto 0; padding: 22px 20px 34px;
+  max-width: 980px; margin: 40px auto 0; padding: 22px 20px 34px;
   border-top: 1px solid var(--border); color: var(--muted); font-size: .88rem;
+  text-align: center;
 }
-.site-footer a { color: var(--rose-deep); }
+.footer-serie { margin: 0 0 14px; }
+.footer-menu { margin: 0; }
+.btn-menu-labo {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 999px;
+  border: 1px solid #ff9f1c; color: #ffcf5c; text-decoration: none;
+  font-weight: 700; background: linear-gradient(180deg, #4a3a0d, #332807);
+}
+.fiole-labo { width: 22px; height: 22px; flex: none; }
+.btn-menu-labo:focus-visible { outline: 2px solid #ff9f1c; }
 
-/* ---------- plein écran de la scène (API native, repli iOS) ---------- */
+/* ---------- petits écrans (seuil unique de l'épisode : 640 px) ---------- */
 
-.stage-panel:fullscreen {
-  display: flex; flex-direction: column; border-radius: 0; padding: 12px 14px;
-  background: var(--bg2);
-}
-.stage-panel:fullscreen .views-grid { flex: 1; min-height: 0; align-items: stretch; }
-.stage-panel:fullscreen .view-block { display: flex; flex-direction: column; min-height: 0; }
-.stage-panel:fullscreen .canvas-wrap { flex: 1; height: auto; min-height: 0; }
-.stage-panel.fs-fallback {
-  position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 60;
-  display: flex; flex-direction: column; border-radius: 0; margin: 0;
-  background: var(--bg2);
-  overflow-y: auto; -webkit-overflow-scrolling: touch;
-}
-.stage-panel.fs-fallback .views-grid { flex: 1; min-height: 0; align-items: stretch; }
-.stage-panel.fs-fallback .view-block { display: flex; flex-direction: column; min-height: 0; }
-.stage-panel.fs-fallback .canvas-wrap { flex: 1; height: auto; min-height: 200px; }
-@supports (aspect-ratio: 1 / 1) {
-  .stage-panel:fullscreen .canvas-wrap, .stage-panel.fs-fallback .canvas-wrap { aspect-ratio: auto; }
-}
-/* Sur mobile en plein écran, on N'étire PAS la scène (leçon de la série) :
-   on empile normalement, chaque vue garde une belle hauteur, la page défile. */
 @media (max-width: 640px) {
-  .stage-panel:fullscreen .views-grid,
-  .stage-panel.fs-fallback .views-grid { flex: none; }
-  .stage-panel:fullscreen .view-block,
-  .stage-panel.fs-fallback .view-block { display: block; }
-  .stage-panel:fullscreen .canvas-wrap,
-  .stage-panel.fs-fallback .canvas-wrap { flex: none; }
-  .stage-panel:fullscreen .ratio-side,
-  .stage-panel.fs-fallback .ratio-side { height: min(60vw, 44vh); }
-  .stage-panel:fullscreen .ratio-back,
-  .stage-panel.fs-fallback .ratio-back { height: min(80vw, 50vh); }
-  @supports (aspect-ratio: 1 / 1) {
-    .stage-panel:fullscreen .ratio-side, .stage-panel.fs-fallback .ratio-side,
-    .stage-panel:fullscreen .ratio-back, .stage-panel.fs-fallback .ratio-back { aspect-ratio: auto; }
-  }
-}
-
-/* ---------- petits écrans ---------- */
-
-/* sous 640 px : les deux vues s'empilent (le côté d'abord), rien ne recouvre les canvas */
-@media (max-width: 640px) {
-  .views-grid { grid-template-columns: 1fr; }
-  .ratio-side { aspect-ratio: 4 / 3; }
+  .site-header h1 { font-size: clamp(1.65rem, 7.5vw, 2.2rem); }
+  .ratio-cote { aspect-ratio: 4 / 3; }
   @supports not (aspect-ratio: 1 / 1) {
-    .ratio-side { height: min(68vw, 420px); }
-    .ratio-back { height: min(88vw, 420px); }
+    .ratio-cote { height: min(70vw, 420px); }
   }
-  .drag-hint { bottom: 8px; font-size: .8rem; }
-  .view-status { min-height: 1.4em; }
-}
-
-@media (max-width: 480px) {
-  .gauges strong { font-size: 1.02rem; }
-  .scn { min-height: 64px; }
-  .stage-head { font-size: .82rem; }
-  .legend-panel { padding: 10px 12px; }
-  .chip { font-size: .8rem; padding: 3px 10px; }
-  .chip i { display: none; }
+  .moments-boutons { grid-template-columns: 1fr; }
+  .moment { flex-direction: row; justify-content: flex-start; gap: 10px; min-height: 56px; text-align: left; }
+  .moment-sub { margin-left: auto; }
+  .ratio-pieces { aspect-ratio: 16 / 10; }
+  @supports not (aspect-ratio: 1 / 1) {
+    .ratio-pieces { height: min(58vw, 340px); }
+  }
+  .piece-btn { width: 40px; height: 40px; font-size: 1.1rem; }
+  .repere-envol i { font-size: .72rem; }
 }
 
 /* ---------- accessibilité : mouvement réduit ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .drag-hint { transition: none; }
-  .scn, button, .bridge-links a { transition: none; }
+  .moment, button, .pont-liens a, .btn-menu-labo { transition: none; }
   html { scroll-behavior: auto; }
 }
