@@ -59,7 +59,9 @@ export function drawArrow(ctx, x, y, angle, len, color, width) {
   ctx.moveTo(x, y);
   ctx.lineTo(hx, hy);
   ctx.stroke();
-  const ah = Math.max(9, wdt * 1.7);
+  // la pointe grandit avec les petites flèches (une pointe fixe sur un fût
+  // minuscule flottait toute seule au-dessus de l'avion — retour de David)
+  const ah = Math.min(Math.max(9, wdt * 1.7), 5 + len * 0.6);
   ctx.beginPath();
   ctx.moveTo(hx + Math.cos(angle) * ah, hy + Math.sin(angle) * ah);
   ctx.lineTo(hx + Math.cos(angle + 2.4) * ah, hy + Math.sin(angle + 2.4) * ah);

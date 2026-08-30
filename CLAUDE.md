@@ -45,8 +45,8 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
    UNIQUEMENT par le bouton ⏸/▶ (libellés empilés, largeur stable). Un tap sur la vue ne
    fait RIEN. Toucher le curseur rend la main. `prefers-reduced-motion` : pas de lecture
    au chargement.
-5. **Trois boutons-moments** (🛫 ✈️ 🛬) : le curseur glisse tout seul, toujours vers
-   l'avant (le moment décollage se POSE d'abord si l'avion vole), puis UNE phrase — la
+5. **Trois boutons-moments** (🛫 ✈️ 🛬) : le curseur glisse tout seul, puis UNE phrase
+   (un bouton sans objet se grise : pas de décollage en vol, pas d'atterrissage posé) — la
    version sonore via le bouton 🔇/🔊 de la famille. Le moment ✈️ pose le curseur PILE
    sur le repère d'envol : les deux flèches deviennent égales (l'équilibre incarné).
 6. **Les pièces de l'avion** (🔍 Découvre ton avion) : 5 pastilles (🪶 🔥 🧑‍✈️ 🪁 🛞),
@@ -108,11 +108,18 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
   et le **repère du curseur est posé dessus** (une seule source de vérité).
 - **Curseur pile sur le repère : équilibre** — les deux flèches égales, altitude stable.
 - **Curseur réduit : il plane** (descente plafonnée), il ne tombe jamais comme une
-  pierre ; **toucher toujours doux** (arrondi automatique) ; **jamais punitif** (curseur
-  fou testé).
+  pierre — et **un avion ne s'arrête pas en l'air** : en vol la vitesse garde un
+  plancher de plané (`VITESSE_PLANE`), on ne freine qu'une fois posé (retour de David
+  2026-08-30 : l'avion « planait sans avancer ») ; **toucher toujours doux** (arrondi
+  automatique) ; **jamais punitif** (curseur fou testé).
+- **L'air se raréfie là-haut** (`densiteAir`, `portanceEnVol`) : la flèche verte dessine
+  la portance RESSENTIE — en palier les deux flèches sont égales à toute altitude
+  d'équilibre, et « plus vite = plus haut » (retours de David 2026-08-30 : la flèche
+  sortait du cadre en altitude, et l'équilibre affiché contredisait la montée).
 - La **lecture automatique** fait un tour complet et reboucle proprement.
-- Le moment décollage décolle vraiment **depuis n'importe quel état** (en se posant
-  d'abord — jamais de marche arrière).
+- Les **moments savent quand ils ont du sens** (`MOMENTS[].dispo`) : décoller seulement
+  posé, atterrir seulement en vol — le bouton se grise sinon (celui du moment en cours
+  reste allumé).
 - L'avion **roule**, il ne « court » jamais ; pas de mythe ; apostrophes typographiques.
 
 Simplifications assumées et **documentées** (note aux parents + README) — ne pas les
@@ -148,7 +155,7 @@ décrochage ; arrondi automatique ; piste infinie ; le virage = un futur épisod
   filets d'air)
 - `js/vue-pieces.js` — l'avion en grand, ancres `ANCRES_PIECES`, anneau de sélection
 - `js/main.js` — boucle rAF, curseur, lecture auto, moments, pièces, conteur
-- `test/model.test.mjs` — tests Node (45 vérifications)
+- `test/model.test.mjs` — tests Node (50 vérifications)
 - `assets/fonts/` — Baloo 2 (copiée du portail, licence OFL)
 
 ## Vérification navigateur

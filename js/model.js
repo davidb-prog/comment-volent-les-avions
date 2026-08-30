@@ -38,7 +38,17 @@ export const VZ_SOL = 2.5;           // descente maxi au ras du sol : le toucher
 export const ALT_ARRONDI = 8;        // sous cette altitude, l'arrondi automatique s'installe
 export const GAIN_VZ = 2.2;          // excès de portance → vitesse verticale visée
 export const REPONSE_VZ = 1.8;       // souplesse de la réponse verticale (1/s)
-export const BANDE_PLAFOND = 15;     // épaisseur du plafond doux sous ALTITUDE_MAX
+
+// Un avion ne s'arrête pas en l'air : en vol, la vitesse ne descend pas sous
+// ce plancher (il garde de l'élan et plane) — on ne freine qu'une fois posé.
+export const VITESSE_PLANE = 40;
+
+// L'air se raréfie avec l'altitude : au-dessus d'ALT_AIR_LEGER, il porte de
+// moins en moins (jusqu'à DENSITE_PLAFOND tout en haut). C'est ce qui donne à
+// chaque vitesse SON altitude de croisière — là où l'air aminci porte pile le
+// poids — et ce qui empêche de monter sans fin (le vrai plafond des avions).
+export const ALT_AIR_LEGER = 50;
+export const DENSITE_PLAFOND = 0.29;
 
 export const KMH_PAR_UNITE = 4;      // affichage parent : v = 55 → « 220 km/h »
 export const METRES_PAR_UNITE = 40;  // affichage parent : alt = 100 → « 4 000 m »
@@ -75,10 +85,17 @@ export function plafondDescente(alt) {
   return VZ_SOL + (VZ_DESCENTE_MAX - VZ_SOL) * borne01(alt / ALT_ARRONDI);
 }
 
-// Plafond de montée : en approchant du haut du ciel, la montée s'éteint en
-// douceur (l'air se fait trop léger) — jamais de butée brutale en haut du cadre.
-export function plafondMontee(alt) {
-  return VZ_MONTEE_MAX * borne01((ALTITUDE_MAX - alt) / BANDE_PLAFOND);
+// La densité de l'air : pleine en bas, raréfiée en haut du ciel dessiné.
+export function densiteAir(alt) {
+  return 1 - (1 - DENSITE_PLAFOND) *
+    borne01((alt - ALT_AIR_LEGER) / (ALTITUDE_MAX - ALT_AIR_LEGER));
+}
+
+// La portance que l'avion SENT (et que la flèche verte dessine) : la poussée
+// de l'air, affaiblie là-haut par l'air raréfié. En palier, elle vaut le
+// poids — les deux flèches égales, à toute altitude d'équilibre.
+export function portanceEnVol(v, alt) {
+  return portance(v) * densiteAir(alt);
 }
 
 // ------------------------------------------------------------------ l'état
@@ -90,7 +107,10 @@ export function etatInitial() {
 // `cible01` est la position du grand curseur (0 = arrêt, 1 = plein vol).
 export function pas(etat, cible01, dt) {
   const e = etat;
-  const vCible = borne01(cible01) * VITESSE_MAX;
+  // en vol, la vitesse ne descend jamais sous le plancher du plané : un avion
+  // ne s'arrête pas en l'air — il garde de l'élan jusqu'à la piste
+  const plancher = e.auSol ? 0 : VITESSE_PLANE;
+  const vCible = Math.max(borne01(cible01) * VITESSE_MAX, plancher);
   const n = { v: e.v, alt: e.alt, vz: e.vz, auSol: e.auSol, distance: e.distance };
 
   // --- la vitesse glisse vers la consigne du curseur, en douceur
@@ -100,24 +120,24 @@ export function pas(etat, cible01, dt) {
   n.v = borne(e.v + pasV, 0, VITESSE_MAX);
   n.distance = e.distance + n.v * dt; // fait défiler le décor
 
-  const p = portance(n.v);
   if (e.auSol) {
     n.alt = 0;
     n.vz = 0;
     // décollage : la portance atteint le poids — l'air soulève l'avion
     // (epsilon : à la vitesse pile, (v/V)² vaut 1.0 exactement, on décolle)
-    if (p >= POIDS - 1e-9 && n.v >= VITESSE_DECOLLAGE - 1e-9) {
+    if (portance(n.v) >= POIDS - 1e-9 && n.v >= VITESSE_DECOLLAGE - 1e-9) {
       n.auSol = false;
       n.vz = 0.5;
     }
   } else {
-    // --- la verticale : l'excès de portance fait monter, le manque fait descendre
+    // --- la verticale : l'excès de portance fait monter, le manque fait
+    // descendre. Là-haut, l'air raréfié porte moins : l'avion s'arrête de
+    // monter tout seul à l'altitude où l'air porte pile son poids.
+    const p = portanceEnVol(n.v, e.alt);
     let vzCible = VZ_MONTEE_MAX * borne((p - POIDS) * GAIN_VZ, -1, 1);
     vzCible = Math.max(vzCible, -plafondDescente(e.alt)); // l'arrondi automatique
-    vzCible = Math.min(vzCible, plafondMontee(e.alt));    // le plafond doux, en haut
     n.vz = e.vz + (vzCible - e.vz) * Math.min(1, REPONSE_VZ * dt);
     n.vz = Math.max(n.vz, -plafondDescente(e.alt)); // même lissé, jamais plus vite que doux
-    n.vz = Math.min(n.vz, plafondMontee(e.alt));
     n.alt = e.alt + n.vz * dt;
     if (n.alt >= ALTITUDE_MAX) { n.alt = ALTITUDE_MAX; n.vz = Math.min(n.vz, 0); }
     if (n.alt <= 0) { n.alt = 0; n.auSol = true; n.vz = 0; }
@@ -155,21 +175,21 @@ export function cibleAuto(t) {
 }
 
 // ------------------------------------------------------------------ les moments
-// Trois boutons-moments : chacun amène le curseur en douceur (jamais de marche
-// arrière brutale — s'il faut se poser d'abord, on se pose pour de vrai), puis
-// UNE phrase raconte l'instant. `etapes` : [{ cible, jusquA }] — `jusquA`
-// est un petit test d'étape franchie ; la dernière étape se prolonge.
+// Trois boutons-moments : chacun amène le curseur en douceur, puis UNE phrase
+// raconte l'instant. `dispo(etat)` dit si le moment a un sens MAINTENANT
+// (retour de David : décoller en vol ou atterrir déjà posé n'a pas de sens —
+// le bouton se grise). `etapes` : [{ cible, jusquA }] — `jusquA` est un petit
+// test d'étape franchie ; la dernière étape se prolonge.
 export const MOMENTS = [
   {
     id: 'decollage', emoji: '🛫', label: 'Le décollage', sub: 'pousse à fond !',
-    etapes: [
-      { cible: 0.3, jusquA: function (e) { return e.auSol; } },
-      { cible: 1 },
-    ],
+    dispo: function (e) { return e.auSol; },
+    etapes: [{ cible: 1 }],
     phrase: 'Regarde la flèche de l’air grandir avec la vitesse… dès qu’elle dépasse le poids : hop, ton avion s’envole !',
   },
   {
     id: 'vol', emoji: '✈️', label: 'En plein vol', sub: 'tout en équilibre',
+    dispo: function () { return true; },
     etapes: [
       { cible: 1, jusquA: function (e) { return !e.auSol && e.alt >= 30; } },
       { cible: REPERE_DECOLLAGE },
@@ -178,10 +198,8 @@ export const MOMENTS = [
   },
   {
     id: 'atterrissage', emoji: '🛬', label: 'L’atterrissage', sub: 'tout doux…',
-    etapes: [
-      { cible: 0.3, jusquA: function (e) { return e.auSol; } },
-      { cible: 0 },
-    ],
+    dispo: function (e) { return !e.auSol; },
+    etapes: [{ cible: 0 }],
     phrase: 'On ralentit : l’air porte un peu moins, ton avion descend tout doucement… et pose ses roues tout doux.',
   },
 ];
@@ -216,6 +234,9 @@ export function phraseEtat(etat) {
   }
   if (etat.vz > 1.2) {
     return '💨 L’air pousse plus fort que le poids : ton avion monte !';
+  }
+  if (etat.vz < -0.4 && etat.v <= VITESSE_PLANE + 3) {
+    return '🍃 Un avion ne s’arrête pas en l’air : il garde de l’élan et plane tout doucement vers la piste.';
   }
   if (etat.vz < -1.2) {
     return '🍃 L’air porte un peu moins que le poids : il descend doucement — il plane !';

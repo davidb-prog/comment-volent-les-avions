@@ -7,10 +7,11 @@
 import {
   TAU, borne, borne01,
   VITESSE_MAX, VITESSE_DECOLLAGE, POIDS, ALTITUDE_MAX,
-  VZ_MONTEE_MAX, VZ_DESCENTE_MAX, VZ_SOL, ALT_ARRONDI, BANDE_PLAFOND,
+  VZ_MONTEE_MAX, VZ_DESCENTE_MAX, VZ_SOL, ALT_ARRONDI,
+  VITESSE_PLANE, ALT_AIR_LEGER, DENSITE_PLAFOND,
   REPERE_DECOLLAGE, TOUR_DUREE,
   COULEUR_AIR, COULEUR_POIDS, COULEUR_AVION,
-  portance, plafondDescente, plafondMontee, etatInitial, pas,
+  portance, densiteAir, portanceEnVol, plafondDescente, etatInitial, pas,
   cibleAuto, MOMENTS, etapeMoment, phraseEtat, PIECES,
   formatVitesse, formatAltitude,
 } from '../js/model.js';
@@ -114,11 +115,40 @@ verifie('curseur à zéro depuis n’importe où : l’avion finit posé, roues 
 
 console.log('L’atterrissage — l’arrondi automatique, le toucher toujours doux');
 verifie('le plafond de descente se resserre près du sol : doux là-haut, très doux au ras',
-  proche(plafondDescente(0), VZ_SOL) && proche(plafondDescente(ALT_ARRONDI), VZ_DESCENTE_MAX) &&
+  proche(plafondDescente(0), VZ_SOL) && proche(plafondDescente(ALT_ARRONDI), VZ_SOL + (VZ_DESCENTE_MAX - VZ_SOL)) &&
   plafondDescente(ALT_ARRONDI / 2) > VZ_SOL && plafondDescente(ALT_ARRONDI / 2) < VZ_DESCENTE_MAX);
-verifie('le plafond doux en haut : pleine montée en dessous, plus rien tout en haut',
-  proche(plafondMontee(ALTITUDE_MAX), 0) &&
-  proche(plafondMontee(ALTITUDE_MAX - BANDE_PLAFOND), VZ_MONTEE_MAX));
+
+console.log('L’air raréfié là-haut — chaque vitesse a son altitude de croisière');
+verifie('l’air est plein en bas, raréfié tout en haut du ciel dessiné',
+  proche(densiteAir(0), 1) && proche(densiteAir(ALT_AIR_LEGER), 1) &&
+  proche(densiteAir(ALTITUDE_MAX), DENSITE_PLAFOND) &&
+  densiteAir(75) < 1 && densiteAir(75) > DENSITE_PLAFOND);
+verifie('en palier, l’air porte pile le poids : les deux flèches sont égales, à toute altitude d’équilibre',
+  (() => {
+    for (const cible of [0.7, 1]) {
+      const fin = simule({ v: 60, alt: 60, vz: 0, auSol: false, distance: 0 },
+        TIENT(cible), 60);
+      if (fin.auSol || Math.abs(fin.vz) > 0.3) return false;
+      if (!proche(portanceEnVol(fin.v, fin.alt), POIDS, 0.06)) return false;
+    }
+    return true;
+  })());
+verifie('plus vite = plus haut : l’altitude d’équilibre grandit avec la vitesse',
+  (() => {
+    const a70 = simule({ v: 70, alt: 60, vz: 0, auSol: false, distance: 0 }, TIENT(0.7), 60);
+    const a100 = simule({ v: 100, alt: 60, vz: 0, auSol: false, distance: 0 }, TIENT(1), 60);
+    return a100.alt > a70.alt + 10 && a100.alt <= ALTITUDE_MAX;
+  })());
+verifie('un avion ne s’arrête pas en l’air : curseur à zéro, il garde son élan de plané ' +
+  'jusqu’à la piste — et ne freine qu’une fois posé',
+  (() => {
+    let vMiniEnVol = 999;
+    const fin = simule({ v: 80, alt: 80, vz: 0, auSol: false, distance: 0 },
+      TIENT(0), 120, (avant, e) => {
+        if (!e.auSol) vMiniEnVol = Math.min(vMiniEnVol, e.v);
+      });
+    return vMiniEnVol >= VITESSE_PLANE - 0.5 && fin.auSol && fin.v < 2;
+  })());
 verifie('vitesse réduite depuis le plein vol : il descend, se pose, et le toucher est doux',
   (() => {
     const e0 = { v: 80, alt: 60, vz: 0, auSol: false, distance: 0 };
@@ -199,24 +229,24 @@ verifie('le plein vol raconte l’équilibre des deux flèches',
   MOMENTS[1].phrase.indexOf('égales') !== -1);
 verifie('l’atterrissage promet le toucher tout doux',
   MOMENTS[2].phrase.indexOf('doux') !== -1);
-verifie('le moment décollage fait vraiment décoller, même depuis le plein vol (en se posant d’abord — jamais de marche arrière)',
+verifie('chaque moment sait quand il a du sens : décoller seulement posé, atterrir seulement en vol',
   (() => {
-    for (const depart of [etatInitial(), { v: 80, alt: 90, vz: 0, auSol: false, distance: 0 }]) {
-      let e = depart;
-      let indice = 0;
-      let sEstPose = depart.auSol;
-      let aDecolleApres = false;
-      for (let t = 0; t < 120; t += DT) {
-        const r = etapeMoment(MOMENTS[0], indice, e);
-        indice = r.indice;
-        const avant = e;
-        e = pas(e, r.cible, DT);
-        if (e.auSol) sEstPose = true;
-        if (sEstPose && avant.auSol && !e.auSol) aDecolleApres = true;
-      }
-      if (!aDecolleApres || e.auSol) return false;
+    const auSol = etatInitial();
+    const enVol = { v: 80, alt: 60, vz: 0, auSol: false, distance: 0 };
+    return MOMENTS[0].dispo(auSol) && !MOMENTS[0].dispo(enVol) &&
+      MOMENTS[1].dispo(auSol) && MOMENTS[1].dispo(enVol) &&
+      !MOMENTS[2].dispo(auSol) && MOMENTS[2].dispo(enVol);
+  })());
+verifie('le moment décollage, joué depuis le sol, fait vraiment décoller',
+  (() => {
+    let e = etatInitial();
+    let indice = 0;
+    for (let t = 0; t < 30; t += DT) {
+      const r = etapeMoment(MOMENTS[0], indice, e);
+      indice = r.indice;
+      e = pas(e, r.cible, DT);
     }
-    return true;
+    return !e.auSol && e.alt > 10;
   })());
 verifie('le moment plein vol installe l’équilibre : altitude stable, flèches égales',
   (() => {
@@ -227,7 +257,7 @@ verifie('le moment plein vol installe l’équilibre : altitude stable, flèches
       indice = r.indice;
       e = pas(e, r.cible, DT);
     }
-    return !e.auSol && proche(portance(e.v), POIDS, 0.05) && Math.abs(e.vz) < 0.5;
+    return !e.auSol && proche(portanceEnVol(e.v, e.alt), POIDS, 0.05) && Math.abs(e.vz) < 0.5;
   })());
 verifie('le moment atterrissage finit posé, roues arrêtées',
   (() => {
@@ -254,6 +284,9 @@ verifie('en montée : l’air pousse plus fort que le poids',
   phraseEtat({ v: 80, alt: 40, vz: 5, auSol: false, distance: 0 }).indexOf('monte') !== -1);
 verifie('vitesse réduite : il plane, il ne tombe pas',
   phraseEtat({ v: 40, alt: 50, vz: -4, auSol: false, distance: 0 }).indexOf('plane') !== -1);
+verifie('curseur à zéro en vol : la phrase explique l’élan (« un avion ne s’arrête pas en l’air »)',
+  phraseEtat({ v: VITESSE_PLANE, alt: 50, vz: -4, auSol: false, distance: 0 })
+    .indexOf('s’arrête pas en l’air') !== -1);
 verifie('en équilibre : les deux flèches sont égales',
   phraseEtat({ v: VITESSE_DECOLLAGE, alt: 50, vz: 0, auSol: false, distance: 0 })
     .indexOf('égales') !== -1);

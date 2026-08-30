@@ -154,6 +154,16 @@ function majTextes() {
   poseTexte('vitesse', $('vitesse-txt'), formatVitesse(sim.etat.v));
   poseTexte('altitude', $('altitude-txt'), formatAltitude(sim.etat.alt));
   poseTexte('etat', $('phrase-etat'), phraseEtat(sim.etat));
+  // un bouton-moment se grise quand il n'a pas de sens (décoller en vol,
+  // atterrir déjà posé) — sauf celui du moment en cours, qui reste allumé
+  for (const moment of MOMENTS) {
+    const utile = moment.dispo(sim.etat) ||
+      (sim.moment !== null && sim.moment.moment.id === moment.id);
+    if (cache['btn-' + moment.id] !== utile) {
+      cache['btn-' + moment.id] = utile;
+      boutonsMoments[moment.id].disabled = !utile;
+    }
+  }
   // le curseur montre la CONSIGNE (jamais la valeur lissée : il ne « revient
   // pas en arrière » sous le doigt) — et il suit la lecture automatique
   if (!curseurTenu) {

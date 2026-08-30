@@ -35,9 +35,9 @@ pousse, le poids qui tire) est le « graphe » que l'enfant lit sans savoir lire
   bougeant tout seul. Toucher le curseur rend la main à l'enfant. Un tap sur la vue ne
   déclenche **rien** (règle de la famille : pas d'action en douce).
 - **Trois boutons-moments** : 🛫 *Le décollage*, ✈️ *En plein vol*, 🛬 *L'atterrissage*.
-  Le curseur glisse tout seul au bon endroit — toujours vers l'avant : s'il faut se poser
-  d'abord, l'avion se pose pour de vrai — puis **une phrase** (une seule !) raconte
-  l'instant, à lire et à écouter (bouton 🔇/🔊 de la famille, choix retenu).
+  Le curseur glisse tout seul au bon endroit, puis **une phrase** (une seule !) raconte
+  l'instant, à lire et à écouter (bouton 🔇/🔊 de la famille, choix retenu). Un bouton
+  qui n'a pas de sens se grise : on ne décolle pas en vol, on n'atterrit pas déjà posé.
 - Le moment **En plein vol** pose le curseur PILE sur le repère d'envol : les deux
   flèches deviennent égales sous les yeux de l'enfant — l'équilibre du vol, incarné par
   le geste.
@@ -88,7 +88,7 @@ Le modèle de vol est pur — aucun accès DOM — et se teste sous Node, sans n
 node test/model.test.mjs
 ```
 
-**45 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
+**50 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
 (∝ v² — nulle à l'arrêt : un avion posé ne s'envole jamais tout seul) ; l'avion
 **s'envole quand elle atteint le poids** (la vitesse de décollage est testée au point
 près, et le repère du curseur est posé dessus) ; **curseur réduit, il plane** (descente
@@ -117,9 +117,10 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
 
 - **La portance** en « poids d'avion » : `(v / VITESSE_DECOLLAGE)²` — égale au poids
   pile à la vitesse de décollage, qui est aussi le repère du curseur.
-- **Le curseur est la seule commande** : la vitesse glisse vers sa consigne, l'excès (ou
-  le manque) de portance fait monter (ou descendre), avec l'arrondi automatique près du
-  sol et le plafond doux en haut du ciel.
+- **Le curseur est la seule commande** : la vitesse glisse vers sa consigne (jamais sous
+  le plancher de plané en vol), l'excès ou le manque de portance ressentie
+  (`portanceEnVol` = portance × densité de l'air) fait monter ou descendre, avec
+  l'arrondi automatique près du sol — et l'air raréfié qui arrête la montée là-haut.
 - **La lecture automatique** est une fonction pure `cibleAuto(t)` : la position du
   curseur à chaque instant d'un tour de 85 s.
 - **Les moments** sont de petites étapes de curseur (`MOMENTS`), jouées en douceur et
@@ -130,7 +131,14 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
 - **Deux flèches seulement.** En vrai, quatre forces s'équilibrent en vol : l'air qui
   porte, le poids, la poussée des moteurs, la traînée de l'air qui freine. La course
   air/poids raconte l'essentiel à 5 ans ; l'équilibre complet viendra dans un autre
-  épisode.
+  épisode. Les flèches sont des vecteurs à l'échelle (le poids sert d'étalon) jusqu'à
+  environ deux poids, puis plafonnées pour rester lisibles ; près du haut du ciel, les
+  DEUX flèches rétrécissent du même facteur (leur rapport reste exact) pour tenir dans
+  l'image ; la pointe garde une taille quasi fixe, comme sur tout schéma de forces.
+- **L'air se raréfie avec l'altitude** (`densiteAir`) : là-haut il porte moins, et
+  chaque vitesse trouve l'altitude où l'air aminci porte pile le poids — le vrai
+  plafond des avions, en version dessin. Conséquence honnête : en palier, les deux
+  flèches sont égales à toute altitude, et « plus vite = plus haut ».
 - **L'explication du site est la vraie** (l'air dévié vers le bas + action-réaction, la
   portance en v²), mais pas complète : les physiciens ajoutent la circulation et les
   champs de pression autour du profil (Bernoulli) — même phénomène, autres outils. Le
@@ -138,14 +146,16 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
   faux et n'apparaît nulle part — il est signalé comme mythe dans la note aux parents.
 - **« Monter = l'air pousse plus fort que le poids »** : vrai au décollage et quand la
   trajectoire s'incurve ; en montée stabilisée, c'est le surplus de poussée qui fait
-  grimper (portance ≈ poids). La course des deux flèches reste la meilleure image à
-  hauteur d'enfant.
+  grimper — la portance vaut même un peu moins que le poids (L = P·cos γ, l'avion
+  incliné faisant porter le complément vertical à sa poussée). La course des deux
+  flèches reste la meilleure image à hauteur d'enfant.
 - **Le curseur règle la vitesse directement** — un vrai pilote pousse une manette de gaz
   et la vitesse suit avec de l'inertie.
 - **Jamais de crash** : descente plafonnée partout (il plane), arrondi automatique près
   du sol, pas de décrochage. L'enfant explore sans peur, c'est voulu.
-- **Gaz coupés, le site laisse l'avion ralentir en descendant** ; un vrai planeur pique
-  un peu du nez pour garder sa vitesse — c'est elle qui le fait voler.
+- **Un avion ne s'arrête pas en l'air** : en vol, la vitesse ne descend pas sous un
+  plancher de plané (`VITESSE_PLANE`) — curseur à zéro, il garde de l'élan et plane
+  jusqu'à la piste, comme un vrai planeur ; on ne freine qu'une fois posé.
 - **Vitesses et altitudes à hauteur d'enfant** : décollage vers 220 km/h, plafond du
   dessin 4 000 m — un vrai avion de ligne décolle vers 250–300 km/h et croise vers
   900 km/h à 11 000 m.
@@ -168,7 +178,7 @@ js/vue-cote.js        LA vue (piste, ciel, avion + pilote, les deux flèches,
 js/vue-pieces.js      « Découvre ton avion » : l'avion en grand, ancres des pastilles
 js/main.js            boucle rAF, curseur maître, lecture auto, moments, pièces,
                       conteur vocal de la famille (clé petit-labo-son)
-test/model.test.mjs   tests Node du modèle (45 vérifications)
+test/model.test.mjs   tests Node du modèle (50 vérifications)
 assets/fonts/         Baloo 2 auto-hébergée (woff2, licence OFL — copiée du portail)
 docs/                 captures + carte de partage og.png
 ```

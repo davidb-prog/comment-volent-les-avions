@@ -6,7 +6,7 @@
 // des filets d'air déviés vers le bas s'échappent derrière l'aile : l'aile
 // pousse l'air en bas, l'air pousse l'aile en haut.
 
-import { TAU, VITESSE_MAX, ALTITUDE_MAX, POIDS, ALT_ARRONDI, portance,
+import { TAU, VITESSE_MAX, ALTITUDE_MAX, POIDS, ALT_ARRONDI, portanceEnVol,
          borne, borne01,
          COULEUR_AIR, COULEUR_POIDS, COULEUR_AVION, COULEUR_AVION_FONCE,
          COULEUR_FEU, CIEL_HAUT, CIEL_BAS, COULEUR_HERBE, COULEUR_PISTE }
@@ -195,10 +195,18 @@ export const VueCote = class {
     dessineAvionCote(ctx, px, py, s, assiette,
       etat.auSol || etat.alt < ALT_ARRONDI, cible01 || 0);
 
-    // ---- LES DEUX FLÈCHES : l'air qui pousse en haut, le poids qui tire en bas
+    // ---- LES DEUX FLÈCHES : l'air qui pousse en haut, le poids qui tire en
+    // bas. La verte dessine la portance RESSENTIE (l'air raréfié là-haut porte
+    // moins) : en palier, à toute altitude, les deux flèches sont égales.
     const echelle = PIXELS_PAR_POIDS * s;
-    const lAir = Math.min(portance(etat.v), FLECHE_MAX) * echelle;
-    const lPoids = POIDS * echelle;
+    const lAirVoulu = Math.min(portanceEnVol(etat.v, etat.alt), FLECHE_MAX) * echelle;
+    // près du haut du ciel, la place manque : les DEUX flèches rétrécissent du
+    // même facteur — leur rapport (la seule chose qu'on lit) reste exact.
+    // Jamais l'une écrasée sans l'autre : ce serait mentir sur les forces.
+    const place = Math.max(28 * s, py - 30 * s);
+    const k = Math.min(1, place / Math.max(lAirVoulu, 1));
+    const lAir = lAirVoulu * k;
+    const lPoids = POIDS * echelle * k;
     const largeur = 10 * s;
     drawArrow(ctx, px + 2 * s, py - 20 * s, -Math.PI / 2, lAir, COULEUR_AIR, largeur);
     drawArrow(ctx, px + 2 * s, py + 16 * s, Math.PI / 2, lPoids, COULEUR_POIDS, largeur);

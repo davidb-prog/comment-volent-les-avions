@@ -212,6 +212,10 @@ main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; }
 }
 .moment:hover { filter: brightness(0.97); }
 .moment:active { transform: translateY(1px); }
+/* un moment qui n'a pas de sens maintenant se grise (décoller en vol…) */
+.moment:disabled { opacity: .45; cursor: default; }
+.moment:disabled:hover { filter: none; }
+.moment:disabled:active { transform: none; }
 .moment.actif { box-shadow: 0 0 0 3px rgba(224, 68, 124, .35); }
 .moment-emoji { font-size: 1.6rem; line-height: 1; }
 .moment-sub { font-weight: 400; font-size: .76rem; opacity: .8; }
