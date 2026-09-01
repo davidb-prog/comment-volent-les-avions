@@ -144,11 +144,13 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
   champs de pression autour du profil (Bernoulli) — même phénomène, autres outils. Le
   **mythe du « chemin plus long au-dessus de l'aile »** (temps de transit égal), lui, est
   faux et n'apparaît nulle part — il est signalé comme mythe dans la note aux parents.
-- **« Monter = l'air pousse plus fort que le poids »** : vrai au décollage et quand la
-  trajectoire s'incurve ; en montée stabilisée, c'est le surplus de poussée qui fait
-  grimper — la portance vaut même un peu moins que le poids (L = P·cos γ, l'avion
-  incliné faisant porter le complément vertical à sa poussée). La course des deux
-  flèches reste la meilleure image à hauteur d'enfant.
+- **« Monter = l'air pousse plus fort que le poids »** : en toute rigueur (1ʳᵉ loi de
+  Newton), une force en trop crée une accélération, pas une vitesse — elle incurve la
+  trajectoire, puis la portance revient d'elle-même à l'équilibre et l'avion continue
+  de monter à forces équilibrées (L ≈ P·cos γ, la poussée inclinée portant le
+  complément vertical), payé par le surplus de *puissance* des moteurs. Le site garde
+  la flèche verte plus grande pendant toute la montée : c'est son image du taux de
+  montée — flèches inégales ⇔ ça monte ou ça descend, dans le modèle du site.
 - **Le curseur règle la vitesse directement** — un vrai pilote pousse une manette de gaz
   et la vitesse suit avec de l'inertie.
 - **Jamais de crash** : descente plafonnée partout (il plane), arrondi automatique près
