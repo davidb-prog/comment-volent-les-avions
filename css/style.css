@@ -194,6 +194,53 @@ main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; }
   color: var(--muted); font-size: .78rem; margin-top: 2px;
 }
 
+/* ---------- les jeux : « Rejoins-les là-haut ! » et « Où est… ? » ---------- */
+
+.jeu-panel { margin-top: 16px; padding: 12px 16px 14px; }
+.jeu-tete { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
+.jeu-tete h2 {
+  margin: 0; font-size: 1.15rem; color: var(--air);
+  font-family: var(--titres); flex: 1 1 auto;
+}
+.jeu-tete .son-btn { margin-left: auto; }
+
+/* le bouton d'entrée du jeu, patron .game-btn de la famille : pilule teal
+   sombre, libellés empilés (largeur stable) */
+.game-btn {
+  border-radius: 999px; padding: 8px 18px; font-weight: 700;
+  background: linear-gradient(180deg, #14434a, #0d2f35);
+  border: 1px solid #46c2a5; color: #8fe0cb;
+}
+.game-btn:hover { filter: brightness(1.15); }
+.jeu-btn { display: inline-grid; align-items: center; justify-items: center; margin-left: 0; }
+.jeu-btn > span { grid-row: 1; grid-column: 1; white-space: nowrap; }
+.jeu-btn[aria-pressed="true"] .jeu-off,
+.jeu-btn[aria-pressed="false"] .jeu-on { visibility: hidden; }
+
+.defi-texte {
+  margin: 10px 2px 4px; font-size: 1.08rem; font-weight: 600; color: var(--text);
+  border-left: 4px solid var(--air); padding-left: 12px; min-height: 1.5em;
+}
+.defi-texte.bravo { border-left-color: #ffcf5c; color: #7a5200; }
+.defi-texte.rate { border-left-color: var(--rose-deep); font-weight: 400; }
+.jeu-pied { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin: 4px 2px 0; }
+.jeu-aide { margin: 0; }
+.pieces-defi { margin-top: 0; }
+.pieces-pied { margin: 10px 0 0; }
+
+/* la pastille ratée frétille gentiment (jamais punitif, juste rigolo) */
+@keyframes tremble {
+  0% { -webkit-transform: translate(-50%, -50%) rotate(0); transform: translate(-50%, -50%) rotate(0); }
+  25% { -webkit-transform: translate(-50%, -50%) rotate(-9deg); transform: translate(-50%, -50%) rotate(-9deg); }
+  50% { -webkit-transform: translate(-50%, -50%) rotate(8deg); transform: translate(-50%, -50%) rotate(8deg); }
+  75% { -webkit-transform: translate(-50%, -50%) rotate(-6deg); transform: translate(-50%, -50%) rotate(-6deg); }
+  100% { -webkit-transform: translate(-50%, -50%) rotate(0); transform: translate(-50%, -50%) rotate(0); }
+}
+.piece-btn.tremble { animation: tremble .4s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .piece-btn.tremble { animation: none; }
+}
+
 /* ---------- les trois boutons-moments + la phrase racontée ---------- */
 
 .moments-panel { margin-top: 16px; padding: 14px 16px 16px; }

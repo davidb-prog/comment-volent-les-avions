@@ -10,13 +10,14 @@ import { fitCanvas } from './canvas.js';
 import { dessineAvionCote } from './vue-cote.js';
 
 // L'ancre de chaque pastille, en unités « avion » (le nez vers la droite,
-// mêmes coordonnées que dessineAvionCote) : [x, y].
+// mêmes coordonnées que dessineAvionCote) — bien écartées les unes des
+// autres pour que chaque pièce se distingue (retour de David) : [x, y].
 export const ANCRES_PIECES = {
-  ailes: [-12, 12],
-  reacteurs: [6, 14],
-  cockpit: [22, -8],
-  queue: [-38, -17],
-  roues: [16, 16],
+  ailes: [-17, 11],
+  reacteurs: [12, 14],
+  cockpit: [28, -12],
+  queue: [-37, -16],
+  roues: [-9, 19],
 };
 
 export const VuePieces = class {
@@ -29,13 +30,13 @@ export const VuePieces = class {
   dessine(maintenantMs) {
     const f = fitCanvas(this.canvas);
     const ctx = f.ctx, w = f.w, h = f.h;
-    // l'avion s'étale de −44 à +40 en x, −24 à +19 en y : on cadre large pour
-    // laisser la place aux pastilles tout autour
-    const s = Math.min(w / 125, h / 72);
-    const px = w * 0.52, py = h * 0.5;
+    // l'avion s'étale de −45 à +41 en x, −27 à +21 en y : cadré serré pour
+    // que les pièces soient grandes et les pastilles bien séparées
+    const s = Math.min(w / 108, h / 66);
+    const px = w * 0.52, py = h * 0.46;
 
     // le même grand ciel de jour que la vue de côté, la piste dessous
-    const horizon = py + 17 * s;
+    const horizon = py + 20 * s;
     const ciel = ctx.createLinearGradient(0, 0, 0, horizon);
     ciel.addColorStop(0, CIEL_HAUT);
     ciel.addColorStop(1, CIEL_BAS);

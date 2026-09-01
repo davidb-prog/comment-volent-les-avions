@@ -102,6 +102,28 @@
       </div>
     </div>
 
+    <!-- LE jeu de l'épisode, juste sous la scène : la consigne, l'avion,
+         l'invité et le curseur restent visibles ensemble pendant qu'on joue -->
+    <div class="panel jeu-panel">
+      <div class="jeu-tete">
+        <h2>🎮 Rejoins-les là-haut !</h2>
+        <button id="btn-son-jeu" class="petit-btn son-btn" aria-pressed="false"
+          aria-label="Allumer ou éteindre la voix qui lit les défis et les bravos"><span
+            class="son-on" aria-hidden="true">🔊 avec la voix</span><span
+            class="son-off" aria-hidden="true">🔇 sans la voix</span></button>
+        <button id="btn-jeu" class="game-btn jeu-btn" aria-pressed="false"><span
+            class="jeu-on" aria-hidden="true">📦 Ranger le jeu</span><span
+            class="jeu-off" aria-hidden="true">🎮 Jouer</span></button>
+      </div>
+      <div id="jeu-corps" hidden>
+        <p id="defi-texte" class="defi-texte" aria-live="polite"></p>
+        <div class="jeu-pied">
+          <p class="hint jeu-aide">règle la vitesse avec le grand curseur — chaque vitesse a sa hauteur !</p>
+          <button id="btn-encore" class="game-btn" hidden>🎲 Encore une !</button>
+        </div>
+      </div>
+    </div>
+
     <div class="panel moments-panel">
       <div class="moments-titre">
         <span>🎲 Joue avec ton avion :</span>
@@ -145,7 +167,15 @@
       <div class="pieces-tete">
         <h2>🔍 Découvre ton avion</h2>
         <span class="hint">appuie sur une pastille !</span>
+        <button id="btn-son-pieces" class="petit-btn son-btn" aria-pressed="false"
+          aria-label="Allumer ou éteindre la voix qui lit les questions et les bravos"><span
+            class="son-on" aria-hidden="true">🔊 avec la voix</span><span
+            class="son-off" aria-hidden="true">🔇 sans la voix</span></button>
+        <button id="btn-jeu-pieces" class="game-btn jeu-btn" aria-pressed="false"><span
+            class="jeu-on" aria-hidden="true">📦 Ranger le jeu</span><span
+            class="jeu-off" aria-hidden="true">🎮 Jouer</span></button>
       </div>
+      <p id="pieces-defi" class="defi-texte pieces-defi" aria-live="polite" hidden></p>
       <div class="pieces-cadre ratio-pieces" id="pieces-cadre">
         <canvas id="vue-pieces" aria-label="Ton avion rose en grand, posé sur la piste, vu de côté. Cinq pastilles rondes marquent ses pièces : les ailes, le réacteur, le cockpit, la queue et les roues. Appuyer sur une pastille affiche une petite explication de la pièce ; le bouton haut-parleur la lit à voix haute."></canvas>
       </div>
@@ -154,6 +184,7 @@
           chaque pièce a son petit secret. Appuie sur une pastille !</p>
         <button id="piece-ecouter" class="mini-ecouter" hidden aria-label="Écouter l’explication de cette pièce">🔊</button>
       </div>
+      <p class="jeu-pied pieces-pied"><button id="btn-pieces-suivante" class="game-btn" hidden>🎲 Pièce suivante !</button></p>
     </div>
 
     <div class="panel pont-panel">

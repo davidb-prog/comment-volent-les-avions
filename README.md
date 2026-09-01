@@ -41,6 +41,17 @@ pousse, le poids qui tire) est le « graphe » que l'enfant lit sans savoir lire
 - Le moment **En plein vol** pose le curseur PILE sur le repère d'envol : les deux
   flèches deviennent égales sous les yeux de l'enfant — l'équilibre du vol, incarné par
   le geste.
+- **« 🎮 Rejoins-les là-haut ! »** — LE jeu de l'épisode, juste sous la scène (la
+  consigne, l'avion, l'invité et le curseur restent visibles ensemble) : un invité
+  attend à SON altitude — 🎈 le ballon échappé, la montgolfière, l'aigle — et l'enfant
+  règle la vitesse pour voler à sa hauteur. C'est la découverte de l'épisode dans les
+  doigts : **chaque vitesse a son altitude**. Patron des défis de la famille : fenêtre
+  de victoire + tenue, hystérésis de sortie, le bravo ne ment jamais, « 🎲 Encore
+  une ! ». Et le défi final renverse la révélation : pour voler aussi bas que le
+  papillon… il faut se poser — « en dessous de la vitesse magique, un avion ne vole
+  pas : il roule ! ».
+
+![Le jeu : l'avion vole à la hauteur du ballon, les deux flèches égales](docs/screenshot-jeu.png)
 
 ![Le décollage : l'avion roule vite, la flèche de l'air grandit](docs/screenshot-decollage.png)
 
@@ -49,10 +60,14 @@ pousse, le poids qui tire) est le « graphe » que l'enfant lit sans savoir lire
   l'air et l'air pousse l'aile — refermés sur le refrain : *… parce que l'air pousse !*
   À lire… ou à **écouter** (conteur de la famille : synthèse vocale de l'appareil, phrase
   à phrase, pauses et relief — rien ne part sur Internet).
-- **« 🔍 Découvre ton avion »** : l'avion en grand, cinq pastilles à taper — 🪶 les
-  ailes, 🔥 le réacteur, 🧑‍✈️ le cockpit, 🪁 la queue, 🛞 les roues — chacune avec sa
-  petite histoire écrite, relue à la demande par le bouton 🔊 (jamais de voix au tap,
-  règle de la famille).
+- **« 🔍 Découvre ton avion »** : l'avion en grand — redessiné pour que chaque pièce se
+  distingue (grande aile en flèche, réacteur suspendu avec son entrée d'air, bulle du
+  cockpit, deux trains, hublots) — et cinq pastilles à taper : 🪶 les ailes, 🔥 le
+  réacteur, 🧑‍✈️ le cockpit, 🪁 la queue, 🛞 les roues, chacune avec sa petite histoire
+  écrite, relue à la demande par le bouton 🔊 (jamais de voix au tap, règle de la
+  famille). Et son **mode jeu « Où est… ? »** : le site demande une pièce, l'enfant la
+  trouve — la bonne gagne un bravo et son histoire en récompense, une autre frétille et
+  dit son nom par écrit (jamais punitif, on apprend quand même).
 - **Le pont de fin de page** : « Et une fusée, là où il n'y a plus d'air… qui la
   pousse ? » — et la passerelle vers les épisodes d'astronomie, chacun avec le médaillon
   SVG de sa carte du portail.
@@ -88,7 +103,7 @@ Le modèle de vol est pur — aucun accès DOM — et se teste sous Node, sans n
 node test/model.test.mjs
 ```
 
-**50 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
+**55 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
 (∝ v² — nulle à l'arrêt : un avion posé ne s'envole jamais tout seul) ; l'avion
 **s'envole quand elle atteint le poids** (la vitesse de décollage est testée au point
 près, et le repère du curseur est posé dessus) ; **curseur réduit, il plane** (descente
@@ -180,7 +195,7 @@ js/vue-cote.js        LA vue (piste, ciel, avion + pilote, les deux flèches,
 js/vue-pieces.js      « Découvre ton avion » : l'avion en grand, ancres des pastilles
 js/main.js            boucle rAF, curseur maître, lecture auto, moments, pièces,
                       conteur vocal de la famille (clé petit-labo-son)
-test/model.test.mjs   tests Node du modèle (50 vérifications)
+test/model.test.mjs   tests Node du modèle (55 vérifications)
 assets/fonts/         Baloo 2 auto-hébergée (woff2, licence OFL — copiée du portail)
 docs/                 captures + carte de partage og.png
 ```

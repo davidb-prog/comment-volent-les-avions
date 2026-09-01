@@ -244,22 +244,75 @@ export function phraseEtat(etat) {
   return '⚖️ Les deux flèches sont égales : l’air porte pile autant que la Terre tire.';
 }
 
+// ------------------------------------------------------------------ le jeu
+// « Rejoins-les là-haut ! » : un invité attend à SON altitude, l'enfant règle
+// la vitesse pour voler à sa hauteur — et découvre dans ses doigts que chaque
+// vitesse a son altitude. Patron des défis de la famille : fenêtre de
+// victoire + tenue, hystérésis de sortie (le bravo ne clignote pas au bord),
+// le bravo ne ment jamais. Le dernier défi renverse la révélation : pour
+// voler aussi bas que le papillon… il faut se poser.
+export const JEU_FENETRE = 6;   // demi-fenêtre de victoire (± 240 m affichés)
+export const JEU_SORTIE = 10;   // hystérésis : le bravo se range plus loin qu'il ne se gagne
+export const JEU_TENUE = 2;     // secondes à tenir dans la fenêtre (pas de victoire « en passant »)
+
+export const DEFIS = [
+  {
+    id: 'ballon', altitude: 56, invite: 'le ballon',
+    consigne: 'Oh, un ballon s’est échappé ! Vole à sa hauteur pour lui dire bonjour.',
+    bravo: 'Bravo ! Tu voles avec le ballon !',
+  },
+  {
+    id: 'montgolfiere', altitude: 77, invite: 'la montgolfière',
+    consigne: 'La montgolfière se promène… monte la rejoindre, tout en douceur !',
+    bravo: 'Coucou la montgolfière ! Tu tiens ta hauteur comme un chef !',
+  },
+  {
+    id: 'aigle', altitude: 98, invite: 'l’aigle',
+    consigne: 'L’aigle plane tout là-haut… fonce le rejoindre !',
+    bravo: 'Waouh, tu voles avec l’aigle ! Plus vite… plus haut !',
+  },
+  {
+    id: 'papillon', altitude: 0, invite: 'le papillon',
+    consigne: 'Le papillon volette tout près des fleurs… viens tout près de lui !',
+    bravo: 'Tu as trouvé le secret ! En dessous de la vitesse magique, un avion ne vole pas : il roule. Le papillon te dit bravo !',
+  },
+];
+
+// L'enfant est-il « chez » l'invité ? `marge` : JEU_FENETRE pour gagner,
+// JEU_SORTIE pour garder le bravo (hystérésis). Le papillon vit au sol : le
+// rejoindre, c'est se poser — la révélation à l'envers.
+export function defiDansFenetre(defi, etat, marge) {
+  if (defi.altitude === 0) return etat.auSol;
+  return !etat.auSol && Math.abs(etat.alt - defi.altitude) <= marge;
+}
+
 // ------------------------------------------------------------------ les pièces
 // « Découvre ton avion » : cinq pièces à taper, une petite histoire chacune
 // (affichée, et relue par le bouton 🔊 — jamais de voix au tap, règle de la
 // famille : sélectionner ne déclenche pas de commentaire audio).
 export const PIECES = [
-  { id: 'ailes', emoji: '🪶', label: 'les ailes', couleur: COULEUR_AIR,
+  { id: 'ailes', emoji: '🪶', label: 'les ailes', pluriel: true, couleur: COULEUR_AIR,
     texte: 'Les ailes, c’est le grand secret : en avançant vite, elles poussent l’air vers le bas — alors l’air les pousse vers le haut, et ton avion est porté !' },
-  { id: 'reacteurs', emoji: '🔥', label: 'le réacteur', couleur: COULEUR_FEU,
+  { id: 'reacteurs', emoji: '🔥', label: 'le réacteur', pluriel: false, couleur: COULEUR_FEU,
     texte: 'Le réacteur, c’est le moteur de l’avion : il avale l’air devant et le souffle très fort derrière — et l’avion file en avant. Encore l’air qui pousse !' },
-  { id: 'cockpit', emoji: '🧑‍✈️', label: 'le cockpit', couleur: COULEUR_AVION_FONCE,
+  { id: 'cockpit', emoji: '🧑‍✈️', label: 'le cockpit', pluriel: false, couleur: COULEUR_AVION_FONCE,
     texte: 'Le cockpit, c’est la petite maison du pilote, tout à l’avant. C’est là qu’il pousse la manette de vitesse — comme toi avec le grand curseur !' },
-  { id: 'queue', emoji: '🪁', label: 'la queue', couleur: COULEUR_POIDS,
+  { id: 'queue', emoji: '🪁', label: 'la queue', pluriel: false, couleur: COULEUR_POIDS,
     texte: 'La queue et sa grande dérive gardent l’avion bien droit dans le vent — comme les plumes au bout d’une flèche.' },
-  { id: 'roues', emoji: '🛞', label: 'les roues', couleur: COULEUR_PISTE,
+  { id: 'roues', emoji: '🛞', label: 'les roues', pluriel: true, couleur: COULEUR_PISTE,
     texte: 'Les roues servent à rouler sur la piste. En vol, hop, elles se replient sous le ventre — comme les pattes d’un oiseau !' },
 ];
+
+// « Où est… ? » — les phrases du jeu des pièces (accord singulier/pluriel).
+export function consignePiece(piece) {
+  return 'Où ' + (piece.pluriel ? 'sont' : 'est') + ' ' + piece.label + ' ?';
+}
+export function bravoPiece(piece) {
+  return 'Bravo, c’' + (piece.pluriel ? 'étaient bien ' : 'était bien ') + piece.label + ' !';
+}
+export function ratePiece(piece) {
+  return 'Non, ça c’' + (piece.pluriel ? 'étaient ' : 'était ') + piece.label + '…';
+}
 
 // ------------------------------------------------------------------ l'affichage
 export function formatVitesse(v) {

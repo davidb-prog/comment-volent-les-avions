@@ -52,9 +52,25 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
 6. **Les pièces de l'avion** (🔍 Découvre ton avion) : 5 pastilles (🪶 🔥 🧑‍✈️ 🪁 🛞),
    une histoire écrite chacune, relue par le bouton 🔊 à la demande — **jamais de voix au
    tap** (règle de la famille : sélectionner ne déclenche pas de commentaire audio).
-7. **Honnêteté** : vérités protégées par les tests ; simplifications documentées note aux
+7. **LE jeu de l'épisode : « 🎮 Rejoins-les là-haut ! »** (2026-08-30) — un invité à SON
+   altitude (`DEFIS` : ballon 56, montgolfière 77, aigle 98 — chacun dans la zone d'air
+   raréfié, donc chacun a SA vitesse d'équilibre stable : l'enfant trouve la vitesse,
+   l'avion se cale seul), à rejoindre au curseur. Patron des défis de la famille :
+   fenêtre `JEU_FENETRE` + tenue `JEU_TENUE`, hystérésis `JEU_SORTIE`, le bravo ne ment
+   jamais (il se range si on ressort, « Encore une ! » reste acquis), bravo lu une seule
+   fois, rien ne se gagne pendant la lecture auto ou un moment. Défi final inversé : le
+   papillon au ras des fleurs — le rejoindre, c'est se poser (« en dessous de la vitesse
+   magique, un avion ne vole pas : il roule »). **Placé JUSTE SOUS la scène** (décision
+   assumée d'écart à l'ordre canonique : la consigne, l'avion, l'invité et le curseur
+   restent visibles ensemble, même sur mobile — pas besoin de médaillon flottant).
+8. **Le jeu des pièces : « Où est… ? »** — mode jeu du panneau 🔍 (`consignePiece`,
+   accords singulier/pluriel testés) : la bonne pastille gagne bravo + histoire en
+   récompense ; une autre frétille et dit son nom PAR ÉCRIT seulement (pas de voix au
+   mauvais tap). Cinq trouvées = bravo final, « Encore une partie ! » remélange.
+9. **Honnêteté** : vérités protégées par les tests ; simplifications documentées note aux
    parents + README ; l'avion **roule** (jamais « court » — testé).
-8. **Jamais punitif** : aucun geste ne produit de crash (testé au curseur fou).
+10. **Jamais punitif** : aucun geste ne produit de crash (testé au curseur fou), aucune
+    mauvaise réponse ne gronde.
 
 ## Contraintes
 
@@ -120,6 +136,9 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
 - Les **moments savent quand ils ont du sens** (`MOMENTS[].dispo`) : décoller seulement
   posé, atterrir seulement en vol — le bouton se grise sinon (celui du moment en cours
   reste allumé).
+- **Chaque défi du jeu est GAGNABLE au curseur** (simulé), les fenêtres des invités ne se
+  chevauchent pas (écart > 2·`JEU_SORTIE`), l'hystérésis est plus large que la fenêtre,
+  et le papillon se gagne en se posant (son bravo dit « roule »).
 - L'avion **roule**, il ne « court » jamais ; pas de mythe ; apostrophes typographiques.
 
 Simplifications assumées et **documentées** (note aux parents + README) — ne pas les
@@ -138,24 +157,33 @@ décrochage ; arrondi automatique ; piste infinie ; le virage = un futur épisod
   pause ET efface l'histoire du moment affiché (et coupe sa voix).
 - Le curseur montre la **consigne** (jamais la valeur lissée) et suit la lecture
   automatique — sauf pendant que le doigt le tient.
+- Le bouton 🔇/🔊 a **trois jumeaux synchronisés** (moments, jeu, pièces — même état,
+  même clé) : le réglage du son à portée de main sans remonter la page.
+- **L'avion est dessiné pour ses pièces** (2026-08-30) : grande aile trapézoïdale en
+  flèche, réacteur suspendu sous l'aile avec entrée d'air, bulle de cockpit, deux trains,
+  hublots — les ancres `ANCRES_PIECES` sont écartées pour que les pastilles ne se
+  chevauchent jamais (vérifié en navigateur : toutes dans le cadre).
 - **Seuil mobile unique : 640 px** (CSS seulement — aucun JS de bascule).
 
 ## Structure
 
 - `index.html` — page unique : en-tête (fiole + kicker), vue de côté + phrase d'état +
-  grand curseur, moments, boîte 💡, pièces, pont (médaillons), note aux parents
+  grand curseur, panneau du jeu, moments, boîte 💡, pièces (+ mode jeu), pont
+  (médaillons), note aux parents
   (patron : Comment on s'en sert / Ce que le site simplifie / mot de la fin), pied de
   page harmonisé ; `<head>` SEO complet
 - `css/style.css` — Baloo 2, palette de l'épisode, ossature de la famille, curseur
   maître, bascule mobile ≤ 640 px
 - `js/model.js` — modèle pur : portance, `pas()`, `cibleAuto()`, MOMENTS, phraseEtat,
-  PIECES, couleurs, formats
+  PIECES + consignes du jeu « Où est… ? », DEFIS + fenêtres du grand jeu, couleurs,
+  formats
 - `js/canvas.js` — helpers canvas partagés (fitCanvas, flèches, étiquettes à halo)
 - `js/vue-cote.js` — LA vue (décor, avion `dessineAvionCote` exporté, deux flèches,
-  filets d'air)
+  filets d'air, invités du jeu `dessineInvite`)
 - `js/vue-pieces.js` — l'avion en grand, ancres `ANCRES_PIECES`, anneau de sélection
-- `js/main.js` — boucle rAF, curseur, lecture auto, moments, pièces, conteur
-- `test/model.test.mjs` — tests Node (50 vérifications)
+- `js/main.js` — boucle rAF, curseur, lecture auto, moments, les deux jeux, pièces,
+  conteur
+- `test/model.test.mjs` — tests Node (55 vérifications)
 - `assets/fonts/` — Baloo 2 (copiée du portail, licence OFL)
 
 ## Vérification navigateur

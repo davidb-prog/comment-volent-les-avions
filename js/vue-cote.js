@@ -28,70 +28,168 @@ const COULEURS_FLEURS = ['#e0447c', '#6a4fd0', '#ffb54d'];
 
 // Ton avion vu de côté, rond et sympathique, avec son petit pilote — le nez
 // vers la droite. Partagé avec « Découvre ton avion » (vue-pieces.js).
-// `feu` (0..1) allume la flamme du réacteur, elle suit la vitesse demandée.
+// Redessiné (retour de David) pour que chaque pièce se distingue : grande
+// aile en flèche, réacteur suspendu avec son entrée d'air, cockpit vitré,
+// deux trains d'atterrissage, hublots. `feu` (0..1) allume la flamme.
 export function dessineAvionCote(ctx, x, y, s, assiette, rouesSorties, feu) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(assiette);
-  // le réacteur sous l'aile, et sa flamme
-  ctx.fillStyle = '#8b93a5';
-  ctx.beginPath(); ctx.ellipse(4 * s, 11 * s, 9 * s, 5.5 * s, 0, 0, TAU); ctx.fill();
+  // les trains d'atterrissage (sortis près du sol) : avant + principal
+  if (rouesSorties) {
+    ctx.strokeStyle = COULEUR_AVION_FONCE;
+    ctx.lineWidth = 2.4 * s;
+    ctx.beginPath();
+    ctx.moveTo(27 * s, 7 * s); ctx.lineTo(28 * s, 14 * s);
+    ctx.moveTo(-8 * s, 10 * s); ctx.lineTo(-9 * s, 15 * s);
+    ctx.stroke();
+    ctx.fillStyle = '#33475c';
+    ctx.beginPath(); ctx.arc(28 * s, 15 * s, 3 * s, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(-9 * s, 16 * s, 3.6 * s, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#9fb2c8';
+    ctx.beginPath(); ctx.arc(28 * s, 15 * s, 1.1 * s, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(-9 * s, 16 * s, 1.3 * s, 0, TAU); ctx.fill();
+  }
+  // la dérive (queue), derrière
+  ctx.fillStyle = COULEUR_AVION;
+  ctx.beginPath();
+  ctx.moveTo(-22 * s, -3 * s);
+  ctx.quadraticCurveTo(-32 * s, -26 * s, -42 * s, -26 * s);
+  ctx.lineTo(-34 * s, -1 * s);
+  ctx.closePath(); ctx.fill();
+  // le stabilisateur
+  ctx.fillStyle = COULEUR_AVION_FONCE;
+  ctx.beginPath();
+  ctx.moveTo(-24 * s, -2 * s); ctx.lineTo(-43 * s, 6 * s); ctx.lineTo(-28 * s, 7 * s);
+  ctx.closePath(); ctx.fill();
+  // le fuselage
+  ctx.fillStyle = COULEUR_AVION;
+  ctx.beginPath(); ctx.ellipse(0, 0, 40 * s, 10.5 * s, 0, 0, TAU); ctx.fill();
+  // trois hublots ronds, au-dessus de l'aile
+  ctx.fillStyle = '#eaf6ff';
+  for (const hx of [6, -4, -14]) {
+    ctx.beginPath(); ctx.arc(hx * s, -4 * s, 1.8 * s, 0, TAU); ctx.fill();
+  }
+  // la bulle du cockpit, posée sur le nez, avec son petit pilote qui dépasse
+  ctx.fillStyle = '#eaf6ff';
+  ctx.beginPath(); ctx.arc(22 * s, -8 * s, 6 * s, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = '#ffd9b0';
+  ctx.beginPath(); ctx.arc(21.5 * s, -9.2 * s, 3 * s, 0, TAU); ctx.fill(); // le pilote
+  ctx.fillStyle = '#4a3524';
+  ctx.beginPath(); ctx.arc(21.5 * s, -10.2 * s, 3 * s, Math.PI, 0); ctx.fill(); // ses cheveux
+  // LA GRANDE AILE : un vrai trapèze en flèche, par-dessus le fuselage
+  ctx.fillStyle = COULEUR_AVION_FONCE;
+  ctx.beginPath();
+  ctx.moveTo(14 * s, 0);
+  ctx.lineTo(-14 * s, 17 * s);
+  ctx.lineTo(-30 * s, 15 * s);
+  ctx.lineTo(-6 * s, -1 * s);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+  ctx.lineWidth = 1.3 * s;
+  ctx.beginPath(); ctx.moveTo(12 * s, 0.5 * s); ctx.lineTo(-27 * s, 14.6 * s); ctx.stroke();
+  // le réacteur suspendu SOUS l'aile, avancé : pylône, flamme, nacelle, entrée d'air
+  ctx.fillStyle = COULEUR_AVION_FONCE;
+  ctx.fillRect(8 * s, 5 * s, 4 * s, 5 * s); // le pylône
   if (feu > 0.03) {
     const fl = (6 + 30 * feu) * s;
-    const flamme = ctx.createLinearGradient(-5 * s, 0, -5 * s - fl, 0);
+    const flamme = ctx.createLinearGradient(4.5 * s, 0, 4.5 * s - fl, 0);
     flamme.addColorStop(0, '#ffd166');
     flamme.addColorStop(0.5, '#ff9f1c');
     flamme.addColorStop(1, 'rgba(255, 122, 28, 0)');
     ctx.fillStyle = flamme;
     ctx.beginPath();
-    ctx.moveTo(-4 * s, 8 * s);
-    ctx.lineTo(-5 * s - fl, 11 * s);
-    ctx.lineTo(-4 * s, 14 * s);
+    ctx.moveTo(5.5 * s, 10 * s);
+    ctx.lineTo(4.5 * s - fl, 12.5 * s);
+    ctx.lineTo(5.5 * s, 15 * s);
     ctx.closePath(); ctx.fill();
   }
-  // les roues (sorties près du sol)
-  if (rouesSorties) {
-    ctx.strokeStyle = COULEUR_AVION_FONCE;
-    ctx.lineWidth = 3 * s;
+  ctx.fillStyle = '#8b93a5';
+  ctx.beginPath(); ctx.ellipse(12 * s, 12.5 * s, 8 * s, 4.6 * s, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#33475c'; // l'entrée d'air, face à la route
+  ctx.beginPath(); ctx.ellipse(19.2 * s, 12.5 * s, 2.4 * s, 3.9 * s, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#9fb2c8';
+  ctx.beginPath(); ctx.ellipse(19.5 * s, 12.5 * s, 1.1 * s, 2.2 * s, 0, 0, TAU); ctx.fill();
+  ctx.restore();
+}
+
+// Les invités du jeu « Rejoins-les là-haut ! » — dessinés dans le langage de
+// l'avion (jamais d'emoji en illustration, règle de la charte). `oscille` :
+// un petit balancement (0 si mouvement réduit) ; `gagne` : des étincelles.
+export function dessineInvite(ctx, id, x, y, s, oscille, gagne) {
+  ctx.save();
+  ctx.translate(x, y + Math.sin(oscille) * 4 * s);
+  if (id === 'ballon') {
+    ctx.strokeStyle = 'rgba(28, 53, 80, 0.55)'; // la ficelle
+    ctx.lineWidth = 1.4 * s;
     ctx.beginPath();
-    ctx.moveTo(-8 * s, 8 * s); ctx.lineTo(-10 * s, 14 * s);
-    ctx.moveTo(14 * s, 8 * s); ctx.lineTo(16 * s, 14 * s);
+    ctx.moveTo(0, 13 * s);
+    ctx.quadraticCurveTo(3 * s, 22 * s, -1 * s, 30 * s);
     ctx.stroke();
-    ctx.fillStyle = '#33475c';
-    ctx.beginPath(); ctx.arc(-10 * s, 15 * s, 4 * s, 0, TAU); ctx.fill();
-    ctx.beginPath(); ctx.arc(16 * s, 15 * s, 4 * s, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#e0447c';
+    ctx.beginPath(); ctx.ellipse(0, 0, 10 * s, 12 * s, 0, 0, TAU); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-2.5 * s, 12 * s); ctx.lineTo(2.5 * s, 12 * s); ctx.lineTo(0, 15 * s);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; // le reflet
+    ctx.beginPath(); ctx.ellipse(-3.5 * s, -4 * s, 2.6 * s, 4 * s, -0.4, 0, TAU); ctx.fill();
+  } else if (id === 'montgolfiere') {
+    ctx.fillStyle = '#ffb54d'; // l'enveloppe
+    ctx.beginPath(); ctx.ellipse(0, 0, 13 * s, 15 * s, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#e0447c'; // les fuseaux
+    for (const fx of [-6, 0, 6]) {
+      ctx.beginPath(); ctx.ellipse(fx * s, 0, 2.6 * s, 14.6 * s, 0, 0, TAU); ctx.fill();
+    }
+    ctx.strokeStyle = 'rgba(28, 53, 80, 0.55)'; // les cordes
+    ctx.lineWidth = 1.2 * s;
+    ctx.beginPath();
+    ctx.moveTo(-7 * s, 12 * s); ctx.lineTo(-4 * s, 22 * s);
+    ctx.moveTo(7 * s, 12 * s); ctx.lineTo(4 * s, 22 * s);
+    ctx.stroke();
+    ctx.fillStyle = '#a06f00'; // la nacelle
+    ctx.fillRect(-5 * s, 22 * s, 10 * s, 7 * s);
+  } else if (id === 'aigle') {
+    ctx.fillStyle = '#7a5230';
+    ctx.beginPath(); // le corps
+    ctx.ellipse(0, 0, 8 * s, 3.2 * s, 0, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#7a5230'; // les grandes ailes déployées
+    ctx.lineWidth = 3.2 * s;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-2 * s, -1 * s);
+    ctx.quadraticCurveTo(-12 * s, -10 * s, -20 * s, -7 * s);
+    ctx.moveTo(2 * s, -1 * s);
+    ctx.quadraticCurveTo(12 * s, -10 * s, 20 * s, -7 * s);
+    ctx.stroke();
+    ctx.fillStyle = '#ffd166'; // le bec
+    ctx.beginPath();
+    ctx.moveTo(8 * s, -1 * s); ctx.lineTo(11.5 * s, 0.5 * s); ctx.lineTo(8 * s, 1.5 * s);
+    ctx.closePath(); ctx.fill();
+  } else if (id === 'papillon') {
+    ctx.fillStyle = '#a98bff'; // les ailes hautes
+    ctx.beginPath(); ctx.ellipse(-3.5 * s, -3 * s, 4.5 * s, 5.5 * s, -0.5, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(3.5 * s, -3 * s, 4.5 * s, 5.5 * s, 0.5, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#ff6b9d'; // les ailes basses
+    ctx.beginPath(); ctx.ellipse(-2.8 * s, 2.5 * s, 3.2 * s, 4 * s, 0.5, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(2.8 * s, 2.5 * s, 3.2 * s, 4 * s, -0.5, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#33475c'; // le corps
+    ctx.beginPath(); ctx.ellipse(0, 0, 1.3 * s, 5 * s, 0, 0, TAU); ctx.fill();
   }
-  // la dérive (queue), derrière
-  ctx.fillStyle = COULEUR_AVION;
-  ctx.beginPath();
-  ctx.moveTo(-26 * s, -5 * s);
-  ctx.quadraticCurveTo(-36 * s, -24 * s, -44 * s, -24 * s);
-  ctx.lineTo(-38 * s, -3 * s);
-  ctx.closePath(); ctx.fill();
-  // le fuselage
-  ctx.beginPath(); ctx.ellipse(0, 0, 40 * s, 12.5 * s, 0, 0, TAU); ctx.fill();
-  // le stabilisateur et l'aile, un ton plus soutenu
-  ctx.fillStyle = COULEUR_AVION_FONCE;
-  ctx.beginPath();
-  ctx.moveTo(-28 * s, -2 * s); ctx.lineTo(-44 * s, 6 * s); ctx.lineTo(-30 * s, 7 * s);
-  ctx.closePath(); ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(8 * s, -2 * s); ctx.lineTo(-14 * s, 15 * s); ctx.lineTo(0, 17 * s); ctx.lineTo(15 * s, 3 * s);
-  ctx.closePath(); ctx.fill();
-  // le hublot du pilote
-  ctx.fillStyle = '#eaf6ff';
-  ctx.beginPath(); ctx.arc(22 * s, -6 * s, 6.5 * s, Math.PI, 0); ctx.fill();
-  ctx.fillStyle = '#ffd9b0';
-  ctx.beginPath(); ctx.arc(22 * s, -7.5 * s, 3.2 * s, 0, TAU); ctx.fill(); // le pilote
-  ctx.fillStyle = '#4a3524';
-  ctx.beginPath(); ctx.arc(22 * s, -8.6 * s, 3.2 * s, Math.PI, 0); ctx.fill(); // ses cheveux
+  if (gagne) {
+    ctx.fillStyle = '#ffcf5c'; // les étincelles du bravo
+    for (const e of [[-16, -14, 2.2], [17, -10, 1.8], [12, 14, 2], [-14, 12, 1.6]]) {
+      ctx.beginPath(); ctx.arc(e[0] * s, e[1] * s, e[2] * s, 0, TAU); ctx.fill();
+    }
+  }
   ctx.restore();
 }
 
 export const VueCote = class {
   constructor(canvas) { this.canvas = canvas; }
 
-  dessine(etat, cible01) {
+  // `invite` : l'invité du jeu ({ id, altitude, gagne }) ou null ;
+  // `oscille` : phase du petit balancement (0 si mouvement réduit).
+  dessine(etat, cible01, invite, oscille) {
     const f = fitCanvas(this.canvas);
     const ctx = f.ctx, w = f.w, h = f.h;
     const s = Math.max(0.6, Math.min(w / 640, h / 340));
@@ -189,6 +287,15 @@ export const VueCote = class {
         ctx.lineTo(x0 - ll * 0.8, y0 + ll * 0.55);
         ctx.stroke();
       }
+    }
+
+    // ---- l'invité du jeu, qui attend à SON altitude côté droit du ciel
+    if (invite) {
+      const xInvite = w * 0.8;
+      const yInvite = invite.altitude === 0
+        ? horizon + hPiste + (h - horizon - hPiste) * 0.4 - 6 * s // le papillon, près des fleurs
+        : ySol - borne01(invite.altitude / ALTITUDE_MAX) * (ySol - yHaut);
+      dessineInvite(ctx, invite.id, xInvite, yInvite, s, oscille || 0, invite.gagne);
     }
 
     // ---- ton avion (et son pilote) — la flamme suit la consigne du curseur

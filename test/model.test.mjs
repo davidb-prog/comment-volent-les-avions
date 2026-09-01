@@ -13,6 +13,8 @@ import {
   COULEUR_AIR, COULEUR_POIDS, COULEUR_AVION,
   portance, densiteAir, portanceEnVol, plafondDescente, etatInitial, pas,
   cibleAuto, MOMENTS, etapeMoment, phraseEtat, PIECES,
+  DEFIS, JEU_FENETRE, JEU_SORTIE, JEU_TENUE, defiDansFenetre,
+  consignePiece, bravoPiece, ratePiece,
   formatVitesse, formatAltitude,
 } from '../js/model.js';
 
@@ -291,6 +293,64 @@ verifie('en équilibre : les deux flèches sont égales',
   phraseEtat({ v: VITESSE_DECOLLAGE, alt: 50, vz: 0, auSol: false, distance: 0 })
     .indexOf('égales') !== -1);
 
+console.log('Le jeu « Rejoins-les là-haut ! » — les défis de la famille');
+verifie('l’hystérésis de sortie est plus large que la fenêtre de victoire (le bravo ne clignote pas)',
+  JEU_SORTIE > JEU_FENETRE && JEU_TENUE > 0);
+verifie('quatre défis, du ballon au papillon — et leurs fenêtres ne se chevauchent pas',
+  (() => {
+    if (DEFIS.length !== 4 || DEFIS[DEFIS.length - 1].id !== 'papillon') return false;
+    const alts = DEFIS.filter((d) => d.altitude > 0).map((d) => d.altitude).sort((a, b) => a - b);
+    for (let i = 1; i < alts.length; i++) {
+      if (alts[i] - alts[i - 1] <= 2 * JEU_SORTIE) return false;
+    }
+    return true;
+  })());
+verifie('chaque défi volant est GAGNABLE au curseur (fenêtre tenue assez longtemps)',
+  (() => {
+    for (const defi of DEFIS) {
+      if (defi.altitude === 0) continue;
+      // la consigne gagnante : viser la vitesse dont l'altitude d'équilibre
+      // est celle de l'invité (pile la découverte que le jeu enseigne)
+      const vEquilibre = defi.altitude > ALT_AIR_LEGER
+        ? VITESSE_DECOLLAGE / Math.sqrt(densiteAir(defi.altitude))
+        : VITESSE_DECOLLAGE;
+      let e = etatInitial();
+      let tenue = 0, meilleure = 0;
+      for (let t = 0; t < 90; t += DT) {
+        const cible = e.alt < defi.altitude - 10
+          ? Math.min(1, (vEquilibre + 14) / VITESSE_MAX)
+          : vEquilibre / VITESSE_MAX;
+        e = pas(e, cible, DT);
+        if (defiDansFenetre(defi, e, JEU_FENETRE)) {
+          tenue += DT;
+          meilleure = Math.max(meilleure, tenue);
+        } else tenue = 0;
+      }
+      if (meilleure < JEU_TENUE) return false;
+    }
+    return true;
+  })());
+verifie('le défi du papillon se gagne en se posant — la révélation à l’envers',
+  (() => {
+    const papillon = DEFIS[DEFIS.length - 1];
+    const enVol = { v: 80, alt: 60, vz: 0, auSol: false, distance: 0 };
+    if (defiDansFenetre(papillon, enVol, JEU_FENETRE)) return false;
+    const fin = simule(enVol, TIENT(0), 60);
+    return defiDansFenetre(papillon, fin, JEU_FENETRE) &&
+      papillon.bravo.indexOf('roule') !== -1;
+  })());
+
+console.log('Le jeu « Où est… ? » — les phrases des pièces');
+verifie('les consignes s’accordent : « Où sont les ailes ? », « Où est le réacteur ? »',
+  (() => {
+    const ailes = PIECES.filter((p) => p.id === 'ailes')[0];
+    const reacteur = PIECES.filter((p) => p.id === 'reacteurs')[0];
+    return consignePiece(ailes) === 'Où sont les ailes ?' &&
+      consignePiece(reacteur) === 'Où est le réacteur ?' &&
+      bravoPiece(ailes).indexOf('étaient') !== -1 &&
+      ratePiece(reacteur).indexOf('était') !== -1;
+  })());
+
 console.log('Les pièces de l’avion — cinq histoires à taper');
 verifie('cinq pièces : ailes, réacteur, cockpit, queue, roues',
   PIECES.length === 5 &&
@@ -326,7 +386,8 @@ verifie('le mythe du « chemin plus long » n’apparaît NULLE PART dans les te
   (() => {
     let tout = '';
     for (const m of MOMENTS) tout += m.label + m.sub + m.phrase;
-    for (const p of PIECES) tout += p.label + p.texte;
+    for (const p of PIECES) tout += p.label + p.texte + consignePiece(p) + bravoPiece(p);
+    for (const d of DEFIS) tout += d.invite + d.consigne + d.bravo;
     tout += phraseEtat(etatInitial());
     tout += phraseEtat({ v: 80, alt: 40, vz: 5, auSol: false, distance: 0 });
     return tout.indexOf('plus long') === -1 && tout.indexOf('rattrap') === -1;
@@ -335,7 +396,8 @@ verifie('apostrophes typographiques « ’ » partout dans les chaînes UI (jama
   (() => {
     let tout = '';
     for (const m of MOMENTS) tout += m.label + m.sub + m.phrase;
-    for (const p of PIECES) tout += p.label + p.texte;
+    for (const p of PIECES) tout += p.label + p.texte + consignePiece(p) + bravoPiece(p) + ratePiece(p);
+    for (const d of DEFIS) tout += d.invite + d.consigne + d.bravo;
     tout += phraseEtat(etatInitial());
     return tout.indexOf("'") === -1;
   })());
