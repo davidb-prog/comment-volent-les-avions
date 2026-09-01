@@ -221,7 +221,13 @@ main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; }
   margin: 10px 2px 4px; font-size: 1.08rem; font-weight: 600; color: var(--text);
   border-left: 4px solid var(--air); padding-left: 12px; min-height: 1.5em;
 }
-.defi-texte.bravo { border-left-color: #ffcf5c; color: #7a5200; }
+/* la victoire se voit : le bravo prend un vrai costume doré */
+.defi-texte.bravo {
+  border-left-color: #ffcf5c; color: #7a5200;
+  font-weight: 800; font-size: 1.18rem;
+  background: linear-gradient(180deg, #fff6dc, #ffedbb);
+  border-radius: 0 12px 12px 0; padding: 8px 12px;
+}
 .defi-texte.rate { border-left-color: var(--rose-deep); font-weight: 400; }
 .jeu-pied { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin: 4px 2px 0; }
 .jeu-aide { margin: 0; }

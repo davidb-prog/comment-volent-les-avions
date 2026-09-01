@@ -154,6 +154,12 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
   chaque vitesse trouve l'altitude où l'air aminci porte pile le poids — le vrai
   plafond des avions, en version dessin. Conséquence honnête : en palier, les deux
   flèches sont égales à toute altitude, et « plus vite = plus haut ».
+- **Une vitesse = une altitude.** C'est le comportement d'un avion dont le coefficient
+  de portance ne change jamais (assiette figée — le curseur est la seule commande de
+  l'épisode) : L = ½ρv²SC_L = P n'a alors qu'une densité solution par vitesse. En
+  vrai, le pilote ajuste l'incidence et peut tenir la même vitesse à plusieurs
+  altitudes ; ce qui reste vrai, c'est le plafond — l'altitude maximale grandit avec
+  la vitesse. Le jeu s'appuie sur cette règle simple, la note aux parents la déclare.
 - **L'explication du site est la vraie** (l'air dévié vers le bas + action-réaction, la
   portance en v²), mais pas complète : les physiciens ajoutent la circulation et les
   champs de pression autour du profil (Bernoulli) — même phénomène, autres outils. Le

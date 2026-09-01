@@ -144,8 +144,10 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
 Simplifications assumées et **documentées** (note aux parents + README) — ne pas les
 « corriger » sans en parler à David : deux flèches seulement (poussée/traînée dans un
 futur épisode) ; monter = excès de portance (en vrai, montée stabilisée = excès de
-poussée) ; curseur = vitesse directe ; plané qui laisse fondre la vitesse ; pas de
-décrochage ; arrondi automatique ; piste infinie ; le virage = un futur épisode.
+poussée) ; curseur = vitesse directe ; **une vitesse = une altitude** (assiette figée —
+en vrai le pilote peut tenir plusieurs altitudes à la même vitesse, questionné par David
+2026-08-31 et assumé : c'est le socle du jeu) ; plané qui laisse fondre la vitesse ; pas
+de décrochage ; arrondi automatique ; piste infinie ; le virage = un futur épisode.
 
 ## Invariants d'interaction (voulus par David)
 

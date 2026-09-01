@@ -118,7 +118,9 @@ export function dessineAvionCote(ctx, x, y, s, assiette, rouesSorties, feu) {
 // un petit balancement (0 si mouvement réduit) ; `gagne` : des étincelles.
 export function dessineInvite(ctx, id, x, y, s, oscille, gagne) {
   ctx.save();
-  ctx.translate(x, y + Math.sin(oscille) * 4 * s);
+  // gagné : l'invité sautille de joie (plus vite, plus haut)
+  const saut = gagne ? Math.sin(oscille * 2.4) * 7 * s : Math.sin(oscille) * 4 * s;
+  ctx.translate(x, y + saut);
   if (id === 'ballon') {
     ctx.strokeStyle = 'rgba(28, 53, 80, 0.55)'; // la ficelle
     ctx.lineWidth = 1.4 * s;
@@ -176,9 +178,20 @@ export function dessineInvite(ctx, id, x, y, s, oscille, gagne) {
     ctx.beginPath(); ctx.ellipse(0, 0, 1.3 * s, 5 * s, 0, 0, TAU); ctx.fill();
   }
   if (gagne) {
-    ctx.fillStyle = '#ffcf5c'; // les étincelles du bravo
-    for (const e of [[-16, -14, 2.2], [17, -10, 1.8], [12, 14, 2], [-14, 12, 1.6]]) {
-      ctx.beginPath(); ctx.arc(e[0] * s, e[1] * s, e[2] * s, 0, TAU); ctx.fill();
+    // les étoiles du bravo : grandes, qui scintillent — la victoire se VOIT
+    // (retour de David : les petites étincelles passaient inaperçues)
+    ctx.fillStyle = '#ffcf5c';
+    const etoiles = [[-24, -20, 5], [26, -14, 4], [18, 20, 4.5], [-22, 16, 3.8], [2, -27, 4.2], [30, 4, 3.4]];
+    for (let i = 0; i < etoiles.length; i++) {
+      const e = etoiles[i];
+      const r = e[2] * s * (0.75 + 0.35 * Math.sin(oscille * 3 + i * 1.7));
+      ctx.beginPath();
+      ctx.moveTo(e[0] * s, e[1] * s - r);
+      ctx.quadraticCurveTo(e[0] * s, e[1] * s, e[0] * s + r, e[1] * s);
+      ctx.quadraticCurveTo(e[0] * s, e[1] * s, e[0] * s, e[1] * s + r);
+      ctx.quadraticCurveTo(e[0] * s, e[1] * s, e[0] * s - r, e[1] * s);
+      ctx.quadraticCurveTo(e[0] * s, e[1] * s, e[0] * s, e[1] * s - r);
+      ctx.fill();
     }
   }
   ctx.restore();
@@ -290,8 +303,10 @@ export const VueCote = class {
     }
 
     // ---- l'invité du jeu, qui attend à SON altitude côté droit du ciel
+    // (à 0.7·largeur : jamais dans le halo du soleil, où ses étoiles de
+    // bravo se noyaient — retour de David)
     if (invite) {
-      const xInvite = w * 0.8;
+      const xInvite = w * 0.7;
       const yInvite = invite.altitude === 0
         ? horizon + hPiste + (h - horizon - hPiste) * 0.4 - 6 * s // le papillon, près des fleurs
         : ySol - borne01(invite.altitude / ALTITUDE_MAX) * (ySol - yHaut);
