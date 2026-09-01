@@ -175,26 +175,19 @@ export function cibleAuto(t) {
 }
 
 // ------------------------------------------------------------------ les moments
-// Trois boutons-moments : chacun amène le curseur en douceur, puis UNE phrase
-// raconte l'instant. `dispo(etat)` dit si le moment a un sens MAINTENANT
-// (retour de David : décoller en vol ou atterrir déjà posé n'a pas de sens —
-// le bouton se grise). `etapes` : [{ cible, jusquA }] — `jusquA` est un petit
-// test d'étape franchie ; la dernière étape se prolonge.
+// DEUX boutons-moments — les deux vrais ÉVÉNEMENTS du vol, dont la phrase
+// raconte exactement ce qui se passe à l'écran (décision de David 2026-08-31 :
+// l'ancien « ✈️ En plein vol » affichait une phrase d'équilibre pendant que
+// l'écran montrait un décollage — l'équilibre est un ÉTAT, il vit déjà dans
+// le repère « ✨ ici, il s'envole ! » et le jeu). `dispo(etat)` dit si le
+// moment a un sens maintenant (sinon le bouton se grise) ; `etapes` :
+// [{ cible, jusquA }] — la dernière étape se prolonge.
 export const MOMENTS = [
   {
     id: 'decollage', emoji: '🛫', label: 'Le décollage', sub: 'pousse à fond !',
     dispo: function (e) { return e.auSol; },
     etapes: [{ cible: 1 }],
     phrase: 'Regarde la flèche de l’air grandir avec la vitesse… dès qu’elle dépasse le poids : hop, ton avion s’envole !',
-  },
-  {
-    id: 'vol', emoji: '✈️', label: 'En plein vol', sub: 'tout en équilibre',
-    dispo: function () { return true; },
-    etapes: [
-      { cible: 1, jusquA: function (e) { return !e.auSol && e.alt >= 30; } },
-      { cible: REPERE_DECOLLAGE },
-    ],
-    phrase: 'À cette vitesse, l’air porte ton avion pile autant que la Terre le tire : les deux flèches sont égales, il vole droit.',
   },
   {
     id: 'atterrissage', emoji: '🛬', label: 'L’atterrissage', sub: 'tout doux…',
@@ -214,14 +207,16 @@ export function etapeMoment(moment, indice, etat) {
 }
 
 // ------------------------------------------------------------- la phrase d'état
-// UNE petite phrase sous la vue : ce que l'air fait à cet instant.
+// UNE petite phrase sous la vue — assise sur la MÊME grandeur que les flèches
+// (l'excès de portance ressentie) : le texte, les flèches et le mouvement ne
+// peuvent pas se contredire (retour de David 2026-08-31 : à 224 km/h l'avion
+// montait doucement pendant que la phrase parlait d'équilibre).
 export function phraseEtat(etat) {
-  const p = portance(etat.v);
   if (etat.auSol) {
     if (etat.v < 2) {
       return '😴 Ton avion est posé. Pas de vitesse : l’air ne le porte pas.';
     }
-    if (p < 0.55) {
+    if (portance(etat.v) < 0.55) {
       return '🏁 Il roule… regarde la flèche de l’air grandir avec la vitesse !';
     }
     return '💨 Encore un peu ! La flèche de l’air va dépasser le poids…';
@@ -232,14 +227,21 @@ export function phraseEtat(etat) {
   if (etat.alt < ALT_ARRONDI && etat.vz < -0.4) {
     return '🪶 Tout près du sol, l’avion se redresse… toucher tout doux !';
   }
-  if (etat.vz > 1.2) {
-    return '💨 L’air pousse plus fort que le poids : ton avion monte !';
-  }
   if (etat.vz < -0.4 && etat.v <= VITESSE_PLANE + 3) {
     return '🍃 Un avion ne s’arrête pas en l’air : il garde de l’élan et plane tout doucement vers la piste.';
   }
-  if (etat.vz < -1.2) {
-    return '🍃 L’air porte un peu moins que le poids : il descend doucement — il plane !';
+  const exces = portanceEnVol(etat.v, etat.alt) - POIDS;
+  if (exces > 0.15) {
+    return '💨 L’air pousse plus fort que le poids : ton avion monte !';
+  }
+  if (exces > 0.03) {
+    return '💨 L’air pousse un tout petit peu plus fort que le poids : il monte doucement.';
+  }
+  if (exces < -0.15) {
+    return '🍃 L’air porte moins que le poids : il descend doucement — il plane !';
+  }
+  if (exces < -0.03) {
+    return '🍃 L’air porte un tout petit peu moins que le poids : il descend tout doucement.';
   }
   return '⚖️ Les deux flèches sont égales : l’air porte pile autant que la Terre tire.';
 }

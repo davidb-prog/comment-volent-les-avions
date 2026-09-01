@@ -45,10 +45,12 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
    UNIQUEMENT par le bouton ⏸/▶ (libellés empilés, largeur stable). Un tap sur la vue ne
    fait RIEN. Toucher le curseur rend la main. `prefers-reduced-motion` : pas de lecture
    au chargement.
-5. **Trois boutons-moments** (🛫 ✈️ 🛬) : le curseur glisse tout seul, puis UNE phrase
-   (un bouton sans objet se grise : pas de décollage en vol, pas d'atterrissage posé) — la
-   version sonore via le bouton 🔇/🔊 de la famille. Le moment ✈️ pose le curseur PILE
-   sur le repère d'envol : les deux flèches deviennent égales (l'équilibre incarné).
+5. **Deux boutons-moments** (🛫 🛬) : les deux vrais ÉVÉNEMENTS, dont la phrase raconte
+   ce qui se passe à l'écran (un bouton sans objet se grise) — version sonore via le
+   bouton 🔇/🔊. Décision David 2026-08-31 : l'ancien « ✈️ En plein vol » affichait
+   l'équilibre pendant que l'écran montrait un décollage — l'équilibre est un ÉTAT, il
+   vit dans le repère ✨ et le défi de la montgolfière. Ne pas réintroduire de bouton
+   d'état.
 6. **Les pièces de l'avion** (🔍 Découvre ton avion) : 5 pastilles (🪶 🔥 🧑‍✈️ 🪁 🛞),
    une histoire écrite chacune, relue par le bouton 🔊 à la demande — **jamais de voix au
    tap** (règle de la famille : sélectionner ne déclenche pas de commentaire audio).
@@ -123,6 +125,10 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
 - L'avion **s'envole quand la portance atteint le poids** : vitesse de décollage précise,
   et le **repère du curseur est posé dessus** (une seule source de vérité).
 - **Curseur pile sur le repère : équilibre** — les deux flèches égales, altitude stable.
+- **La phrase d'état est assise sur l'excès de portance** (la grandeur des flèches),
+  graduée (« un tout petit peu plus fort : il monte doucement ») : texte, flèches et
+  mouvement toujours d'accord (retour de David 2026-08-31 : à 224 km/h l'avion montait
+  pendant que la phrase parlait d'équilibre — testé).
 - **Curseur réduit : il plane** (descente plafonnée), il ne tombe jamais comme une
   pierre — et **un avion ne s'arrête pas en l'air** : en vol la vitesse garde un
   plancher de plané (`VITESSE_PLANE`), on ne freine qu'une fois posé (retour de David
@@ -185,7 +191,7 @@ de décrochage ; arrondi automatique ; piste infinie ; le virage = un futur épi
 - `js/vue-pieces.js` — l'avion en grand, ancres `ANCRES_PIECES`, anneau de sélection
 - `js/main.js` — boucle rAF, curseur, lecture auto, moments, les deux jeux, pièces,
   conteur
-- `test/model.test.mjs` — tests Node (55 vérifications)
+- `test/model.test.mjs` — tests Node (54 vérifications)
 - `assets/fonts/` — Baloo 2 (copiée du portail, licence OFL)
 
 ## Vérification navigateur

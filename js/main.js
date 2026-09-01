@@ -138,8 +138,7 @@ function montrePhrase(moment) {
   boite.innerHTML = '';
   const p = document.createElement('p');
   p.className = 'histoire-phrase';
-  p.style.borderLeftColor = moment.id === 'vol' ? 'var(--air)'
-    : moment.id === 'decollage' ? 'var(--feu)' : 'var(--rose-deep)';
+  p.style.borderLeftColor = moment.id === 'decollage' ? 'var(--feu)' : 'var(--rose-deep)';
   p.textContent = moment.phrase;
   boite.appendChild(p);
 }

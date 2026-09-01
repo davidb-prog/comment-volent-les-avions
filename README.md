@@ -34,13 +34,17 @@ pousse, le poids qui tire) est le « graphe » que l'enfant lit sans savoir lire
   un tour complet — décollage, plein vol, atterrissage — en ~85 s, en boucle, le curseur
   bougeant tout seul. Toucher le curseur rend la main à l'enfant. Un tap sur la vue ne
   déclenche **rien** (règle de la famille : pas d'action en douce).
-- **Trois boutons-moments** : 🛫 *Le décollage*, ✈️ *En plein vol*, 🛬 *L'atterrissage*.
-  Le curseur glisse tout seul au bon endroit, puis **une phrase** (une seule !) raconte
-  l'instant, à lire et à écouter (bouton 🔇/🔊 de la famille, choix retenu). Un bouton
-  qui n'a pas de sens se grise : on ne décolle pas en vol, on n'atterrit pas déjà posé.
-- Le moment **En plein vol** pose le curseur PILE sur le repère d'envol : les deux
-  flèches deviennent égales sous les yeux de l'enfant — l'équilibre du vol, incarné par
-  le geste.
+- **Deux boutons-moments** : 🛫 *Le décollage* et 🛬 *L'atterrissage* — les deux vrais
+  **événements** du vol, dont la phrase raconte exactement ce qui se passe à l'écran, à
+  lire et à écouter (bouton 🔇/🔊 de la famille, choix retenu). Un bouton qui n'a pas de
+  sens se grise : on ne décolle pas en vol, on n'atterrit pas déjà posé. (L'ancien
+  bouton « ✈️ En plein vol » affichait une phrase d'équilibre pendant que l'écran
+  montrait un décollage : l'équilibre est un *état*, pas un événement — il vit dans le
+  repère ✨ du curseur et dans le jeu.)
+- **La phrase d'état est assise sur la même grandeur que les flèches** (l'excès de
+  portance ressentie), avec une graduation honnête — « un tout petit peu plus fort :
+  il monte doucement » près du repère : le texte, les flèches et le mouvement ne
+  peuvent pas se contredire.
 - **« 🎮 Rejoins-les là-haut ! »** — LE jeu de l'épisode, juste sous la scène (la
   consigne, l'avion, l'invité et le curseur restent visibles ensemble) : un invité
   attend à SON altitude — 🎈 le ballon échappé, la montgolfière, l'aigle — et l'enfant
@@ -103,7 +107,7 @@ Le modèle de vol est pur — aucun accès DOM — et se teste sous Node, sans n
 node test/model.test.mjs
 ```
 
-**55 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
+**54 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
 (∝ v² — nulle à l'arrêt : un avion posé ne s'envole jamais tout seul) ; l'avion
 **s'envole quand elle atteint le poids** (la vitesse de décollage est testée au point
 près, et le repère du curseur est posé dessus) ; **curseur réduit, il plane** (descente
@@ -201,7 +205,7 @@ js/vue-cote.js        LA vue (piste, ciel, avion + pilote, les deux flèches,
 js/vue-pieces.js      « Découvre ton avion » : l'avion en grand, ancres des pastilles
 js/main.js            boucle rAF, curseur maître, lecture auto, moments, pièces,
                       conteur vocal de la famille (clé petit-labo-son)
-test/model.test.mjs   tests Node du modèle (55 vérifications)
+test/model.test.mjs   tests Node du modèle (54 vérifications)
 assets/fonts/         Baloo 2 auto-hébergée (woff2, licence OFL — copiée du portail)
 docs/                 captures + carte de partage og.png
 ```

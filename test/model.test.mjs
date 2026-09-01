@@ -219,25 +219,21 @@ console.log('La lecture automatique — le tour d’avion vit tout seul, en bouc
     proche(cibleAuto(TOUR_DUREE + 3), cibleAuto(3), 1e-9));
 }
 
-console.log('Les trois moments — le curseur guidé, une phrase chacun');
-verifie('trois moments : décollage, plein vol, atterrissage',
-  MOMENTS.length === 3 && MOMENTS[0].id === 'decollage' &&
-  MOMENTS[1].id === 'vol' && MOMENTS[2].id === 'atterrissage');
+console.log('Les deux moments — les deux vrais événements, une phrase chacun');
+verifie('deux moments : le décollage et l’atterrissage (l’équilibre est un ÉTAT — il vit dans le repère et le jeu)',
+  MOMENTS.length === 2 && MOMENTS[0].id === 'decollage' && MOMENTS[1].id === 'atterrissage');
 verifie('chaque moment a son émoji, son sous-titre et UNE phrase courte (pas de pavé)',
   MOMENTS.every((m) => m.emoji && m.sub && m.phrase.length > 40 && m.phrase.length <= 140));
 verifie('le décollage raconte la course des flèches (dépasser le poids)',
   MOMENTS[0].phrase.indexOf('dépasse') !== -1);
-verifie('le plein vol raconte l’équilibre des deux flèches',
-  MOMENTS[1].phrase.indexOf('égales') !== -1);
 verifie('l’atterrissage promet le toucher tout doux',
-  MOMENTS[2].phrase.indexOf('doux') !== -1);
+  MOMENTS[1].phrase.indexOf('doux') !== -1);
 verifie('chaque moment sait quand il a du sens : décoller seulement posé, atterrir seulement en vol',
   (() => {
     const auSol = etatInitial();
     const enVol = { v: 80, alt: 60, vz: 0, auSol: false, distance: 0 };
     return MOMENTS[0].dispo(auSol) && !MOMENTS[0].dispo(enVol) &&
-      MOMENTS[1].dispo(auSol) && MOMENTS[1].dispo(enVol) &&
-      !MOMENTS[2].dispo(auSol) && MOMENTS[2].dispo(enVol);
+      !MOMENTS[1].dispo(auSol) && MOMENTS[1].dispo(enVol);
   })());
 verifie('le moment décollage, joué depuis le sol, fait vraiment décoller',
   (() => {
@@ -250,23 +246,12 @@ verifie('le moment décollage, joué depuis le sol, fait vraiment décoller',
     }
     return !e.auSol && e.alt > 10;
   })());
-verifie('le moment plein vol installe l’équilibre : altitude stable, flèches égales',
-  (() => {
-    let e = etatInitial();
-    let indice = 0;
-    for (let t = 0; t < 90; t += DT) {
-      const r = etapeMoment(MOMENTS[1], indice, e);
-      indice = r.indice;
-      e = pas(e, r.cible, DT);
-    }
-    return !e.auSol && proche(portanceEnVol(e.v, e.alt), POIDS, 0.05) && Math.abs(e.vz) < 0.5;
-  })());
 verifie('le moment atterrissage finit posé, roues arrêtées',
   (() => {
     let e = { v: 80, alt: 90, vz: 0, auSol: false, distance: 0 };
     let indice = 0;
     for (let t = 0; t < 120; t += DT) {
-      const r = etapeMoment(MOMENTS[2], indice, e);
+      const r = etapeMoment(MOMENTS[1], indice, e);
       indice = r.indice;
       e = pas(e, r.cible, DT);
     }
@@ -292,6 +277,16 @@ verifie('curseur à zéro en vol : la phrase explique l’élan (« un avion ne 
 verifie('en équilibre : les deux flèches sont égales',
   phraseEtat({ v: VITESSE_DECOLLAGE, alt: 50, vz: 0, auSol: false, distance: 0 })
     .indexOf('égales') !== -1);
+verifie('la phrase ne contredit JAMAIS le mouvement : petit excès = « il monte doucement », ' +
+  'petit manque = « il descend » — « égales » réservé au vrai équilibre',
+  (() => {
+    const monteDoucement = phraseEtat({ v: 56, alt: 20, vz: 0.9, auSol: false, distance: 0 });
+    const descendDoucement = phraseEtat({ v: 54, alt: 20, vz: -0.9, auSol: false, distance: 0 });
+    return monteDoucement.indexOf('monte doucement') !== -1 &&
+      monteDoucement.indexOf('égales') === -1 &&
+      descendDoucement.indexOf('descend') !== -1 &&
+      descendDoucement.indexOf('égales') === -1;
+  })());
 
 console.log('Le jeu « Rejoins-les là-haut ! » — les défis de la famille');
 verifie('l’hystérésis de sortie est plus large que la fenêtre de victoire (le bravo ne clignote pas)',
