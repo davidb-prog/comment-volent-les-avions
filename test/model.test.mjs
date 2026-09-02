@@ -263,10 +263,21 @@ verifie('posé à l’arrêt : « pas de vitesse, l’air ne le porte pas »',
   phraseEtat(etatInitial()).indexOf('l’air ne le porte pas') !== -1);
 verifie('au roulage, l’avion ROULE (il ne « court » jamais) et la flèche grandit',
   (() => {
-    const ph = phraseEtat({ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 });
+    const ph = phraseEtat({ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 }, 1);
     return ph.indexOf('roule') !== -1 && ph.indexOf('grandir') !== -1 &&
       ph.indexOf('court') === -1;
   })());
+verifie('la phrase du sol sait dans quel sens on va : en freinant, la flèche RAPETISSE ' +
+  '(elle ne « grandit » plus — retour de David : la phrase du décollage s’affichait à l’atterrissage)',
+  (() => {
+    const freine = phraseEtat({ v: 35, alt: 0, vz: 0, auSol: true, distance: 0 }, 0);
+    const maintient = phraseEtat({ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 }, 0.3);
+    return freine.indexOf('freine') !== -1 && freine.indexOf('rapetisse') !== -1 &&
+      freine.indexOf('grandir') === -1 &&
+      maintient.indexOf('Pousse encore') !== -1;
+  })());
+verifie('le drapeau à damier a disparu du roulage (il dit « arrivée ! », pas « ça roule »)',
+  phraseEtat({ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 }, 1).indexOf('🏁') === -1);
 verifie('en montée : l’air pousse plus fort que le poids',
   phraseEtat({ v: 80, alt: 40, vz: 5, auSol: false, distance: 0 }).indexOf('monte') !== -1);
 verifie('vitesse réduite : il plane, il ne tombe pas',

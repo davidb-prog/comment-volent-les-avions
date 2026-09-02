@@ -163,7 +163,7 @@ function poseTexte(cle, el, valeur) {
 function majTextes() {
   poseTexte('vitesse', $('vitesse-txt'), formatVitesse(sim.etat.v));
   poseTexte('altitude', $('altitude-txt'), formatAltitude(sim.etat.alt));
-  poseTexte('etat', $('phrase-etat'), phraseEtat(sim.etat));
+  poseTexte('etat', $('phrase-etat'), phraseEtat(sim.etat, sim.cible));
   // un bouton-moment se grise quand il n'a pas de sens (décoller en vol,
   // atterrir déjà posé) — sauf celui du moment en cours, qui reste allumé
   for (const moment of MOMENTS) {

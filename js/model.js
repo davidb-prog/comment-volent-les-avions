@@ -210,16 +210,27 @@ export function etapeMoment(moment, indice, etat) {
 // UNE petite phrase sous la vue — assise sur la MÊME grandeur que les flèches
 // (l'excès de portance ressentie) : le texte, les flèches et le mouvement ne
 // peuvent pas se contredire (retour de David 2026-08-31 : à 224 km/h l'avion
-// montait doucement pendant que la phrase parlait d'équilibre).
-export function phraseEtat(etat) {
+// montait doucement pendant que la phrase parlait d'équilibre). Au sol, la
+// phrase reçoit la consigne du curseur pour savoir si l'on accélère ou si
+// l'on freine (retour de David 2026-09-02 : « regarde la flèche grandir »
+// s'affichait aussi pendant le freinage après l'atterrissage — et le drapeau
+// à damier 🏁, qui dit « arrivée ! », racontait le contraire du roulage).
+export function phraseEtat(etat, cible01) {
   if (etat.auSol) {
     if (etat.v < 2) {
       return '😴 Ton avion est posé. Pas de vitesse : l’air ne le porte pas.';
     }
-    if (portance(etat.v) < 0.55) {
-      return '🏁 Il roule… regarde la flèche de l’air grandir avec la vitesse !';
+    const vCible = cible01 === undefined ? etat.v : borne01(cible01) * VITESSE_MAX;
+    if (vCible < etat.v - 2) {
+      return '🛞 Il freine sur la piste… la flèche de l’air rapetisse avec la vitesse.';
     }
-    return '💨 Encore un peu ! La flèche de l’air va dépasser le poids…';
+    if (vCible > etat.v + 2) {
+      if (portance(etat.v) < 0.55) {
+        return '🛞 Il roule de plus en plus vite… regarde la flèche de l’air grandir !';
+      }
+      return '💨 Encore un peu ! La flèche de l’air va dépasser le poids…';
+    }
+    return '🛞 Il roule. Pousse encore la vitesse pour faire grandir la flèche de l’air !';
   }
   if (etat.alt > ALTITUDE_MAX - 3 && etat.vz > -0.4) {
     return '🎈 Tout en haut ! Plus haut, l’air est trop léger pour bien porter.';

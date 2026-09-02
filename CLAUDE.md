@@ -128,7 +128,10 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
 - **La phrase d'état est assise sur l'excès de portance** (la grandeur des flèches),
   graduée (« un tout petit peu plus fort : il monte doucement ») : texte, flèches et
   mouvement toujours d'accord (retour de David 2026-08-31 : à 224 km/h l'avion montait
-  pendant que la phrase parlait d'équilibre — testé).
+  pendant que la phrase parlait d'équilibre — testé). Au sol, elle reçoit la consigne
+  du curseur et distingue accélérer (« la flèche grandit »), freiner (« elle
+  rapetisse ») et maintenir — et la roue 🛞 a remplacé le drapeau à damier 🏁, qui dit
+  « arrivée ! » (retours de David 2026-09-02, testés).
 - **Curseur réduit : il plane** (descente plafonnée), il ne tombe jamais comme une
   pierre — et **un avion ne s'arrête pas en l'air** : en vol la vitesse garde un
   plancher de plané (`VITESSE_PLANE`), on ne freine qu'une fois posé (retour de David
