@@ -156,7 +156,10 @@ futur épisode) ; monter = excès de portance (en vrai, montée stabilisée = ex
 poussée) ; curseur = vitesse directe ; **une vitesse = une altitude** (assiette figée —
 en vrai le pilote peut tenir plusieurs altitudes à la même vitesse, questionné par David
 2026-08-31 et assumé : c'est le socle du jeu) ; plané qui laisse fondre la vitesse ; pas
-de décrochage ; arrondi automatique ; piste infinie ; le virage = un futur épisode.
+de décrochage ; arrondi automatique ; piste infinie où l'avion peut s'arrêter tout à
+fait (questionné par David 2026-09-02 — en vrai on libère la piste et on roule au
+parking — et assumé : l'arrêt est le repos du jouet, l'état d'où tout repart ; pas de
+bretelles ni d'aéroport dans cet épisode) ; le virage = un futur épisode.
 
 ## Invariants d'interaction (voulus par David)
 
@@ -194,7 +197,7 @@ de décrochage ; arrondi automatique ; piste infinie ; le virage = un futur épi
 - `js/vue-pieces.js` — l'avion en grand, ancres `ANCRES_PIECES`, anneau de sélection
 - `js/main.js` — boucle rAF, curseur, lecture auto, moments, les deux jeux, pièces,
   conteur
-- `test/model.test.mjs` — tests Node (54 vérifications)
+- `test/model.test.mjs` — tests Node (56 vérifications)
 - `assets/fonts/` — Baloo 2 (copiée du portail, licence OFL)
 
 ## Vérification navigateur

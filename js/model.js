@@ -230,7 +230,9 @@ export function phraseEtat(etat, cible01) {
       }
       return '💨 Encore un peu ! La flèche de l’air va dépasser le poids…';
     }
-    return '🛞 Il roule. Pousse encore la vitesse pour faire grandir la flèche de l’air !';
+    // descriptive, jamais une injonction : après un atterrissage curseur à
+    // mi-course, « pousse encore ! » sonnait comme un ordre de redécoller
+    return '🛞 Il roule tranquillement sur la piste… à cette vitesse, l’air ne le porte pas assez pour s’envoler.';
   }
   if (etat.alt > ALTITUDE_MAX - 3 && etat.vz > -0.4) {
     return '🎈 Tout en haut ! Plus haut, l’air est trop léger pour bien porter.';

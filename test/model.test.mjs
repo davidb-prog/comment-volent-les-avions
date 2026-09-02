@@ -274,7 +274,8 @@ verifie('la phrase du sol sait dans quel sens on va : en freinant, la flèche RA
     const maintient = phraseEtat({ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 }, 0.3);
     return freine.indexOf('freine') !== -1 && freine.indexOf('rapetisse') !== -1 &&
       freine.indexOf('grandir') === -1 &&
-      maintient.indexOf('Pousse encore') !== -1;
+      maintient.indexOf('ne le porte pas assez') !== -1 &&
+      maintient.indexOf('Pousse') === -1; // descriptive, jamais une injonction
   })());
 verifie('le drapeau à damier a disparu du roulage (il dit « arrivée ! », pas « ça roule »)',
   phraseEtat({ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 }, 1).indexOf('🏁') === -1);

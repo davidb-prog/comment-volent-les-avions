@@ -107,7 +107,7 @@ Le modèle de vol est pur — aucun accès DOM — et se teste sous Node, sans n
 node test/model.test.mjs
 ```
 
-**54 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
+**56 vérifications**, dont les vérités du récit : la **portance grandit avec la vitesse**
 (∝ v² — nulle à l'arrêt : un avion posé ne s'envole jamais tout seul) ; l'avion
 **s'envole quand elle atteint le poids** (la vitesse de décollage est testée au point
 près, et le repère du curseur est posé dessus) ; **curseur réduit, il plane** (descente
@@ -186,7 +186,10 @@ Tout est dans [`js/model.js`](js/model.js) (aucun accès DOM, toutes les constan
 - **Vitesses et altitudes à hauteur d'enfant** : décollage vers 220 km/h, plafond du
   dessin 4 000 m — un vrai avion de ligne décolle vers 250–300 km/h et croise vers
   900 km/h à 11 000 m.
-- **La piste est infinie** (toujours là pour se poser) et le monde défile en boucle.
+- **La piste est infinie** (toujours là pour se poser) et le monde défile en boucle —
+  et l'avion peut s'y arrêter tout à fait : c'est le repos du jouet, l'état d'où tout
+  repart. En vrai, un avion libère la piste après l'atterrissage et roule jusqu'au
+  parking — les bretelles et l'aéroport attendront un autre épisode.
 - **Le virage n'est pas dans cet épisode** : pencher les ailes pour tourner est une
   deuxième idée à part entière — elle aura son propre épisode.
 
@@ -205,7 +208,7 @@ js/vue-cote.js        LA vue (piste, ciel, avion + pilote, les deux flèches,
 js/vue-pieces.js      « Découvre ton avion » : l'avion en grand, ancres des pastilles
 js/main.js            boucle rAF, curseur maître, lecture auto, moments, pièces,
                       conteur vocal de la famille (clé petit-labo-son)
-test/model.test.mjs   tests Node du modèle (54 vérifications)
+test/model.test.mjs   tests Node du modèle (56 vérifications)
 assets/fonts/         Baloo 2 auto-hébergée (woff2, licence OFL — copiée du portail)
 docs/                 captures + carte de partage og.png
 ```
