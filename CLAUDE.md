@@ -78,10 +78,14 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
    consigne/bravo et « Pièce suivante ! » vivent CÔTE À CÔTE dans `.pieces-defi-zone`,
    au-dessus du cadre avec les autres commandes, hauteur réservée (56 px desktop,
    122 px mobile où le bouton passe sous le message, bravo un cran plus petit) ;
-   l'histoire des pièces a la place de la plus longue (`.piece-histoire`). Pendant
-   tout le jeu, le cadre et le panneau ne bougent pas d'un pixel (testé en
-   navigateur, raté/bravo/bouton compris) — attention : la zone est en
-   `display:flex`, son `[hidden]` doit être ré-affirmé en CSS.
+   l'histoire des pièces a la place de la plus longue (`.piece-histoire`). Le bouton
+   garde SA place même caché (`visibility`, pas `display`, + `min-width` couvrant ses
+   deux libellés). Pendant tout le jeu, le cadre, le panneau ET le bouton ne bougent
+   pas d'un pixel (testé en navigateur, raté/bravo/bouton compris) — attention : la
+   zone est en `display:flex`, son `[hidden]` doit être ré-affirmé en CSS. Même
+   principe plus haut : `.phrase-etat` réserve ses 2 lignes (3 sur mobile), car la
+   lecture automatique la change toute seule — la page ne respire jamais sans geste
+   (retour de David 2026-09-03 : « la fenêtre bouge quand je ne fais rien »).
 9. **Honnêteté** : vérités protégées par les tests ; simplifications documentées note aux
    parents + README ; l'avion **roule** (jamais « court » — testé).
 10. **Jamais punitif** : aucun geste ne produit de crash (testé au curseur fou), aucune

@@ -120,7 +120,10 @@ main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; }
 .canvas-wrap canvas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; display: block; }
 
 /* la petite phrase sous la vue : ce que l'air fait, à cet instant */
-.phrase-etat { margin: 10px 4px 4px; font-size: 1rem; color: var(--text); min-height: 1.6em; }
+/* la place des phrases les plus longues (2 lignes) est réservée : la lecture
+   automatique change la phrase toute seule, la page ne doit PAS respirer
+   (retour de David 2026-09-03 : « la fenêtre bouge quand je ne fais rien ») */
+.phrase-etat { margin: 10px 4px 4px; font-size: 1rem; color: var(--text); min-height: 3.2em; }
 
 /* ---------- LE geste : le grand curseur de vitesse ---------- */
 
@@ -240,7 +243,11 @@ main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; }
 }
 .pieces-defi-zone[hidden] { display: none; }
 .pieces-defi { margin: 0; flex: 1 1 auto; min-width: 0; }
-#btn-pieces-suivante { flex: 0 0 auto; white-space: nowrap; }
+/* le bouton garde SA place même caché (visibility, pas display) et une
+   largeur qui couvre ses deux libellés : il ne bouge plus d'un pixel entre
+   « Pièce suivante ! » et « Encore une partie ! » */
+#btn-pieces-suivante { flex: 0 0 auto; white-space: nowrap; min-width: 186px; text-align: center; }
+#btn-pieces-suivante[hidden] { display: inline-block; visibility: hidden; }
 
 /* la pastille ratée frétille gentiment (jamais punitif, juste rigolo) */
 @keyframes tremble {
@@ -450,9 +457,12 @@ button:focus-visible, input:focus-visible, a:focus-visible {
      bravo met un costume un cran plus petit, et on réserve la hauteur de
      l'état le plus haut — le cadre et le panneau ne bougent plus du jeu */
   .pieces-defi-zone { flex-wrap: wrap; min-height: 122px; }
-  .pieces-defi { flex: 1 1 100%; }
+  /* le message réserve ses lignes pour que le bouton, en dessous, ne
+     descende pas quand le texte s'allonge */
+  .pieces-defi { flex: 1 1 100%; min-height: 68px; }
   .defi-texte.bravo { font-size: 1.05rem; }
   .piece-histoire { min-height: 8em; }
+  .phrase-etat { min-height: 4.8em; }
   .repere-envol i { font-size: .72rem; }
 }
 
