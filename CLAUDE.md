@@ -178,11 +178,17 @@ bretelles ni d'aéroport dans cet épisode) ; le virage = un futur épisode.
 - Le bouton 🔇/🔊 a **trois jumeaux synchronisés** (moments, jeu, pièces — même état,
   même clé) : le réglage du son à portée de main sans remonter la page.
 - **L'avion est dessiné pour ses pièces** (2026-08-30, retravaillé 2026-09-03) : aile en
-  flèche aux coins doux (bord d'attaque brillant, ligne de volet), réacteur détaillé
-  (nacelle en dégradé, lèvre d'entrée d'air, cône de soufflante, tuyère), bulle de
-  cockpit, dérive arrondie à gouvernail, nez marqué, ventre ombré, deux trains, hublots.
-  Les pastilles sont des points de 20 px (zone de tap 44 px, couleur via `--c`) — testé
-  en navigateur : jamais de chevauchement, même à 390 px, et toutes dans le cadre.
+  flèche aux coins doux (bord d'attaque brillant, ligne de volet), bulle de cockpit,
+  dérive arrondie à gouvernail, nez marqué, ventre ombré, hublots. Trois règles nées des
+  retours de David (2026-09-03) : le **réacteur pend SOUS l'aile** par son pylône (il
+  flottait devant, à la place du train — trompeur) ; son **entrée d'air est une fine
+  ellipse de profil** avec sa lèvre claire — jamais un disque à moyeu, qui se lisait
+  comme une roue ; le train principal est un **boggie à roues jumelées** (pneus sombres,
+  moyeux clairs) qui dépasse bien sous l'aile. Et une règle de pastilles : **une
+  pastille ne cache jamais la pièce qu'elle désigne** — celle des roues se pose sur la
+  piste, SOUS le boggie. Les pastilles sont des points de 20 px (zone de tap 44 px,
+  couleur via `--c`) — testé en navigateur : jamais de chevauchement, même à 390 px, et
+  toutes dans le cadre.
 - **Seuil mobile unique : 640 px** (CSS seulement — aucun JS de bascule).
 
 ## Structure

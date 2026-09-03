@@ -13,11 +13,11 @@ import { dessineAvionCote } from './vue-cote.js';
 // mêmes coordonnées que dessineAvionCote) — bien écartées les unes des
 // autres pour que chaque pièce se distingue (retour de David) : [x, y].
 export const ANCRES_PIECES = {
-  ailes: [-17, 11],
-  reacteurs: [12, 14],
+  ailes: [-17, 12],
+  reacteurs: [4, 15],   // sur la nacelle, désormais sous l'aile
   cockpit: [28, -12],
   queue: [-37, -16],
-  roues: [-9, 19],
+  roues: [-11, 26.5],   // SOUS le boggie, posée sur la piste — les roues restent visibles
 };
 
 export const VuePieces = class {
@@ -36,7 +36,8 @@ export const VuePieces = class {
     const px = w * 0.52, py = h * 0.46;
 
     // le même grand ciel de jour que la vue de côté, la piste dessous
-    const horizon = py + 20 * s;
+    // (le bas du boggie principal est à 22 unités sous le centre de l'avion)
+    const horizon = py + 22 * s;
     const ciel = ctx.createLinearGradient(0, 0, 0, horizon);
     ciel.addColorStop(0, CIEL_HAUT);
     ciel.addColorStop(1, CIEL_BAS);

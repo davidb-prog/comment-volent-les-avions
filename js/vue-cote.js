@@ -35,20 +35,25 @@ export function dessineAvionCote(ctx, x, y, s, assiette, rouesSorties, feu) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(assiette);
-  // les trains d'atterrissage (sortis près du sol) : avant + principal
+  // les trains d'atterrissage (sortis près du sol) : roulette de nez + boggie
+  // principal à roues JUMELÉES sous l'aile — pneus sombres, moyeux clairs,
+  // pour que « les roues » ne se confondent jamais avec l'entrée d'air du
+  // réacteur (retour de David 2026-09-03)
   if (rouesSorties) {
     ctx.strokeStyle = COULEUR_AVION_FONCE;
     ctx.lineWidth = 2.4 * s;
     ctx.beginPath();
-    ctx.moveTo(27 * s, 7 * s); ctx.lineTo(28 * s, 14 * s);
-    ctx.moveTo(-8 * s, 10 * s); ctx.lineTo(-9 * s, 15 * s);
+    ctx.moveTo(27 * s, 7 * s); ctx.lineTo(28 * s, 15 * s);
+    ctx.moveTo(-10 * s, 10 * s); ctx.lineTo(-11 * s, 17 * s);
     ctx.stroke();
-    ctx.fillStyle = '#33475c';
-    ctx.beginPath(); ctx.arc(28 * s, 15 * s, 3 * s, 0, TAU); ctx.fill();
-    ctx.beginPath(); ctx.arc(-9 * s, 16 * s, 3.6 * s, 0, TAU); ctx.fill();
-    ctx.fillStyle = '#9fb2c8';
-    ctx.beginPath(); ctx.arc(28 * s, 15 * s, 1.1 * s, 0, TAU); ctx.fill();
-    ctx.beginPath(); ctx.arc(-9 * s, 16 * s, 1.3 * s, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#2c3a4c';
+    ctx.beginPath(); ctx.arc(28 * s, 17.8 * s, 3.2 * s, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(-13.5 * s, 18 * s, 4 * s, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(-8.5 * s, 18 * s, 4 * s, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#cfd8e4';
+    ctx.beginPath(); ctx.arc(28 * s, 17.8 * s, 1.2 * s, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(-13.5 * s, 18 * s, 1.5 * s, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(-8.5 * s, 18 * s, 1.5 * s, 0, TAU); ctx.fill();
   }
   // la dérive (queue), derrière — bout arrondi + trait de gouvernail
   ctx.fillStyle = COULEUR_AVION;
@@ -104,40 +109,41 @@ export function dessineAvionCote(ctx, x, y, s, assiette, rouesSorties, feu) {
   ctx.strokeStyle = 'rgba(28, 53, 80, 0.28)'; // la ligne du volet
   ctx.lineWidth = 1.1 * s;
   ctx.beginPath(); ctx.moveTo(-9 * s, 3.5 * s); ctx.lineTo(-25 * s, 13 * s); ctx.stroke();
-  // le réacteur suspendu SOUS l'aile : pylône, flamme, nacelle allongée,
-  // lèvre d'entrée d'air, cône de soufflante, tuyère à l'arrière
+  // le réacteur suspendu SOUS L'AILE (pylône accroché à l'intrados, comme sur
+  // un vrai avion de ligne — retour de David 2026-09-03 : il flottait devant
+  // l'aile, à la place des roues) : nacelle allongée, lèvre claire, entrée
+  // d'air en fine ellipse de profil (surtout PAS un disque à moyeu, qui se
+  // lisait comme une roue), tuyère et flamme à l'arrière
   ctx.fillStyle = COULEUR_AVION_FONCE;
-  ctx.fillRect(8 * s, 5 * s, 4 * s, 5 * s); // le pylône
+  ctx.fillRect(2 * s, 5 * s, 4.5 * s, 6.5 * s); // le pylône, sous l'aile
   if (feu > 0.03) {
     const fl = (6 + 30 * feu) * s;
-    const flamme = ctx.createLinearGradient(3 * s, 0, 3 * s - fl, 0);
+    const flamme = ctx.createLinearGradient(-4 * s, 0, -4 * s - fl, 0);
     flamme.addColorStop(0, '#ffd166');
     flamme.addColorStop(0.5, '#ff9f1c');
     flamme.addColorStop(1, 'rgba(255, 122, 28, 0)');
     ctx.fillStyle = flamme;
     ctx.beginPath();
-    ctx.moveTo(4 * s, 10.5 * s);
-    ctx.lineTo(3 * s - fl, 12.5 * s);
-    ctx.lineTo(4 * s, 14.5 * s);
+    ctx.moveTo(-3 * s, 13 * s);
+    ctx.lineTo(-4 * s - fl, 15 * s);
+    ctx.lineTo(-3 * s, 17 * s);
     ctx.closePath(); ctx.fill();
   }
   ctx.fillStyle = '#6e7b90'; // la tuyère, à l'arrière
   ctx.beginPath();
-  ctx.moveTo(6 * s, 9.5 * s); ctx.lineTo(3 * s, 11 * s);
-  ctx.lineTo(3 * s, 14 * s); ctx.lineTo(6 * s, 15.5 * s);
+  ctx.moveTo(-1 * s, 12 * s); ctx.lineTo(-4.5 * s, 13.5 * s);
+  ctx.lineTo(-4.5 * s, 16.5 * s); ctx.lineTo(-1 * s, 18 * s);
   ctx.closePath(); ctx.fill();
-  const nacelle = ctx.createLinearGradient(0, 8 * s, 0, 17 * s); // la nacelle
+  const nacelle = ctx.createLinearGradient(0, 10.5 * s, 0, 19.5 * s); // la nacelle
   nacelle.addColorStop(0, '#aab6c9');
   nacelle.addColorStop(0.5, '#8b93a5');
   nacelle.addColorStop(1, '#727e93');
   ctx.fillStyle = nacelle;
-  ctx.beginPath(); ctx.ellipse(12.5 * s, 12.5 * s, 8.2 * s, 4.6 * s, 0, 0, TAU); ctx.fill();
-  ctx.fillStyle = '#e6edf5'; // la lèvre de l'entrée d'air
-  ctx.beginPath(); ctx.ellipse(20 * s, 12.5 * s, 2.6 * s, 4.4 * s, 0, 0, TAU); ctx.fill();
-  ctx.fillStyle = '#33475c'; // l'entrée d'air, face à la route
-  ctx.beginPath(); ctx.ellipse(20.3 * s, 12.5 * s, 2 * s, 3.6 * s, 0, 0, TAU); ctx.fill();
-  ctx.fillStyle = '#9fb2c8'; // le cône de la soufflante
-  ctx.beginPath(); ctx.ellipse(20.6 * s, 12.5 * s, 0.9 * s, 1.6 * s, 0, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(4.5 * s, 15 * s, 8 * s, 4.4 * s, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#e6edf5'; // la lèvre de l'entrée d'air, à l'avant
+  ctx.beginPath(); ctx.ellipse(11.6 * s, 15 * s, 1.9 * s, 4.2 * s, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#33475c'; // l'ouverture, vue de profil : une fine ellipse
+  ctx.beginPath(); ctx.ellipse(12 * s, 15 * s, 1 * s, 3.3 * s, 0, 0, TAU); ctx.fill();
   ctx.restore();
 }
 
@@ -283,7 +289,7 @@ export const VueCote = class {
     // ---- la place de l'avion à l'écran (à poste fixe : le décor bouge, pas lui)
     const px = w * 0.44;
     const yRoues = horizon + 2 * s;
-    const ySol = yRoues - 15 * s;
+    const ySol = yRoues - 17.5 * s; // les roues (bas du boggie : 22 unités) posées sur la piste
     const yHaut = h * 0.17;
     const py = ySol - borne01(etat.alt / ALTITUDE_MAX) * (ySol - yHaut);
     const assiette = etat.auSol ? 0 : borne(-Math.atan2(etat.vz, 26), -0.42, 0.42);
