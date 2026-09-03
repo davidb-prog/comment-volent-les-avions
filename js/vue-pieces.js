@@ -15,7 +15,7 @@ import { dessineAvionCote } from './vue-cote.js';
 export const ANCRES_PIECES = {
   ailes: [-17, 12],
   reacteurs: [4, 15],   // sur la nacelle, désormais sous l'aile
-  cockpit: [28, -12],
+  cockpit: [25, -13.5], // l'épaule droite de la bulle — sans cacher le pilote
   queue: [-37, -16],
   roues: [-11, 26.5],   // SOUS le boggie, posée sur la piste — les roues restent visibles
 };

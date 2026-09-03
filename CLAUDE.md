@@ -177,9 +177,13 @@ bretelles ni d'aéroport dans cet épisode) ; le virage = un futur épisode.
   automatique — sauf pendant que le doigt le tient.
 - Le bouton 🔇/🔊 a **trois jumeaux synchronisés** (moments, jeu, pièces — même état,
   même clé) : le réglage du son à portée de main sans remonter la page.
-- **L'avion est dessiné pour ses pièces** (2026-08-30, retravaillé 2026-09-03) : aile en
-  flèche aux coins doux (bord d'attaque brillant, ligne de volet), bulle de cockpit,
-  dérive arrondie à gouvernail, nez marqué, ventre ombré, hublots. Trois règles nées des
+- **L'avion est dessiné pour ses pièces** (2026-08-30, feuille blanche 2026-09-03 :
+  « le nez n'est pas ajusté sur la carlingue, c'est très grossier » — le fuselage est
+  désormais UNE seule silhouette continue en courbes de Bézier, toit → front arrondi →
+  menton du nez → ventre → effilement → cône de queue : jamais de forme rapportée qui
+  laisse un raccord visible ; l'ombre du ventre et le reflet du nez suivent la même
+  courbe) : aile en flèche aux coins doux (bord d'attaque brillant, ligne de volet),
+  bulle de cockpit, dérive arrondie à gouvernail, hublots. Trois règles nées des
   retours de David (2026-09-03) : le **réacteur pend SOUS l'aile** par son pylône (il
   flottait devant, à la place du train — trompeur) ; son **entrée d'air est une fine
   ellipse de profil** avec sa lèvre claire — jamais un disque à moyeu, qui se lisait

@@ -28,9 +28,11 @@ const COULEURS_FLEURS = ['#e0447c', '#6a4fd0', '#ffb54d'];
 
 // Ton avion vu de côté, rond et sympathique, avec son petit pilote — le nez
 // vers la droite. Partagé avec « Découvre ton avion » (vue-pieces.js).
-// Redessiné (retour de David) pour que chaque pièce se distingue : grande
-// aile en flèche, réacteur suspendu avec son entrée d'air, cockpit vitré,
-// deux trains d'atterrissage, hublots. `feu` (0..1) allume la flamme.
+// Feuille blanche 2026-09-03 (retour de David : « le nez n'est pas ajusté
+// sur la carlingue ») : le fuselage est UNE seule silhouette continue en
+// courbes de Bézier — toit, front arrondi, menton du nez, ventre, effilement
+// de queue — plus aucune forme rapportée qui laisse un raccord visible.
+// `feu` (0..1) allume la flamme.
 export function dessineAvionCote(ctx, x, y, s, assiette, rouesSorties, feu) {
   ctx.save();
   ctx.translate(x, y);
@@ -55,41 +57,67 @@ export function dessineAvionCote(ctx, x, y, s, assiette, rouesSorties, feu) {
     ctx.beginPath(); ctx.arc(-13.5 * s, 18 * s, 1.5 * s, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.arc(-8.5 * s, 18 * s, 1.5 * s, 0, TAU); ctx.fill();
   }
-  // la dérive (queue), derrière — bout arrondi + trait de gouvernail
+  // la dérive (queue), derrière — bout arrondi + trait de gouvernail ; sa
+  // racine plonge dans le fuselage, dessiné par-dessus : aucun raccord
   ctx.fillStyle = COULEUR_AVION;
   ctx.beginPath();
-  ctx.moveTo(-22 * s, -3 * s);
-  ctx.quadraticCurveTo(-30 * s, -24 * s, -38 * s, -26.5 * s);
-  ctx.quadraticCurveTo(-42.5 * s, -27.5 * s, -42 * s, -23 * s);
-  ctx.quadraticCurveTo(-40 * s, -12 * s, -34 * s, -1 * s);
+  ctx.moveTo(-25 * s, -4 * s);
+  ctx.quadraticCurveTo(-30 * s, -24 * s, -37.5 * s, -26.5 * s);
+  ctx.quadraticCurveTo(-42 * s, -27.5 * s, -41.5 * s, -23 * s);
+  ctx.quadraticCurveTo(-40 * s, -12 * s, -36 * s, -1 * s);
   ctx.closePath(); ctx.fill();
   ctx.strokeStyle = COULEUR_AVION_FONCE;
   ctx.lineWidth = 1.4 * s;
-  ctx.beginPath(); ctx.moveTo(-37 * s, -24 * s); ctx.lineTo(-33.5 * s, -4 * s); ctx.stroke();
-  // le stabilisateur
+  ctx.beginPath(); ctx.moveTo(-36.5 * s, -24 * s); ctx.lineTo(-34 * s, -7 * s); ctx.stroke();
+  // le stabilisateur, sous la queue
   ctx.fillStyle = COULEUR_AVION_FONCE;
   ctx.beginPath();
-  ctx.moveTo(-24 * s, -2 * s); ctx.lineTo(-43 * s, 6 * s); ctx.lineTo(-28 * s, 7 * s);
+  ctx.moveTo(-25 * s, -2 * s); ctx.lineTo(-43 * s, 5 * s); ctx.lineTo(-28 * s, 6.5 * s);
   ctx.closePath(); ctx.fill();
-  // le fuselage, avec son ventre ombré et son nez marqué
+  // LE FUSELAGE : une seule silhouette fermée — le toit file vers le front qui
+  // s'arrondit, la pointe du nez redescend en menton doux, le ventre remonte
+  // en s'effilant jusqu'au petit cône de queue arrondi
   ctx.fillStyle = COULEUR_AVION;
-  ctx.beginPath(); ctx.ellipse(0, 0, 40 * s, 10.5 * s, 0, 0, TAU); ctx.fill();
-  ctx.fillStyle = 'rgba(28, 53, 80, 0.10)'; // l'ombre du ventre
-  ctx.beginPath(); ctx.ellipse(0, 4 * s, 39 * s, 6.5 * s, 0, 0.15, Math.PI - 0.15); ctx.fill();
-  ctx.fillStyle = COULEUR_AVION_FONCE; // le bout du nez
-  ctx.beginPath(); ctx.ellipse(37 * s, 0.5 * s, 4.5 * s, 6.5 * s, -0.25, -1.7, 1.7); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-32 * s, -7.2 * s);
+  ctx.bezierCurveTo(-12 * s, -9.9 * s, 8 * s, -9.9 * s, 24 * s, -8.6 * s);   // le toit
+  ctx.bezierCurveTo(33 * s, -7.9 * s, 39.5 * s, -5.4 * s, 41 * s, -1.6 * s); // le front
+  ctx.bezierCurveTo(42 * s, 1.2 * s, 40.2 * s, 4.6 * s, 36.5 * s, 6.4 * s);  // le menton
+  ctx.bezierCurveTo(28 * s, 8.8 * s, 6 * s, 9.8 * s, -14 * s, 8.6 * s);      // le ventre
+  ctx.bezierCurveTo(-26 * s, 7.6 * s, -36 * s, 4.4 * s, -41 * s, 0.6 * s);   // l'effilement
+  ctx.bezierCurveTo(-42.6 * s, -0.7 * s, -42.3 * s, -2.5 * s, -40.5 * s, -3.3 * s); // le cône de queue
+  ctx.bezierCurveTo(-38 * s, -4.5 * s, -35.5 * s, -6.4 * s, -32 * s, -7.2 * s);
+  ctx.closePath(); ctx.fill();
+  // l'ombre du ventre : un croissant qui suit la MÊME courbe que la silhouette
+  ctx.fillStyle = 'rgba(28, 53, 80, 0.10)';
+  ctx.beginPath();
+  ctx.moveTo(35 * s, 5.8 * s);
+  ctx.bezierCurveTo(27 * s, 8.2 * s, 5 * s, 9.2 * s, -14 * s, 8.0 * s);
+  ctx.bezierCurveTo(-26 * s, 7.0 * s, -35.5 * s, 3.9 * s, -40.2 * s, 0.4 * s);
+  ctx.bezierCurveTo(-34.5 * s, 3.0 * s, -25 * s, 5.4 * s, -14 * s, 6.2 * s);
+  ctx.bezierCurveTo(5 * s, 7.4 * s, 27 * s, 6.2 * s, 35 * s, 5.8 * s);
+  ctx.closePath(); ctx.fill();
+  // le reflet du nez : un trait de lumière qui épouse le front — on VOIT que
+  // le nez et la carlingue ne font qu'un
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+  ctx.lineWidth = 1.7 * s;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(25 * s, -7.2 * s);
+  ctx.quadraticCurveTo(34 * s, -6.2 * s, 38.6 * s, -2.6 * s);
+  ctx.stroke();
   // trois hublots ronds, au-dessus de l'aile
   ctx.fillStyle = '#eaf6ff';
-  for (const hx of [6, -4, -14]) {
+  for (const hx of [9, 0, -9]) {
     ctx.beginPath(); ctx.arc(hx * s, -4 * s, 1.8 * s, 0, TAU); ctx.fill();
   }
-  // la bulle du cockpit, posée sur le nez, avec son petit pilote qui dépasse
+  // la bulle du cockpit, posée en douceur sur le toit, avec son petit pilote
   ctx.fillStyle = '#eaf6ff';
-  ctx.beginPath(); ctx.arc(22 * s, -8 * s, 6 * s, Math.PI, 0); ctx.fill();
+  ctx.beginPath(); ctx.arc(20 * s, -8.9 * s, 5.8 * s, Math.PI, 0); ctx.fill();
   ctx.fillStyle = '#ffd9b0';
-  ctx.beginPath(); ctx.arc(21.5 * s, -9.2 * s, 3 * s, 0, TAU); ctx.fill(); // le pilote
+  ctx.beginPath(); ctx.arc(19.5 * s, -10 * s, 2.9 * s, 0, TAU); ctx.fill(); // le pilote
   ctx.fillStyle = '#4a3524';
-  ctx.beginPath(); ctx.arc(21.5 * s, -10.2 * s, 3 * s, Math.PI, 0); ctx.fill(); // ses cheveux
+  ctx.beginPath(); ctx.arc(19.5 * s, -11 * s, 2.9 * s, Math.PI, 0); ctx.fill(); // ses cheveux
   // LA GRANDE AILE : un trapèze en flèche aux coins doux, emplanture claire
   // et ligne de volet — par-dessus le fuselage
   ctx.fillStyle = COULEUR_AVION_FONCE;
