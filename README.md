@@ -64,14 +64,15 @@ pousse, le poids qui tire) est le « graphe » que l'enfant lit sans savoir lire
   l'air et l'air pousse l'aile — refermés sur le refrain : *… parce que l'air pousse !*
   À lire… ou à **écouter** (conteur de la famille : synthèse vocale de l'appareil, phrase
   à phrase, pauses et relief — rien ne part sur Internet).
-- **« 🔍 Découvre ton avion »** : l'avion en grand — redessiné pour que chaque pièce se
-  distingue (grande aile en flèche, réacteur suspendu avec son entrée d'air, bulle du
-  cockpit, deux trains, hublots) — et cinq pastilles à taper : 🪶 les ailes, 🔥 le
-  réacteur, 🧑‍✈️ le cockpit, 🪁 la queue, 🛞 les roues, chacune avec sa petite histoire
-  écrite, relue à la demande par le bouton 🔊 (jamais de voix au tap, règle de la
-  famille). Et son **mode jeu « Où est… ? »** : le site demande une pièce, l'enfant la
-  trouve — la bonne gagne un bravo et son histoire en récompense, une autre frétille et
-  dit son nom par écrit (jamais punitif, on apprend quand même).
+- **« 🔍 Découvre ton avion »** : l'avion en grand, dessiné pour que chaque pièce se
+  reconnaisse — aile en flèche avec bord d'attaque brillant et ligne de volet, réacteur
+  suspendu (lèvre d'entrée d'air, cône de soufflante, tuyère), bulle du cockpit, dérive
+  à gouvernail, deux trains, hublots — et cinq **points colorés** à taper (pas d'emoji :
+  ils cachaient les pièces et jouaient aux devinettes — le dessin est le seul indice).
+  Taper un point affiche l'histoire de la pièce, et la lit si la voix 🔊 est allumée.
+  Et son **mode jeu « Où est… ? »** : le site demande une pièce, l'enfant la trouve —
+  la bonne gagne un bravo et son histoire en récompense, une autre frétille et dit son
+  nom par écrit (jamais punitif, on apprend quand même).
 - **Le pont de fin de page** : « Et une fusée, là où il n'y a plus d'air… qui la
   pousse ? » — et la passerelle vers les épisodes d'astronomie, chacun avec le médaillon
   SVG de sa carte du portail.

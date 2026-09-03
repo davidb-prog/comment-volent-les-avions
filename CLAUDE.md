@@ -51,9 +51,13 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
    l'équilibre pendant que l'écran montrait un décollage — l'équilibre est un ÉTAT, il
    vit dans le repère ✨ et le défi de la montgolfière. Ne pas réintroduire de bouton
    d'état.
-6. **Les pièces de l'avion** (🔍 Découvre ton avion) : 5 pastilles (🪶 🔥 🧑‍✈️ 🪁 🛞),
-   une histoire écrite chacune, relue par le bouton 🔊 à la demande — **jamais de voix au
-   tap** (règle de la famille : sélectionner ne déclenche pas de commentaire audio).
+6. **Les pièces de l'avion** (🔍 Découvre ton avion) : 5 **points colorés** posés sur
+   les pièces — PAS d'emoji sur les pastilles (retour de David 2026-09-03 : ils cachaient
+   les pièces et jouaient aux devinettes — le cerf-volant pour la queue…) ; le dessin de
+   l'avion est le seul indice. Taper un point affiche l'histoire de la pièce et la LIT si
+   la voix 🔇/🔊 est allumée (une pastille est un choix de contenu, comme un moment — le
+   bouton 🔊 par pièce, redondant, a été retiré ; voix éteinte = silence complet, l'esprit
+   de la règle « sélectionner ne parle pas » est préservé).
 7. **LE jeu de l'épisode : « 🎮 Rejoins-les là-haut ! »** (2026-08-30) — un invité à SON
    altitude (`DEFIS` : ballon 56, montgolfière 77, aigle 98 — chacun dans la zone d'air
    raréfié, donc chacun a SA vitesse d'équilibre stable : l'enfant trouve la vitesse,
@@ -173,10 +177,12 @@ bretelles ni d'aéroport dans cet épisode) ; le virage = un futur épisode.
   automatique — sauf pendant que le doigt le tient.
 - Le bouton 🔇/🔊 a **trois jumeaux synchronisés** (moments, jeu, pièces — même état,
   même clé) : le réglage du son à portée de main sans remonter la page.
-- **L'avion est dessiné pour ses pièces** (2026-08-30) : grande aile trapézoïdale en
-  flèche, réacteur suspendu sous l'aile avec entrée d'air, bulle de cockpit, deux trains,
-  hublots — les ancres `ANCRES_PIECES` sont écartées pour que les pastilles ne se
-  chevauchent jamais (vérifié en navigateur : toutes dans le cadre).
+- **L'avion est dessiné pour ses pièces** (2026-08-30, retravaillé 2026-09-03) : aile en
+  flèche aux coins doux (bord d'attaque brillant, ligne de volet), réacteur détaillé
+  (nacelle en dégradé, lèvre d'entrée d'air, cône de soufflante, tuyère), bulle de
+  cockpit, dérive arrondie à gouvernail, nez marqué, ventre ombré, deux trains, hublots.
+  Les pastilles sont des points de 20 px (zone de tap 44 px, couleur via `--c`) — testé
+  en navigateur : jamais de chevauchement, même à 390 px, et toutes dans le cadre.
 - **Seuil mobile unique : 640 px** (CSS seulement — aucun JS de bascule).
 
 ## Structure

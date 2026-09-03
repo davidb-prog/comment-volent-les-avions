@@ -363,8 +363,8 @@ verifie('cinq pièces : ailes, réacteur, cockpit, queue, roues',
   PIECES.length === 5 &&
   ['ailes', 'reacteurs', 'cockpit', 'queue', 'roues']
     .every((id) => PIECES.some((p) => p.id === id)));
-verifie('chaque pièce a son émoji, son nom, sa couleur et son explication',
-  PIECES.every((p) => p.emoji && p.label && p.couleur && p.texte && p.texte.length > 40));
+verifie('chaque pièce a son nom, sa couleur et son explication — et AUCUN emoji sur sa pastille',
+  PIECES.every((p) => p.emoji === undefined && p.label && p.couleur && p.texte && p.texte.length > 40));
 verifie('les ailes racontent la révélation (pousser l’air), le réacteur souffle',
   (() => {
     const ailes = PIECES.filter((p) => p.id === 'ailes')[0];

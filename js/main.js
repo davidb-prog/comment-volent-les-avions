@@ -462,27 +462,21 @@ $('btn-encore').addEventListener('click', () => {
 
 const cadrePieces = $('pieces-cadre');
 const boutonsPieces = {};
-let texteEcoutePiece = null;
-const btnEcoutePiece = $('piece-ecouter');
-if (conteur) {
-  btnEcoutePiece.hidden = false;
-  btnEcoutePiece.addEventListener('click', () => {
-    if (texteEcoutePiece) conteur.parle(phrasesDe(pourLaVoix(texteEcoutePiece), true));
-  });
-}
+// les pastilles sont de simples POINTS colorés (pas d'emoji — retour de
+// David 2026-09-03 : ils cachaient les pièces et jouaient aux devinettes) ;
+// la zone de tap reste large (44 px), le point dessiné est petit
 for (const piece of PIECES) {
   const btn = document.createElement('button');
   btn.className = 'piece-btn';
-  btn.textContent = piece.emoji;
-  btn.style.borderColor = piece.couleur;
+  btn.style.setProperty('--c', piece.couleur);
   btn.setAttribute('aria-pressed', 'false');
-  btn.setAttribute('aria-label', piece.label + ' — afficher son explication');
+  btn.setAttribute('aria-label', piece.label + ' — découvrir cette pièce');
   btn.addEventListener('click', () => { tapePiece(piece, btn); });
   cadrePieces.appendChild(btn);
   boutonsPieces[piece.id] = btn;
 }
 
-// affiche une pièce : l'anneau, la ligne écrite, le texte à écouter
+// affiche une pièce : l'anneau sur le dessin et la ligne écrite
 function montrePiece(piece) {
   vuePieces.choisie = piece.id;
   for (const id in boutonsPieces) {
@@ -491,11 +485,10 @@ function montrePiece(piece) {
   const texteEl = $('piece-texte');
   texteEl.innerHTML = '';
   const gras = document.createElement('strong');
-  gras.textContent = piece.emoji + ' ' + piece.label + ' — ';
+  gras.textContent = piece.label + ' — ';
   gras.style.color = piece.couleur;
   texteEl.appendChild(gras);
   texteEl.appendChild(document.createTextNode(piece.texte));
-  texteEcoutePiece = piece.label + '. ' + piece.texte;
 }
 
 // ---- « Où est… ? » — le mode jeu du panneau : le site demande une pièce,
@@ -529,7 +522,14 @@ function montreConsignePieces(parler) {
 }
 
 function tapePiece(piece, btn) {
-  if (!jeuPieces.actif) { montrePiece(piece); return; } // mode libre : comme avant
+  if (!jeuPieces.actif) {
+    // mode libre : la pastille est un choix de contenu, comme un moment —
+    // son histoire se lit si la voix de la famille est allumée (le bouton
+    // 🔊 par pièce, redondant avec 🔇/🔊, a été retiré — David 2026-09-03)
+    montrePiece(piece);
+    parleTexte(piece.label + '. ' + piece.texte);
+    return;
+  }
   const cherchee = pieceCherchee();
   if (!cherchee) return;
   if (piece.id === cherchee.id) {

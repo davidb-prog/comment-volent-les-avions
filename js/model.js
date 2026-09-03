@@ -302,19 +302,22 @@ export function defiDansFenetre(defi, etat, marge) {
 }
 
 // ------------------------------------------------------------------ les pièces
-// « Découvre ton avion » : cinq pièces à taper, une petite histoire chacune
-// (affichée, et relue par le bouton 🔊 — jamais de voix au tap, règle de la
-// famille : sélectionner ne déclenche pas de commentaire audio).
+// « Découvre ton avion » : cinq pièces marquées d'un simple POINT coloré —
+// pas d'emoji sur les pastilles (retour de David 2026-09-03 : le cerf-volant
+// pour la queue était une devinette, et les emojis cachaient les pièces).
+// Taper une pastille affiche l'histoire, et la LIT si la voix de la famille
+// est allumée (une pastille est un choix de contenu, comme un moment — voix
+// éteinte, silence complet).
 export const PIECES = [
-  { id: 'ailes', emoji: '🪶', label: 'les ailes', pluriel: true, couleur: COULEUR_AIR,
+  { id: 'ailes', label: 'les ailes', pluriel: true, couleur: COULEUR_AIR,
     texte: 'Les ailes, c’est le grand secret : en avançant vite, elles poussent l’air vers le bas — alors l’air les pousse vers le haut, et ton avion est porté !' },
-  { id: 'reacteurs', emoji: '🔥', label: 'le réacteur', pluriel: false, couleur: COULEUR_FEU,
+  { id: 'reacteurs', label: 'le réacteur', pluriel: false, couleur: COULEUR_FEU,
     texte: 'Le réacteur, c’est le moteur de l’avion : il avale l’air devant et le souffle très fort derrière — et l’avion file en avant. Encore l’air qui pousse !' },
-  { id: 'cockpit', emoji: '🧑‍✈️', label: 'le cockpit', pluriel: false, couleur: COULEUR_AVION_FONCE,
+  { id: 'cockpit', label: 'le cockpit', pluriel: false, couleur: COULEUR_AVION_FONCE,
     texte: 'Le cockpit, c’est la petite maison du pilote, tout à l’avant. C’est là qu’il pousse la manette de vitesse — comme toi avec le grand curseur !' },
-  { id: 'queue', emoji: '🪁', label: 'la queue', pluriel: false, couleur: COULEUR_POIDS,
+  { id: 'queue', label: 'la queue', pluriel: false, couleur: COULEUR_POIDS,
     texte: 'La queue et sa grande dérive gardent l’avion bien droit dans le vent — comme les plumes au bout d’une flèche.' },
-  { id: 'roues', emoji: '🛞', label: 'les roues', pluriel: true, couleur: COULEUR_PISTE,
+  { id: 'roues', label: 'les roues', pluriel: true, couleur: COULEUR_PISTE,
     texte: 'Les roues servent à rouler sur la piste. En vol, hop, elles se replient sous le ventre — comme les pattes d’un oiseau !' },
 ];
 
