@@ -73,6 +73,15 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
    accords singulier/pluriel testés) : la bonne pastille gagne bravo + histoire en
    récompense ; une autre frétille et dit son nom PAR ÉCRIT seulement (pas de voix au
    mauvais tap). Cinq trouvées = bravo final, « Encore une partie ! » remélange.
+   **Mise en page immobile** (retour de David 2026-09-03 : le cadre changeait tout le
+   temps de taille, et « Pièce suivante ! » traînait en bas loin des commandes) : la
+   consigne/bravo et « Pièce suivante ! » vivent CÔTE À CÔTE dans `.pieces-defi-zone`,
+   au-dessus du cadre avec les autres commandes, hauteur réservée (56 px desktop,
+   122 px mobile où le bouton passe sous le message, bravo un cran plus petit) ;
+   l'histoire des pièces a la place de la plus longue (`.piece-histoire`). Pendant
+   tout le jeu, le cadre et le panneau ne bougent pas d'un pixel (testé en
+   navigateur, raté/bravo/bouton compris) — attention : la zone est en
+   `display:flex`, son `[hidden]` doit être ré-affirmé en CSS.
 9. **Honnêteté** : vérités protégées par les tests ; simplifications documentées note aux
    parents + README ; l'avion **roule** (jamais « court » — testé).
 10. **Jamais punitif** : aucun geste ne produit de crash (testé au curseur fou), aucune

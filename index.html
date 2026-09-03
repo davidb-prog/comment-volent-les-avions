@@ -175,7 +175,13 @@
             class="jeu-on" aria-hidden="true">📦 Ranger le jeu</span><span
             class="jeu-off" aria-hidden="true">🎮 Jouer</span></button>
       </div>
-      <p id="pieces-defi" class="defi-texte pieces-defi" aria-live="polite" hidden></p>
+      <!-- la zone du défi : consigne/bravo ET « Pièce suivante ! » côte à côte,
+           au-dessus du cadre avec les autres commandes — hauteur réservée pour
+           que le cadre ne bouge pas quand les messages et le bouton changent -->
+      <div class="pieces-defi-zone" id="pieces-defi-zone" hidden>
+        <p id="pieces-defi" class="defi-texte pieces-defi" aria-live="polite"></p>
+        <button id="btn-pieces-suivante" class="game-btn" hidden>🎲 Pièce suivante !</button>
+      </div>
       <div class="pieces-cadre ratio-pieces" id="pieces-cadre">
         <canvas id="vue-pieces" aria-label="Ton avion rose en grand, posé sur la piste, vu de côté. Cinq pastilles rondes marquent ses pièces : les ailes, le réacteur, le cockpit, la queue et les roues. Appuyer sur une pastille affiche une petite explication de la pièce ; le bouton haut-parleur la lit à voix haute."></canvas>
       </div>
@@ -183,7 +189,6 @@
         <p id="piece-texte" class="mini-histoire-texte">Les ailes, le réacteur, le cockpit…
           chaque pièce a son petit secret. Appuie sur une pastille !</p>
       </div>
-      <p class="jeu-pied pieces-pied"><button id="btn-pieces-suivante" class="game-btn" hidden>🎲 Pièce suivante !</button></p>
     </div>
 
     <div class="panel pont-panel">

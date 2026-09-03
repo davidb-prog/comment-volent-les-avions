@@ -231,8 +231,16 @@ main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; }
 .defi-texte.rate { border-left-color: var(--rose-deep); font-weight: 400; }
 .jeu-pied { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin: 4px 2px 0; }
 .jeu-aide { margin: 0; }
-.pieces-defi { margin-top: 0; }
-.pieces-pied { margin: 10px 0 0; }
+/* la zone du défi des pièces : la consigne et « Pièce suivante ! » sur la même
+   ligne, hauteur RÉSERVÉE — le cadre du dessin ne bouge pas quand le message
+   change ou que le bouton apparaît (retour de David 2026-09-03) */
+.pieces-defi-zone {
+  display: flex; align-items: center; align-content: center; gap: 10px 16px;
+  min-height: 56px; margin: 8px 2px 6px;
+}
+.pieces-defi-zone[hidden] { display: none; }
+.pieces-defi { margin: 0; flex: 1 1 auto; min-width: 0; }
+#btn-pieces-suivante { flex: 0 0 auto; white-space: nowrap; }
 
 /* la pastille ratée frétille gentiment (jamais punitif, juste rigolo) */
 @keyframes tremble {
@@ -335,6 +343,9 @@ main { max-width: 980px; margin: 0 auto; padding: 0 20px 60px; }
 
 /* la petite explication d'une pièce : texte + bouton d'écoute à la demande */
 .mini-histoire { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; min-height: 2.6em; }
+/* la place de la plus longue histoire est réservée : taper une pièce ne fait
+   pas respirer le panneau (retour de David 2026-09-03) */
+.piece-histoire { min-height: 3.6em; }
 .mini-histoire-texte { margin: 0; font-size: 1rem; line-height: 1.6; color: #33475c; }
 .mini-histoire-texte strong { color: inherit; }
 .mini-ecouter {
@@ -435,6 +446,13 @@ button:focus-visible, input:focus-visible, a:focus-visible {
     .ratio-pieces { height: min(58vw, 340px); }
   }
   .piece-btn::before { width: 15px; height: 15px; border-width: 4px; }
+  /* sur mobile les textes s'étalent : le bouton passe SOUS le message, le
+     bravo met un costume un cran plus petit, et on réserve la hauteur de
+     l'état le plus haut — le cadre et le panneau ne bougent plus du jeu */
+  .pieces-defi-zone { flex-wrap: wrap; min-height: 122px; }
+  .pieces-defi { flex: 1 1 100%; }
+  .defi-texte.bravo { font-size: 1.05rem; }
+  .piece-histoire { min-height: 8em; }
   .repere-envol i { font-size: .72rem; }
 }
 

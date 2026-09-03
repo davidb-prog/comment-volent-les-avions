@@ -556,7 +556,9 @@ function tapePiece(piece, btn) {
 function reglerJeuPieces(actif) {
   jeuPieces.actif = actif;
   $('btn-jeu-pieces').setAttribute('aria-pressed', actif ? 'true' : 'false');
-  piecesDefiEl.hidden = !actif;
+  // c'est la ZONE (hauteur réservée) qui apparaît : pendant le jeu, messages
+  // et bouton s'y relaient sans jamais faire bouger le cadre du dessin
+  $('pieces-defi-zone').hidden = !actif;
   btnSuivante.hidden = true;
   if (actif) {
     melangePieces();
