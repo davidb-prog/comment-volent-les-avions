@@ -4,7 +4,7 @@
 // famille. Un geste = un effet : le curseur règle la vitesse, tout en découle.
 
 import { VITESSE_MAX, REPERE_DECOLLAGE, TOUR_DUREE,
-         etatInitial, pas, cibleAuto, MOMENTS, etapeMoment, phraseEtat,
+         etatInitial, pas, cibleAuto, MOMENTS, etapeMoment, phraseEtat, PHRASE_TENUE,
          PIECES, formatVitesse, borne01,
          DEFIS, JEU_FENETRE, JEU_SORTIE, JEU_TENUE, defiDansFenetre,
          consignePiece, bravoPiece, ratePiece } from './model.js';
@@ -160,12 +160,23 @@ function poseTexte(cle, el, valeur) {
   el.textContent = valeur;
 }
 
+let tPhraseAffichee = -1e9; // la première phrase s'affiche tout de suite
+
 function majTextes() {
   poseTexte('vitesse', $('vitesse-txt'), formatVitesse(sim.etat.v));
   // (l'altitude en chiffres est partie — on voit l'avion voler ; la suite
   //  Playwright lit l'état par window.etatLabo, ci-dessous)
   window.etatLabo = sim.etat;
-  poseTexte('etat', $('phrase-etat'), phraseEtat(sim.etat, sim.cible));
+  // la phrase d'état reste affichée le temps d'être LUE (PHRASE_TENUE) : sur
+  // une transition rapide (décollage, arrondi), on ne fait pas clignoter les
+  // micro-états — on saute directement à la phrase du moment présent, qui
+  // n'est donc jamais vieille de plus d'une tenue (retour de David 2026-09-04)
+  const phrase = phraseEtat(sim.etat, sim.cible);
+  if (phrase !== cache.etat &&
+      performance.now() - tPhraseAffichee >= PHRASE_TENUE * 1000) {
+    poseTexte('etat', $('phrase-etat'), phrase);
+    tPhraseAffichee = performance.now();
+  }
   // un bouton-moment se grise quand il n'a pas de sens (décoller en vol,
   // atterrir déjà posé) — sauf celui du moment en cours, qui reste allumé
   for (const moment of MOMENTS) {

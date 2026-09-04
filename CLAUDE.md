@@ -155,12 +155,21 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
   `ALT_ARRONDI` en descente — jamais ailleurs (testé). Et le **plafond n'a plus de
   phrase à lui** (décision David 2026-09-04) : depuis « une vitesse = une altitude »,
   tout en haut est un équilibre comme un autre — les flèches égales disent vrai, et
-  l'air léger se raconte dans la boîte 💡 (paragraphe « jusqu'aux étoiles »).
+  l'air léger se raconte dans la boîte 💡 (paragraphe « jusqu'aux étoiles »). Côté
+  affichage (main.js), chaque phrase **tient à l'écran le temps d'être lue**
+  (`PHRASE_TENUE`) : sur une transition rapide (décollage, arrondi) on saute les
+  micro-états au lieu de les faire clignoter — la phrase affichée n'est jamais vieille
+  de plus d'une tenue (retour de David 2026-09-04 : « on voit juste le texte
+  changer » — tenue mesurée en navigateur, séquence des roues comprise).
 - **Curseur réduit : il plane** (descente plafonnée), il ne tombe jamais comme une
   pierre — et **un avion ne s'arrête pas en l'air** : en vol la vitesse garde un
   plancher de plané (`VITESSE_PLANE`), on ne freine qu'une fois posé (retour de David
   2026-08-30 : l'avion « planait sans avancer ») ; **toucher toujours doux** (arrondi
-  automatique) ; **jamais punitif** (curseur fou testé).
+  automatique) ; **jamais punitif** (curseur fou testé). Une fois posé, l'avion
+  **roule longtemps avant de s'arrêter** (`DECELERATION_ROULAGE`, plus douce que le
+  freinage de vol — retour de David 2026-09-04 : « il roule très peu, peu
+  réaliste » ; testé : encore en mouvement à 5 s, arrêté avant 15 s — la lecture
+  auto lui laisse ce temps avant de reboucler).
 - **L'air se raréfie là-haut** (`densiteAir`, `portanceEnVol`) : la flèche verte dessine
   la portance RESSENTIE — en palier les deux flèches sont égales à toute altitude
   d'équilibre, et « plus vite = plus haut » (retours de David 2026-08-30 : la flèche

@@ -29,7 +29,13 @@ export const VITESSE_DECOLLAGE = 55; // portance = poids pile à cette vitesse
 export const POIDS = 1;              // le poids, étalon des deux flèches
 
 export const ACCELERATION = 11;      // (unités de vitesse / s) quand on pousse
-export const DECELERATION = 9;       // quand on réduit (l'air freine, les freins au sol)
+export const DECELERATION = 9;       // quand on réduit en vol (l'air freine)
+export const DECELERATION_ROULAGE = 4; // au sol : l'avion posé ROULE longtemps avant
+                                     // de s'arrêter (retour de David 2026-09-04 :
+                                     // « il roule très peu, c'est peu réaliste »)
+export const PHRASE_TENUE = 2.4;     // secondes : la phrase d'état reste affichée le
+                                     // temps d'être LUE — les transitions rapides ne
+                                     // font pas clignoter le texte (David 2026-09-04)
 
 export const ALTITUDE_MAX = 100;     // le haut du ciel dessiné
 export const VZ_MONTEE_MAX = 12;     // montée maxi (unités d'altitude / s)
@@ -115,8 +121,9 @@ export function pas(etat, cible01, dt) {
 
   // --- la vitesse glisse vers la consigne du curseur, en douceur
   const ecart = vCible - e.v;
+  const freinage = e.auSol ? DECELERATION_ROULAGE : DECELERATION;
   const pasV = ecart >= 0 ? Math.min(ecart, ACCELERATION * dt)
-                          : Math.max(ecart, -DECELERATION * dt);
+                          : Math.max(ecart, -freinage * dt);
   n.v = borne(e.v + pasV, 0, VITESSE_MAX);
   n.distance = e.distance + n.v * dt; // fait défiler le décor
 
@@ -248,7 +255,7 @@ export function phraseEtat(etat, cible01) {
   // les roues suivent le dessin (rentrées dès ALT_ARRONDI) : la phrase ne les
   // raconte que là où c'est VRAI à l'écran (demande de David 2026-09-04)
   if (exces > 0.03 && etat.vz > 0.4 &&
-      etat.alt >= ALT_ARRONDI && etat.alt < ALT_ARRONDI * 2.5) {
+      etat.alt >= ALT_ARRONDI && etat.alt < ALT_ARRONDI * 3) {
     return '💨 L’air pousse plus que le poids : il monte — et hop, les roues se rangent sous le ventre !';
   }
   if (exces > 0.15) {

@@ -101,6 +101,17 @@ verifie('curseur réduit en vol : il descend doucement — il PLANE, il ne tombe
     });
     return fin.alt < ALTITUDE_MAX && vzMini < -0.5 && vzMini >= -VZ_DESCENTE_MAX - 1e-6;
   })());
+verifie('posé, l’avion ROULE longtemps avant de s’arrêter : encore en mouvement à 5 s, ' +
+  'arrêté avant 15 s (retour de David 2026-09-04 : « il roule très peu »)',
+  (() => {
+    let e = { v: VITESSE_PLANE, alt: 0, vz: 0, auSol: true, distance: 0 };
+    let vA5s = 0;
+    for (let t = 0; t < 15; t += 0.05) {
+      e = pas(e, 0, 0.05);
+      if (Math.abs(t - 5) < 0.026) vA5s = e.v;
+    }
+    return vA5s > 10 && e.v === 0;
+  })());
 verifie('curseur à zéro depuis n’importe où : l’avion finit posé, roues arrêtées',
   (() => {
     const alea = mulberry32(42);
@@ -292,8 +303,9 @@ verifie('en équilibre : les deux flèches sont égales',
 verifie('la phrase ne contredit JAMAIS le mouvement : petit excès = « il monte doucement », ' +
   'petit manque = « il descend » — « égales » réservé au vrai équilibre',
   (() => {
-    const monteDoucement = phraseEtat({ v: 56, alt: 20, vz: 0.9, auSol: false, distance: 0 });
-    const descendDoucement = phraseEtat({ v: 54, alt: 20, vz: -0.9, auSol: false, distance: 0 });
+    // alt 30 : hors de la bande où la phrase raconte les roues qui se rangent
+    const monteDoucement = phraseEtat({ v: 56, alt: 30, vz: 0.9, auSol: false, distance: 0 });
+    const descendDoucement = phraseEtat({ v: 54, alt: 30, vz: -0.9, auSol: false, distance: 0 });
     return monteDoucement.indexOf('monte doucement') !== -1 &&
       monteDoucement.indexOf('égales') === -1 &&
       descendDoucement.indexOf('descend') !== -1 &&
