@@ -151,10 +151,16 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
   fort : il monte doucement ») et la phrase ne prétend jamais une inégalité des
   flèches quand l'excès est minuscule (« Il monte tout doucement. » neutre) : texte,
   flèches et mouvement toujours d'accord (retour initial de David 2026-08-31 —
-  testé). Au sol, elle reçoit la consigne
-  du curseur et distingue accélérer (« la flèche grandit »), freiner (« elle
-  rapetisse ») et maintenir — et la roue 🛞 a remplacé le drapeau à damier 🏁, qui dit
-  « arrivée ! » (retours de David 2026-09-02, testés). En vol, elle raconte aussi les
+  testé). Au sol AUSSI, le mouvement décide : la phrase lit la **vraie
+  accélération** (`etat.dv`, exposée par `pas()`) — pas l'écart de consigne, quasi nul
+  quand la lecture auto pousse la consigne au rythme de l'avion (« il roule,
+  l'air ne le porte pas assez » s'affichait en pleine accélération — retour de David
+  2026-09-04, testé ; les états écrits à la main sans `dv` replient sur l'écart).
+  Elle distingue accélérer (« la flèche grandit »), freiner (« elle rapetisse ») et
+  rouler stable — phrase du stable NEUTRE (« la flèche de l'air reste petite », ou
+  « presque le poids » sous le seuil) : jamais le récit d'un envol raté, qui sonnait
+  absurde après un atterrissage. La roue 🛞 a remplacé le drapeau à damier 🏁, qui
+  dit « arrivée ! » (retours de David 2026-09-02, testés). En vol, elle raconte aussi les
   **roues** (mot choisi avec David 2026-09-04, cohérent avec la pastille — « train
   d'atterrissage » reste côté parents) PILE quand le dessin les bouge : « elles se
   rangent » juste au-dessus du seuil en montée, « il sort ses roues » sous

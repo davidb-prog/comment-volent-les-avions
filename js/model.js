@@ -107,7 +107,7 @@ export function portanceEnVol(v, alt) {
 
 // ------------------------------------------------------------------ l'état
 export function etatInitial() {
-  return { v: 0, alt: 0, vz: 0, auSol: true, distance: 0 };
+  return { v: 0, alt: 0, vz: 0, dv: 0, auSol: true, distance: 0 };
 }
 
 // Un pas de simulation — pur : rend un NOUVEL état, ne touche à rien.
@@ -126,6 +126,9 @@ export function pas(etat, cible01, dt) {
   const pasV = ecart >= 0 ? Math.min(ecart, ACCELERATION * dt)
                           : Math.max(ecart, -freinage * dt);
   n.v = borne(e.v + pasV, 0, VITESSE_MAX);
+  n.dv = dt > 0 ? (n.v - e.v) / dt : 0; // la VRAIE accélération — la phrase du
+                                        // sol se lit dessus, pas sur l'écart de
+                                        // consigne (voir phraseEtat)
   n.distance = e.distance + n.v * dt; // fait défiler le décor
 
   if (e.auSol) {
@@ -232,19 +235,30 @@ export function phraseEtat(etat, cible01) {
     if (etat.v < 2) {
       return '😴 Il est posé : pas de vitesse, pas d’envol.';
     }
+    // LE MOUVEMENT D'ABORD, au sol aussi (retour de David 2026-09-04) : la
+    // VRAIE accélération (etat.dv) décide — pas l'écart de consigne, qui
+    // reste quasi nul quand la lecture auto pousse la consigne au même
+    // rythme que l'avion accélère (« il roule… » en pleine accélération !).
+    // Les états écrits à la main (tests) n'ont pas toujours dv : repli sur
+    // l'écart de consigne.
     const vCible = cible01 === undefined ? etat.v : borne01(cible01) * VITESSE_MAX;
-    if (vCible < etat.v - 2) {
+    const dv = etat.dv === undefined ? vCible - etat.v : etat.dv;
+    if (dv < -0.8) {
       return '🛞 Il freine… la flèche rapetisse.';
     }
-    if (vCible > etat.v + 2) {
+    if (dv > 0.8) {
       if (portance(etat.v) < 0.55) {
         return '🛞 Il roule… regarde la flèche grandir !';
       }
       return '💨 Encore un peu… presque le poids !';
     }
-    // descriptive, jamais une injonction : après un atterrissage curseur à
-    // mi-course, « pousse encore ! » sonnait comme un ordre de redécoller
-    return '🛞 Il roule : l’air ne le porte pas assez.';
+    // vitesse stable : une observation neutre des flèches — jamais le récit
+    // d'un envol raté (« l'air ne le porte pas assez » sonnait absurde juste
+    // après un atterrissage), jamais une injonction
+    if (portance(etat.v) >= 0.55) {
+      return '💨 Encore un peu… presque le poids !';
+    }
+    return '🛞 Il roule : la flèche de l’air reste petite.';
   }
   // (le plafond n'a plus sa phrase à lui : depuis « une vitesse = une
   //  altitude », tout en haut est un équilibre comme un autre — la phrase des

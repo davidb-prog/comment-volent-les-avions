@@ -307,8 +307,24 @@ verifie('la phrase du sol sait dans quel sens on va : en freinant, la flèche RA
     const maintient = phraseEtat({ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 }, 0.3);
     return freine.indexOf('freine') !== -1 && freine.indexOf('rapetisse') !== -1 &&
       freine.indexOf('grandir') === -1 &&
-      maintient.indexOf('ne le porte pas assez') !== -1 &&
+      maintient.indexOf('reste petite') !== -1 && // observation neutre des flèches
       maintient.indexOf('Pousse') === -1; // descriptive, jamais une injonction
+  })());
+verifie('au sol aussi, LE MOUVEMENT décide : en pleine accélération la flèche grandit ' +
+  'même si la consigne colle à la vitesse, et le roulage stable reste neutre ' +
+  '(retour de David 2026-09-04 : « il roule, l’air ne le porte pas assez » au décollage)',
+  (() => {
+    // la lecture auto pousse la consigne au rythme de l'avion : écart quasi nul,
+    // mais dv = +11 — la phrase doit raconter l'accélération
+    const accelere = phraseEtat({ v: 30, alt: 0, vz: 0, dv: 11, auSol: true, distance: 0 }, 0.31);
+    // après l'atterrissage du tour auto : il roule stable à 38 — observation
+    // neutre, plus jamais le récit d'un envol raté
+    const arrive = phraseEtat({ v: 38, alt: 0, vz: 0, dv: 0, auSol: true, distance: 0 }, 0.38);
+    // stable juste sous le seuil : les flèches sont presque égales, pas « petites »
+    const presque = phraseEtat({ v: 53, alt: 0, vz: 0, dv: 0, auSol: true, distance: 0 }, 0.53);
+    return accelere.indexOf('grandir') !== -1 &&
+      arrive.indexOf('reste petite') !== -1 && arrive.indexOf('porte pas') === -1 &&
+      presque.indexOf('presque le poids') !== -1;
   })());
 verifie('le drapeau à damier a disparu du roulage (il dit « arrivée ! », pas « ça roule »)',
   phraseEtat({ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 }, 1).indexOf('🏁') === -1);
