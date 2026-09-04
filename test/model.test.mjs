@@ -270,8 +270,30 @@ verifie('le moment atterrissage finit posé, roues arrêtées',
   })());
 
 console.log('La phrase d’état — ce que l’air fait, à chaque instant');
-verifie('posé à l’arrêt : « pas de vitesse, l’air ne le porte pas »',
-  phraseEtat(etatInitial()).indexOf('l’air ne le porte pas') !== -1);
+verifie('posé à l’arrêt, la phrase dit le refrain : « pas de vitesse, pas d’envol »',
+  phraseEtat(etatInitial()).indexOf('posé') !== -1 &&
+  phraseEtat(etatInitial()).indexOf('pas de vitesse, pas d’envol') !== -1);
+verifie('les phrases d’état sont COURTES — lisibles pendant leur tenue (≤ 50 signes, ' +
+  'décision David 2026-09-04)',
+  (() => {
+    const etats = [
+      [{ v: 0, alt: 0, vz: 0, auSol: true, distance: 0 }, 0],
+      [{ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 }, 1],
+      [{ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 }, 0],
+      [{ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 }, 0.3],
+      [{ v: 53, alt: 0, vz: 0, auSol: true, distance: 0 }, 1],
+      [{ v: 80, alt: 12, vz: 2, auSol: false, distance: 0 }, 1],
+      [{ v: 80, alt: 40, vz: 5, auSol: false, distance: 0 }, 1],
+      [{ v: 56, alt: 30, vz: 0.9, auSol: false, distance: 0 }, 0.56],
+      [{ v: 54, alt: 30, vz: -0.9, auSol: false, distance: 0 }, 0.54],
+      [{ v: 40, alt: 50, vz: -4, auSol: false, distance: 0 }, 0],
+      [{ v: 60, alt: 60, vz: -2, auSol: false, distance: 0 }, 0.4],
+      [{ v: 50, alt: 5, vz: -1.5, auSol: false, distance: 0 }, 0.4],
+      [{ v: VITESSE_DECOLLAGE, alt: 50, vz: 0, auSol: false, distance: 0 }, 0.55],
+    ];
+    for (const [e, c] of etats) { if (phraseEtat(e, c).length > 50) return false; }
+    return true;
+  })());
 verifie('au roulage, l’avion ROULE (il ne « court » jamais) et la flèche grandit',
   (() => {
     const ph = phraseEtat({ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 }, 1);
@@ -303,9 +325,9 @@ verifie('en équilibre : les deux flèches sont égales',
 verifie('la phrase ne contredit JAMAIS le mouvement : petit excès = « il monte doucement », ' +
   'petit manque = « il descend » — « égales » réservé au vrai équilibre',
   (() => {
-    // alt 30 : hors de la bande où la phrase raconte les roues qui se rangent
-    const monteDoucement = phraseEtat({ v: 56, alt: 30, vz: 0.9, auSol: false, distance: 0 });
-    const descendDoucement = phraseEtat({ v: 54, alt: 30, vz: -0.9, auSol: false, distance: 0 });
+    // alt 40 : hors de la bande où la phrase raconte les roues qui se rangent
+    const monteDoucement = phraseEtat({ v: 56, alt: 40, vz: 0.9, auSol: false, distance: 0 });
+    const descendDoucement = phraseEtat({ v: 54, alt: 40, vz: -0.9, auSol: false, distance: 0 });
     return monteDoucement.indexOf('monte doucement') !== -1 &&
       monteDoucement.indexOf('égales') === -1 &&
       descendDoucement.indexOf('descend') !== -1 &&

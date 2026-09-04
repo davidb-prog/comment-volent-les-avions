@@ -33,9 +33,10 @@ export const DECELERATION = 9;       // quand on réduit en vol (l'air freine)
 export const DECELERATION_ROULAGE = 4; // au sol : l'avion posé ROULE longtemps avant
                                      // de s'arrêter (retour de David 2026-09-04 :
                                      // « il roule très peu, c'est peu réaliste »)
-export const PHRASE_TENUE = 2.4;     // secondes : la phrase d'état reste affichée le
+export const PHRASE_TENUE = 3;       // secondes : la phrase d'état reste affichée le
                                      // temps d'être LUE — les transitions rapides ne
-                                     // font pas clignoter le texte (David 2026-09-04)
+                                     // font pas clignoter le texte, et les phrases
+                                     // sont courtes exprès (David 2026-09-04)
 
 export const ALTITUDE_MAX = 100;     // le haut du ciel dessiné
 export const VZ_MONTEE_MAX = 12;     // montée maxi (unités d'altitude / s)
@@ -222,55 +223,60 @@ export function etapeMoment(moment, indice, etat) {
 // l'on freine (retour de David 2026-09-02 : « regarde la flèche grandir »
 // s'affichait aussi pendant le freinage après l'atterrissage — et le drapeau
 // à damier 🏁, qui dit « arrivée ! », racontait le contraire du roulage).
+// ⚠️ Phrases COURTES à dessein (décision David 2026-09-04 : même en tenant
+// 2,4 s, les anciennes phrases de 15-20 mots défilaient trop vite pour être
+// lues). Squelette fixe « emoji + constat en 4-8 petits mots » : au deuxième
+// tour, l'emoji suffit à reconnaître l'état et la lecture est instantanée.
 export function phraseEtat(etat, cible01) {
   if (etat.auSol) {
     if (etat.v < 2) {
-      return '😴 Ton avion est posé. Pas de vitesse : l’air ne le porte pas.';
+      return '😴 Il est posé : pas de vitesse, pas d’envol.';
     }
     const vCible = cible01 === undefined ? etat.v : borne01(cible01) * VITESSE_MAX;
     if (vCible < etat.v - 2) {
-      return '🛞 Il freine sur la piste… la flèche de l’air rapetisse avec la vitesse.';
+      return '🛞 Il freine… la flèche rapetisse.';
     }
     if (vCible > etat.v + 2) {
       if (portance(etat.v) < 0.55) {
-        return '🛞 Il roule de plus en plus vite… regarde la flèche de l’air grandir !';
+        return '🛞 Il roule… regarde la flèche grandir !';
       }
-      return '💨 Encore un peu ! La flèche de l’air va dépasser le poids…';
+      return '💨 Encore un peu… presque le poids !';
     }
     // descriptive, jamais une injonction : après un atterrissage curseur à
     // mi-course, « pousse encore ! » sonnait comme un ordre de redécoller
-    return '🛞 Il roule tranquillement sur la piste… à cette vitesse, l’air ne le porte pas assez pour s’envoler.';
+    return '🛞 Il roule : l’air ne le porte pas assez.';
   }
   // (le plafond n'a plus sa phrase à lui : depuis « une vitesse = une
   //  altitude », tout en haut est un équilibre comme un autre — la phrase des
   //  flèches égales dit vrai, et l'air léger se raconte dans la boîte 💡 ;
   //  décision David 2026-09-04)
   if (etat.alt < ALT_ARRONDI && etat.vz < -0.4) {
-    return '🪶 Tout près du sol, il sort ses roues et se redresse… toucher tout doux !';
+    return '🪶 Il sort ses roues… toucher tout doux !';
   }
   if (etat.vz < -0.4 && etat.v <= VITESSE_PLANE + 3) {
-    return '🍃 Un avion ne s’arrête pas en l’air : il garde de l’élan et plane tout doucement vers la piste.';
+    return '🍃 Un avion ne s’arrête pas en l’air : il plane !';
   }
   const exces = portanceEnVol(etat.v, etat.alt) - POIDS;
   // les roues suivent le dessin (rentrées dès ALT_ARRONDI) : la phrase ne les
-  // raconte que là où c'est VRAI à l'écran (demande de David 2026-09-04)
+  // raconte que là où c'est VRAI à l'écran (demande de David 2026-09-04) —
+  // bande assez large pour survivre à la tenue de lecture en pleine montée
   if (exces > 0.03 && etat.vz > 0.4 &&
-      etat.alt >= ALT_ARRONDI && etat.alt < ALT_ARRONDI * 3) {
-    return '💨 L’air pousse plus que le poids : il monte — et hop, les roues se rangent sous le ventre !';
+      etat.alt >= ALT_ARRONDI && etat.alt < ALT_ARRONDI * 4.5) {
+    return '💨 Il monte… hop, les roues se rangent !';
   }
   if (exces > 0.15) {
-    return '💨 L’air pousse plus fort que le poids : ton avion monte !';
+    return '💨 L’air gagne : il monte !';
   }
   if (exces > 0.03) {
-    return '💨 L’air pousse un tout petit peu plus fort que le poids : il monte doucement.';
+    return '💨 Un petit peu plus fort : il monte doucement.';
   }
   if (exces < -0.15) {
-    return '🍃 L’air porte moins que le poids : il descend doucement — il plane !';
+    return '🍃 L’air porte moins : il descend en planant.';
   }
   if (exces < -0.03) {
-    return '🍃 L’air porte un tout petit peu moins que le poids : il descend tout doucement.';
+    return '🍃 Un petit peu moins fort : il descend doucement.';
   }
-  return '⚖️ Les deux flèches sont égales : l’air porte pile autant que la Terre tire.';
+  return '⚖️ Les deux flèches sont égales !';
 }
 
 // ------------------------------------------------------------------ le jeu

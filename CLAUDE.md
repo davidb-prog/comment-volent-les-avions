@@ -83,9 +83,10 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
    deux libellés). Pendant tout le jeu, le cadre, le panneau ET le bouton ne bougent
    pas d'un pixel (testé en navigateur, raté/bravo/bouton compris) — attention : la
    zone est en `display:flex`, son `[hidden]` doit être ré-affirmé en CSS. Même
-   principe plus haut : `.phrase-etat` réserve ses 2 lignes (3 sur mobile), car la
-   lecture automatique la change toute seule — la page ne respire jamais sans geste
-   (retour de David 2026-09-03 : « la fenêtre bouge quand je ne fais rien »).
+   principe plus haut : `.phrase-etat` réserve sa ligne (2 sur mobile — les phrases
+   courtes de 2026-09-04 tiennent dessous), car la lecture automatique la change
+   toute seule — la page ne respire jamais sans geste (retour de David 2026-09-03 :
+   « la fenêtre bouge quand je ne fais rien »).
 9. **Honnêteté** : vérités protégées par les tests ; simplifications documentées note aux
    parents + README ; l'avion **roule** (jamais « court » — testé).
 10. **Jamais punitif** : aucun geste ne produit de crash (testé au curseur fou), aucune
@@ -160,7 +161,15 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
   (`PHRASE_TENUE`) : sur une transition rapide (décollage, arrondi) on saute les
   micro-états au lieu de les faire clignoter — la phrase affichée n'est jamais vieille
   de plus d'une tenue (retour de David 2026-09-04 : « on voit juste le texte
-  changer » — tenue mesurée en navigateur, séquence des roues comprise).
+  changer » — tenue mesurée en navigateur, séquence des roues comprise). Et les
+  phrases sont **courtes à dessein** (≤ 50 signes, testé ; squelette fixe « emoji +
+  constat en 4-8 petits mots » — au deuxième tour l'emoji suffit à reconnaître
+  l'état) : même tenues 3 s, des phrases de 15-20 mots défilaient trop vite pour être
+  lues (décision David 2026-09-04, option retenue parmi celles proposées ; si les
+  événements — envol, roues, toucher — méritent plus de présence, la piste suivante
+  est une bulle éphémère dessinée près de l'avion, PAS des phrases plus longues). La
+  bande « les roues se rangent » va jusqu'à 4,5·`ALT_ARRONDI` pour survivre à la
+  tenue en pleine montée.
 - **Curseur réduit : il plane** (descente plafonnée), il ne tombe jamais comme une
   pierre — et **un avion ne s'arrête pas en l'air** : en vol la vitesse garde un
   plancher de plané (`VITESSE_PLANE`), on ne freine qu'une fois posé (retour de David
