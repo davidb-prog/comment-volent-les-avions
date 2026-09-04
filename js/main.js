@@ -161,6 +161,8 @@ function poseTexte(cle, el, valeur) {
 }
 
 let tPhraseAffichee = -1e9; // la première phrase s'affiche tout de suite
+let phraseCandidate = '', tPhraseCandidate = 0; // l'anti-hoquet (voir majTextes)
+let phraseEnAttente = false; // la boucle ne s'endort pas tant qu'une phrase attend
 
 function majTextes() {
   poseTexte('vitesse', $('vitesse-txt'), formatVitesse(sim.etat.v));
@@ -170,13 +172,25 @@ function majTextes() {
   // la phrase d'état reste affichée le temps d'être LUE (PHRASE_TENUE) : sur
   // une transition rapide (décollage, arrondi), on ne fait pas clignoter les
   // micro-états — on saute directement à la phrase du moment présent, qui
-  // n'est donc jamais vieille de plus d'une tenue (retour de David 2026-09-04)
+  // n'est donc jamais vieille de plus d'une tenue (retour de David 2026-09-04).
+  // Et l'anti-hoquet : une NOUVELLE phrase doit être vraie depuis 0,6 s avant
+  // de remplacer l'ancienne — au bord d'un seuil, le texte n'alterne pas.
   const phrase = phraseEtat(sim.etat, sim.cible);
-  if (phrase !== cache.etat &&
-      performance.now() - tPhraseAffichee >= PHRASE_TENUE * 1000) {
-    poseTexte('etat', $('phrase-etat'), phrase);
-    tPhraseAffichee = performance.now();
+  const tMaintenant = performance.now();
+  if (phrase !== phraseCandidate) {
+    phraseCandidate = phrase;
+    tPhraseCandidate = tMaintenant;
   }
+  if (phrase !== cache.etat &&
+      tMaintenant - tPhraseAffichee >= PHRASE_TENUE * 1000 &&
+      tMaintenant - tPhraseCandidate >= 600) {
+    poseTexte('etat', $('phrase-etat'), phrase);
+    tPhraseAffichee = tMaintenant;
+  }
+  // tant que la phrase affichée n'est pas celle du moment (tenue ou anti-hoquet
+  // en cours), la garde batterie ne doit PAS endormir la boucle — sinon la
+  // dernière phrase (« il freine… ») resterait pour toujours après l'arrêt
+  phraseEnAttente = phrase !== cache.etat;
   // un bouton-moment se grise quand il n'a pas de sens (décoller en vol,
   // atterrir déjà posé) — sauf celui du moment en cours, qui reste allumé
   for (const moment of MOMENTS) {
@@ -213,7 +227,8 @@ function image(ms) {
     // en pause complète et tout posé, on ne redessine pas (batterie) — sauf
     // si une pièce est choisie (son anneau respire) ou qu'un jeu est ouvert
     const vif = sim.lecture || sim.moment || !sim.etat.auSol || sim.etat.v > 0.05 ||
-      sim.cible > 0.001 || vuePieces.choisie !== null || jeu.actif || !cache.premierDessin;
+      sim.cible > 0.001 || vuePieces.choisie !== null || jeu.actif ||
+      phraseEnAttente || !cache.premierDessin;
     if (vif) {
       cache.premierDessin = true;
       sim.etat = pas(sim.etat, sim.cible, dt);

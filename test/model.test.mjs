@@ -333,6 +333,19 @@ verifie('la phrase ne contredit JAMAIS le mouvement : petit excès = « il monte
       descendDoucement.indexOf('descend') !== -1 &&
       descendDoucement.indexOf('égales') === -1;
   })());
+verifie('JAMAIS « égales » pendant que ça bouge : juste après l’envol, l’excès est ' +
+  'minuscule mais l’avion monte — la phrase le dit (retour de David 2026-09-04)',
+  (() => {
+    // le mouvement d'abord : « égales » exige une altitude qui ne bouge pas
+    const envol = phraseEtat({ v: 56, alt: 2, vz: 0.6, auSol: false, distance: 0 });
+    const petitEnvol = phraseEtat({ v: 55.4, alt: 3, vz: 0.5, auSol: false, distance: 0 });
+    const glisse = phraseEtat({ v: 54.6, alt: 30, vz: -0.5, auSol: false, distance: 0 });
+    const calme = phraseEtat({ v: VITESSE_DECOLLAGE, alt: 3, vz: 0.1, auSol: false, distance: 0 });
+    return envol.indexOf('monte') !== -1 && envol.indexOf('égales') === -1 &&
+      petitEnvol.indexOf('monte') !== -1 && petitEnvol.indexOf('égales') === -1 &&
+      glisse.indexOf('descend') !== -1 && glisse.indexOf('égales') === -1 &&
+      calme.indexOf('égales') !== -1;
+  })());
 verifie('la phrase raconte les roues PILE quand le dessin les bouge : rangées juste ' +
   'au-dessus du seuil en montée, sorties sous le seuil en descente — jamais ailleurs',
   (() => {

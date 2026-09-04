@@ -143,10 +143,15 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
 - L'avion **s'envole quand la portance atteint le poids** : vitesse de décollage précise,
   et le **repère du curseur est posé dessus** (une seule source de vérité).
 - **Curseur pile sur le repère : équilibre** — les deux flèches égales, altitude stable.
-- **La phrase d'état est assise sur l'excès de portance** (la grandeur des flèches),
-  graduée (« un tout petit peu plus fort : il monte doucement ») : texte, flèches et
-  mouvement toujours d'accord (retour de David 2026-08-31 : à 224 km/h l'avion montait
-  pendant que la phrase parlait d'équilibre — testé). Au sol, elle reçoit la consigne
+- **La phrase d'état suit LE MOUVEMENT d'abord** (2026-09-04, après deux retours de
+  David) : `vz` décide monte/descend/« égales » — car juste après l'envol l'excès de
+  portance est minuscule alors que l'avion monte bel et bien, et « ⚖️ égales »
+  s'affichait pendant un décollage. **« Égales » est impossible dès que l'avion
+  bouge** (testé). L'excès des flèches ne fait que GRADUER (« un petit peu plus
+  fort : il monte doucement ») et la phrase ne prétend jamais une inégalité des
+  flèches quand l'excès est minuscule (« Il monte tout doucement. » neutre) : texte,
+  flèches et mouvement toujours d'accord (retour initial de David 2026-08-31 —
+  testé). Au sol, elle reçoit la consigne
   du curseur et distingue accélérer (« la flèche grandit »), freiner (« elle
   rapetisse ») et maintenir — et la roue 🛞 a remplacé le drapeau à damier 🏁, qui dit
   « arrivée ! » (retours de David 2026-09-02, testés). En vol, elle raconte aussi les
@@ -161,7 +166,12 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
   (`PHRASE_TENUE`) : sur une transition rapide (décollage, arrondi) on saute les
   micro-états au lieu de les faire clignoter — la phrase affichée n'est jamais vieille
   de plus d'une tenue (retour de David 2026-09-04 : « on voit juste le texte
-  changer » — tenue mesurée en navigateur, séquence des roues comprise). Et les
+  changer » — tenue mesurée en navigateur, séquence des roues comprise). S'y ajoute
+  l'**anti-hoquet** : une nouvelle phrase doit être vraie depuis 0,6 s avant de
+  remplacer l'ancienne (au bord d'un seuil, le texte n'alterne pas) — et ⚠️ la
+  **garde batterie ne doit pas endormir la boucle tant qu'une phrase attend**
+  (`phraseEnAttente` dans `vif`), sinon « il freine… » restait affiché pour toujours
+  après l'arrêt. Et les
   phrases sont **courtes à dessein** (≤ 50 signes, testé ; squelette fixe « emoji +
   constat en 4-8 petits mots » — au deuxième tour l'emoji suffit à reconnaître
   l'état) : même tenues 3 s, des phrases de 15-20 mots défilaient trop vite pour être

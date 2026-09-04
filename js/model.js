@@ -33,7 +33,7 @@ export const DECELERATION = 9;       // quand on réduit en vol (l'air freine)
 export const DECELERATION_ROULAGE = 4; // au sol : l'avion posé ROULE longtemps avant
                                      // de s'arrêter (retour de David 2026-09-04 :
                                      // « il roule très peu, c'est peu réaliste »)
-export const PHRASE_TENUE = 3;       // secondes : la phrase d'état reste affichée le
+export const PHRASE_TENUE = 3.5;     // secondes : la phrase d'état reste affichée le
                                      // temps d'être LUE — les transitions rapides ne
                                      // font pas clignoter le texte, et les phrases
                                      // sont courtes exprès (David 2026-09-04)
@@ -257,25 +257,30 @@ export function phraseEtat(etat, cible01) {
     return '🍃 Un avion ne s’arrête pas en l’air : il plane !';
   }
   const exces = portanceEnVol(etat.v, etat.alt) - POIDS;
-  // les roues suivent le dessin (rentrées dès ALT_ARRONDI) : la phrase ne les
-  // raconte que là où c'est VRAI à l'écran (demande de David 2026-09-04) —
-  // bande assez large pour survivre à la tenue de lecture en pleine montée
-  if (exces > 0.03 && etat.vz > 0.4 &&
-      etat.alt >= ALT_ARRONDI && etat.alt < ALT_ARRONDI * 4.5) {
-    return '💨 Il monte… hop, les roues se rangent !';
+  // LE MOUVEMENT D'ABORD : la phrase suit ce que l'œil voit (vz) — l'excès
+  // des flèches ne fait que graduer. Retour de David 2026-09-04 : « les deux
+  // flèches sont égales » s'affichait pendant le décollage, car juste après
+  // l'envol l'excès est minuscule… alors que l'avion monte bel et bien.
+  // « Égales » est désormais impossible dès que l'avion bouge.
+  if (etat.vz > 0.4) {
+    // les roues suivent le dessin (rentrées dès ALT_ARRONDI) : racontées
+    // seulement là où c'est VRAI à l'écran — bande assez large pour
+    // survivre à la tenue de lecture en pleine montée
+    if (etat.alt >= ALT_ARRONDI && etat.alt < ALT_ARRONDI * 4.5) {
+      return '💨 Il monte… hop, les roues se rangent !';
+    }
+    if (exces > 0.15) return '💨 L’air gagne : il monte !';
+    if (exces > 0.03) return '💨 Un petit peu plus fort : il monte doucement.';
+    return '💨 Il monte tout doucement.'; // flèches quasi égales : pas de mensonge
   }
-  if (exces > 0.15) {
-    return '💨 L’air gagne : il monte !';
+  if (etat.vz < -0.4) {
+    if (exces < -0.15) return '🍃 L’air porte moins : il descend en planant.';
+    if (exces < -0.03) return '🍃 Un petit peu moins fort : il descend doucement.';
+    return '🍃 Il descend tout doucement.';
   }
-  if (exces > 0.03) {
-    return '💨 Un petit peu plus fort : il monte doucement.';
-  }
-  if (exces < -0.15) {
-    return '🍃 L’air porte moins : il descend en planant.';
-  }
-  if (exces < -0.03) {
-    return '🍃 Un petit peu moins fort : il descend doucement.';
-  }
+  // l'altitude ne bouge pas (ou pas encore) à l'œil
+  if (exces > 0.15) return '💨 L’air gagne : il va monter !';
+  if (exces < -0.15) return '🍃 L’air porte moins : il va descendre.';
   return '⚖️ Les deux flèches sont égales !';
 }
 
