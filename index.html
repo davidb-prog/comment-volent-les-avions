@@ -89,8 +89,10 @@
       <!-- LE geste de l'épisode : le grand curseur de vitesse -->
       <div class="curseur-bloc">
         <div class="curseur-titre"><span class="curseur-nom">La vitesse de ton avion</span>
-          <span class="gauges">il file à <strong id="vitesse-txt">0 km/h</strong>,
-            à <strong id="altitude-txt">0 m</strong> du sol</span></div>
+          <!-- l'altitude en chiffres est partie (décision David 2026-09-04 :
+               « on voit l'avion voler ») — la vitesse reste : c'est la valeur
+               du geste, celle que le parent lit à voix haute -->
+          <span class="gauges">il file à <strong id="vitesse-txt">0 km/h</strong></span></div>
         <div class="curseur-piste">
           <span class="repere-envol" aria-hidden="true"><i>✨ ici, il s’envole !</i></span>
           <input type="range" id="curseur" min="0" max="100" step="1" value="0"
@@ -156,6 +158,9 @@
         <p>C’est pour ça que l’avion roule si vite sur la piste avant de s’envoler : sans
           vitesse, l’air ne pousse pas assez fort. Mais quand l’avion va assez vite, l’air
           pousse plus fort que le poids… et hop, il décolle !</p>
+        <p>Et pourquoi il ne monte pas jusqu’aux étoiles ? Parce que tout en haut, l’air
+          devient léger, léger… il porte moins. Alors chaque vitesse a sa hauteur : plus
+          l’avion va vite, plus haut il vole !</p>
         <p>Et pour redescendre ? L’avion ralentit : l’air le porte un peu moins, et il
           glisse tout doucement vers la piste, comme un oiseau qui plane.</p>
         <p><strong>Alors, comment volent les avions ? C’est l’air, costaud, qui les porte…

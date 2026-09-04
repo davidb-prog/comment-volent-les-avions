@@ -148,7 +148,14 @@ L'explication du site : l'air dévié vers le bas + « il faut de la vitesse ».
   pendant que la phrase parlait d'équilibre — testé). Au sol, elle reçoit la consigne
   du curseur et distingue accélérer (« la flèche grandit »), freiner (« elle
   rapetisse ») et maintenir — et la roue 🛞 a remplacé le drapeau à damier 🏁, qui dit
-  « arrivée ! » (retours de David 2026-09-02, testés).
+  « arrivée ! » (retours de David 2026-09-02, testés). En vol, elle raconte aussi les
+  **roues** (mot choisi avec David 2026-09-04, cohérent avec la pastille — « train
+  d'atterrissage » reste côté parents) PILE quand le dessin les bouge : « elles se
+  rangent » juste au-dessus du seuil en montée, « il sort ses roues » sous
+  `ALT_ARRONDI` en descente — jamais ailleurs (testé). Et le **plafond n'a plus de
+  phrase à lui** (décision David 2026-09-04) : depuis « une vitesse = une altitude »,
+  tout en haut est un équilibre comme un autre — les flèches égales disent vrai, et
+  l'air léger se raconte dans la boîte 💡 (paragraphe « jusqu'aux étoiles »).
 - **Curseur réduit : il plane** (descente plafonnée), il ne tombe jamais comme une
   pierre — et **un avion ne s'arrête pas en l'air** : en vol la vitesse garde un
   plancher de plané (`VITESSE_PLANE`), on ne freine qu'une fois posé (retour de David
@@ -183,7 +190,11 @@ bretelles ni d'aéroport dans cet épisode) ; le virage = un futur épisode.
 - **Un seul geste : le curseur.** Les canvas ne réagissent à rien (pas de tap-pause, pas
   de glisser) — un tap d'enfant ne doit rien déclencher en douce.
 - L'avion reste **à poste fixe** à l'écran (le décor défile) ; les flèches sont
-  accrochées à lui.
+  accrochées à lui. L'étiquette « l'air pousse » ne se fait jamais recouvrir : à court
+  de place tout en haut du ciel, elle se range À GAUCHE de la flèche (retour de David
+  2026-09-04). Sous la scène, **seule la vitesse s'affiche en chiffres** — l'altitude
+  est partie (décision David 2026-09-04 : « on voit l'avion voler ») ; la suite
+  navigateur lit l'état par le crochet `window.etatLabo` (posé par main.js).
 - La lecture auto ne se commande que par ⏸/▶ (ou espace) ; reprendre le curseur met en
   pause ET efface l'histoire du moment affiché (et coupe sa voix).
 - Le curseur montre la **consigne** (jamais la valeur lissée) et suit la lecture
@@ -203,9 +214,14 @@ bretelles ni d'aéroport dans cet épisode) ; le virage = un futur épisode.
   comme une roue ; le train principal est un **boggie à roues jumelées** (pneus sombres,
   moyeux clairs) qui dépasse bien sous l'aile. Et une règle de pastilles : **une
   pastille ne cache jamais la pièce qu'elle désigne** — celle des roues se pose sur la
-  piste, SOUS le boggie. Les pastilles sont des points de 20 px (zone de tap 44 px,
-  couleur via `--c`) — testé en navigateur : jamais de chevauchement, même à 390 px, et
-  toutes dans le cadre.
+  piste, SOUS le boggie. Le stabilisateur est une **mini-aile au bout arrondi** (bord
+  d'attaque brillant), bien visible sous le cône de queue (retour 2026-09-04 : « on ne
+  voit pas bien les ailerons »). Les pastilles sont des points de 20 px (zone de tap
+  44 px, couleur via `--c`) — testé en navigateur : jamais de chevauchement, même à
+  390 px, et toutes dans le cadre. **Couleur d'une pastille ≠ couleur de son fond** :
+  celle des roues vit sur la piste grise, elle est bleu vif `#2f7fd6` (jamais
+  `COULEUR_PISTE` — retour 2026-09-04) ; et l'ancre des ailes vit au BOUT de l'aile,
+  loin de la pastille des roues.
 - **Seuil mobile unique : 640 px** (CSS seulement — aucun JS de bascule).
 
 ## Structure
@@ -234,8 +250,8 @@ bretelles ni d'aéroport dans cet épisode) ; le virage = un futur épisode.
 Suite Playwright dans le scratchpad des sessions (`test-site.cjs`) : desktop,
 `prefers-reduced-motion`, mobile tactile 390 px ; zéro erreur console ; sondes de pixels
 (attention aux sondes qui tombent sur la flèche du poids ou son étiquette — sonder les
-coins) ; `parseInt` sur l'altitude affichée doit retirer l'espace des milliers
-(« 1 600 m »). Captures regardées vraiment aux moments clés. Servir avant :
+coins) ; l'altitude n'est plus affichée : les scripts lisent `window.etatLabo.alt`
+(unités du modèle, ×40 pour des mètres). Captures regardées vraiment aux moments clés. Servir avant :
 `python3 -m http.server 8123` ; Playwright global : `NODE_PATH=/opt/node22/lib/node_modules`,
 `chromium.launch()` avec repli `executablePath: '/opt/pw-browsers/chromium'`.
 

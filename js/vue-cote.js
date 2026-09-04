@@ -69,11 +69,22 @@ export function dessineAvionCote(ctx, x, y, s, assiette, rouesSorties, feu) {
   ctx.strokeStyle = COULEUR_AVION_FONCE;
   ctx.lineWidth = 1.4 * s;
   ctx.beginPath(); ctx.moveTo(-36.5 * s, -24 * s); ctx.lineTo(-34 * s, -7 * s); ctx.stroke();
-  // le stabilisateur, sous la queue
+  // le stabilisateur (le petit aileron de la queue) : une vraie mini-aile au
+  // bout arrondi, avec son bord d'attaque qui brille — bien visible sous le
+  // cône de queue (retour de David 2026-09-04 : on le distinguait mal)
   ctx.fillStyle = COULEUR_AVION_FONCE;
   ctx.beginPath();
-  ctx.moveTo(-25 * s, -2 * s); ctx.lineTo(-43 * s, 5 * s); ctx.lineTo(-28 * s, 6.5 * s);
+  ctx.moveTo(-24 * s, -2 * s);
+  ctx.quadraticCurveTo(-38 * s, 1 * s, -45 * s, 4.2 * s);
+  ctx.quadraticCurveTo(-46.8 * s, 5.3 * s, -44.6 * s, 6.3 * s);
+  ctx.quadraticCurveTo(-36 * s, 7.8 * s, -27 * s, 6.3 * s);
   ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.lineWidth = 1.2 * s;
+  ctx.beginPath();
+  ctx.moveTo(-27 * s, 0.5 * s);
+  ctx.quadraticCurveTo(-37 * s, 2.6 * s, -43.5 * s, 4.9 * s);
+  ctx.stroke();
   // LE FUSELAGE : une seule silhouette fermée — le toit file vers le front qui
   // s'arrondit, la pointe du nez redescend en menton doux, le ventre remonte
   // en s'effilant jusqu'au petit cône de queue arrondi
@@ -395,8 +406,17 @@ export const VueCote = class {
     drawArrow(ctx, px + 2 * s, py - 20 * s, -Math.PI / 2, lAir, COULEUR_AIR, largeur);
     drawArrow(ctx, px + 2 * s, py + 16 * s, Math.PI / 2, lPoids, COULEUR_POIDS, largeur);
     if (lAir > 14) {
-      label(ctx, 'l’air pousse', px + 2 * s, py - 24 * s - lAir - 10 * s,
-        { align: 'center', size: 14 * s, color: COULEUR_AIR, clampW: w, clampH: h });
+      const yEtiquette = py - 24 * s - lAir - 10 * s;
+      if (yEtiquette > 16 * s) {
+        label(ctx, 'l’air pousse', px + 2 * s, yEtiquette,
+          { align: 'center', size: 14 * s, color: COULEUR_AIR, clampW: w, clampH: h });
+      } else {
+        // tout en haut du ciel, plus de place au-dessus : l'étiquette se range
+        // À GAUCHE de la flèche (côté queue, ciel libre) au lieu de se faire
+        // recouvrir par elle (retour de David 2026-09-04)
+        label(ctx, 'l’air pousse', px - 6 * s, py - 20 * s - lAir * 0.55,
+          { align: 'right', size: 14 * s, color: COULEUR_AIR, clampW: w, clampH: h });
+      }
     }
     label(ctx, 'le poids tire', px + 2 * s, py + 20 * s + lPoids + 11 * s,
       { align: 'center', size: 14 * s, color: COULEUR_POIDS, clampW: w, clampH: h });

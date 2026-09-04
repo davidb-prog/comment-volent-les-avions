@@ -234,16 +234,23 @@ export function phraseEtat(etat, cible01) {
     // mi-course, « pousse encore ! » sonnait comme un ordre de redécoller
     return '🛞 Il roule tranquillement sur la piste… à cette vitesse, l’air ne le porte pas assez pour s’envoler.';
   }
-  if (etat.alt > ALTITUDE_MAX - 3 && etat.vz > -0.4) {
-    return '🎈 Tout en haut ! Plus haut, l’air est trop léger pour bien porter.';
-  }
+  // (le plafond n'a plus sa phrase à lui : depuis « une vitesse = une
+  //  altitude », tout en haut est un équilibre comme un autre — la phrase des
+  //  flèches égales dit vrai, et l'air léger se raconte dans la boîte 💡 ;
+  //  décision David 2026-09-04)
   if (etat.alt < ALT_ARRONDI && etat.vz < -0.4) {
-    return '🪶 Tout près du sol, l’avion se redresse… toucher tout doux !';
+    return '🪶 Tout près du sol, il sort ses roues et se redresse… toucher tout doux !';
   }
   if (etat.vz < -0.4 && etat.v <= VITESSE_PLANE + 3) {
     return '🍃 Un avion ne s’arrête pas en l’air : il garde de l’élan et plane tout doucement vers la piste.';
   }
   const exces = portanceEnVol(etat.v, etat.alt) - POIDS;
+  // les roues suivent le dessin (rentrées dès ALT_ARRONDI) : la phrase ne les
+  // raconte que là où c'est VRAI à l'écran (demande de David 2026-09-04)
+  if (exces > 0.03 && etat.vz > 0.4 &&
+      etat.alt >= ALT_ARRONDI && etat.alt < ALT_ARRONDI * 2.5) {
+    return '💨 L’air pousse plus que le poids : il monte — et hop, les roues se rangent sous le ventre !';
+  }
   if (exces > 0.15) {
     return '💨 L’air pousse plus fort que le poids : ton avion monte !';
   }
@@ -317,7 +324,8 @@ export const PIECES = [
     texte: 'Le cockpit, c’est la petite maison du pilote, tout à l’avant. C’est là qu’il pousse la manette de vitesse — comme toi avec le grand curseur !' },
   { id: 'queue', label: 'la queue', pluriel: false, couleur: COULEUR_POIDS,
     texte: 'La queue et sa grande dérive gardent l’avion bien droit dans le vent — comme les plumes au bout d’une flèche.' },
-  { id: 'roues', label: 'les roues', pluriel: true, couleur: COULEUR_PISTE,
+  { id: 'roues', label: 'les roues', pluriel: true, couleur: '#2f7fd6', // bleu vif :
+    // sa pastille vit SUR la piste grise — jamais COULEUR_PISTE (invisible)
     texte: 'Les roues servent à rouler sur la piste. En vol, hop, elles se replient sous le ventre — comme les pattes d’un oiseau !' },
 ];
 

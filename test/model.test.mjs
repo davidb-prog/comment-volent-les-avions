@@ -299,6 +299,28 @@ verifie('la phrase ne contredit JAMAIS le mouvement : petit excès = « il monte
       descendDoucement.indexOf('descend') !== -1 &&
       descendDoucement.indexOf('égales') === -1;
   })());
+verifie('la phrase raconte les roues PILE quand le dessin les bouge : rangées juste ' +
+  'au-dessus du seuil en montée, sorties sous le seuil en descente — jamais ailleurs',
+  (() => {
+    // le dessin rentre les roues dès ALT_ARRONDI : la phrase doit dire vrai
+    const range = phraseEtat({ v: 80, alt: ALT_ARRONDI + 4, vz: 2, auSol: false, distance: 0 });
+    const sort = phraseEtat({ v: 50, alt: ALT_ARRONDI - 3, vz: -1.5, auSol: false, distance: 0 });
+    const hautEnMontee = phraseEtat({ v: 80, alt: 40, vz: 2, auSol: false, distance: 0 });
+    const hautEnDescente = phraseEtat({ v: 60, alt: 40, vz: -2, auSol: false, distance: 0 });
+    return range.indexOf('se rangent') !== -1 && range.indexOf('monte') !== -1 &&
+      sort.indexOf('sort ses roues') !== -1 &&
+      hautEnMontee.indexOf('roues') === -1 && hautEnDescente.indexOf('roues') === -1;
+  })());
+verifie('le plafond n’a plus de phrase à lui : tout en haut, l’équilibre se raconte ' +
+  'comme partout (« une vitesse = une altitude » — décision David 2026-09-04)',
+  (() => {
+    const e0 = { v: VITESSE_MAX, alt: 0, vz: 0, auSol: false, distance: 0 };
+    let e = e0;
+    for (let t = 0; t < 240; t += 0.05) e = pas(e, 1, 0.05); // il se cale au plafond
+    const phrase = phraseEtat(e);
+    return phrase.indexOf('Tout en haut') === -1 && phrase.indexOf('trop léger') === -1 &&
+      phrase.indexOf('égales') !== -1;
+  })());
 
 console.log('Le jeu « Rejoins-les là-haut ! » — les défis de la famille');
 verifie('l’hystérésis de sortie est plus large que la fenêtre de victoire (le bravo ne clignote pas)',

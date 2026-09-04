@@ -5,7 +5,7 @@
 
 import { VITESSE_MAX, REPERE_DECOLLAGE, TOUR_DUREE,
          etatInitial, pas, cibleAuto, MOMENTS, etapeMoment, phraseEtat,
-         PIECES, formatVitesse, formatAltitude, borne01,
+         PIECES, formatVitesse, borne01,
          DEFIS, JEU_FENETRE, JEU_SORTIE, JEU_TENUE, defiDansFenetre,
          consignePiece, bravoPiece, ratePiece } from './model.js';
 import { VueCote } from './vue-cote.js';
@@ -162,7 +162,9 @@ function poseTexte(cle, el, valeur) {
 
 function majTextes() {
   poseTexte('vitesse', $('vitesse-txt'), formatVitesse(sim.etat.v));
-  poseTexte('altitude', $('altitude-txt'), formatAltitude(sim.etat.alt));
+  // (l'altitude en chiffres est partie — on voit l'avion voler ; la suite
+  //  Playwright lit l'état par window.etatLabo, ci-dessous)
+  window.etatLabo = sim.etat;
   poseTexte('etat', $('phrase-etat'), phraseEtat(sim.etat, sim.cible));
   // un bouton-moment se grise quand il n'a pas de sens (décoller en vol,
   // atterrir déjà posé) — sauf celui du moment en cours, qui reste allumé

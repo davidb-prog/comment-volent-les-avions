@@ -13,7 +13,7 @@ import { dessineAvionCote } from './vue-cote.js';
 // mêmes coordonnées que dessineAvionCote) — bien écartées les unes des
 // autres pour que chaque pièce se distingue (retour de David) : [x, y].
 export const ANCRES_PIECES = {
-  ailes: [-17, 12],
+  ailes: [-23, 14],     // vers le bout de l'aile, loin de la pastille des roues
   reacteurs: [4, 15],   // sur la nacelle, désormais sous l'aile
   cockpit: [25, -13.5], // l'épaule droite de la bulle — sans cacher le pilote
   queue: [-37, -16],
