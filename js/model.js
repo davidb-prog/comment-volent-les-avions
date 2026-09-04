@@ -218,18 +218,13 @@ export function etapeMoment(moment, indice, etat) {
 }
 
 // ------------------------------------------------------------- la phrase d'état
-// UNE petite phrase sous la vue — assise sur la MÊME grandeur que les flèches
-// (l'excès de portance ressentie) : le texte, les flèches et le mouvement ne
-// peuvent pas se contredire (retour de David 2026-08-31 : à 224 km/h l'avion
-// montait doucement pendant que la phrase parlait d'équilibre). Au sol, la
-// phrase reçoit la consigne du curseur pour savoir si l'on accélère ou si
-// l'on freine (retour de David 2026-09-02 : « regarde la flèche grandir »
-// s'affichait aussi pendant le freinage après l'atterrissage — et le drapeau
-// à damier 🏁, qui dit « arrivée ! », racontait le contraire du roulage).
-// ⚠️ Phrases COURTES à dessein (décision David 2026-09-04 : même en tenant
-// 2,4 s, les anciennes phrases de 15-20 mots défilaient trop vite pour être
-// lues). Squelette fixe « emoji + constat en 4-8 petits mots » : au deuxième
-// tour, l'emoji suffit à reconnaître l'état et la lecture est instantanée.
+// UNE petite phrase sous la vue — mais seulement là où le texte ENSEIGNE :
+// au sol (posé, la flèche qui grandit avec la vitesse, le freinage), la
+// leçon du geste. EN VOL, ELLE SE TAIT — les événements (evenementVol,
+// ci-dessous) prennent le relais. Le mouvement d'abord : au sol, la vraie
+// accélération (etat.dv) décide, jamais l'écart de consigne (retours de
+// David 2026-09-02→04, tous testés). Phrases COURTES à dessein (≤ 50
+// signes, squelette « emoji + constat ») : lisibles pendant leur tenue.
 export function phraseEtat(etat, cible01) {
   if (etat.auSol) {
     if (etat.v < 2) {
@@ -260,42 +255,45 @@ export function phraseEtat(etat, cible01) {
     }
     return '🛞 Il roule : la flèche de l’air reste petite.';
   }
-  // (le plafond n'a plus sa phrase à lui : depuis « une vitesse = une
-  //  altitude », tout en haut est un équilibre comme un autre — la phrase des
-  //  flèches égales dit vrai, et l'air léger se raconte dans la boîte 💡 ;
-  //  décision David 2026-09-04)
-  if (etat.alt < ALT_ARRONDI && etat.vz < -0.4) {
-    return '🪶 Il sort ses roues… toucher tout doux !';
+  // EN VOL, LA LIGNE SE TAIT (le narrateur d'événements — décision David
+  // 2026-09-04) : les flèches et l'avion racontent seuls. Un ticker continu
+  // (« il monte », « égales », « il descend »…) répétait en mots ce que le
+  // dessin montre déjà, et se trompait à chaque transition — le texte ne
+  // revient que pour un ÉVÉNEMENT (evenementVol) ou une leçon du sol.
+  return '';
+}
+
+// ------------------------------------------- le narrateur d'événements
+// Un événement est un INSTANT (pas un état) : il se détecte sur la
+// transition entre deux pas de simulation, s'affiche quelques secondes
+// (EVENEMENT_TENUE), puis la ligne se tait à nouveau. Chaque apparition de
+// texte redevient un signal : « quelque chose vient de se passer ».
+export const EVENEMENT_TENUE = 4.5; // secondes d'affichage d'un événement
+export const EVENEMENT_MINI = 2.5;  // un événement tient au moins ceci avant
+                                    // qu'un autre ne le remplace
+
+export function evenementVol(avant, apres) {
+  if (avant.auSol && !apres.auSol) {
+    return '✨ Il s’envole… parce que l’air pousse !'; // le refrain, au vrai moment
   }
-  if (etat.vz < -0.4 && etat.v <= VITESSE_PLANE + 3) {
-    return '🍃 Un avion ne s’arrête pas en l’air : il plane !';
+  if (!avant.auSol && apres.auSol) {
+    return '🪶 Toucher tout doux !';
   }
-  const exces = portanceEnVol(etat.v, etat.alt) - POIDS;
-  // LE MOUVEMENT D'ABORD : la phrase suit ce que l'œil voit (vz) — l'excès
-  // des flèches ne fait que graduer. Retour de David 2026-09-04 : « les deux
-  // flèches sont égales » s'affichait pendant le décollage, car juste après
-  // l'envol l'excès est minuscule… alors que l'avion monte bel et bien.
-  // « Égales » est désormais impossible dès que l'avion bouge.
-  if (etat.vz > 0.4) {
-    // les roues suivent le dessin (rentrées dès ALT_ARRONDI) : racontées
-    // seulement là où c'est VRAI à l'écran — bande assez large pour
-    // survivre à la tenue de lecture en pleine montée
-    if (etat.alt >= ALT_ARRONDI && etat.alt < ALT_ARRONDI * 4.5) {
-      return '💨 Il monte… hop, les roues se rangent !';
+  if (!avant.auSol && !apres.auSol) {
+    // les roues suivent le dessin (rentrées dès ALT_ARRONDI) : l'événement
+    // tombe PILE au franchissement du seuil — quand on les voit bouger
+    if (avant.alt < ALT_ARRONDI && apres.alt >= ALT_ARRONDI) {
+      return '💨 Hop, les roues se rangent sous le ventre !';
     }
-    if (exces > 0.15) return '💨 L’air gagne : il monte !';
-    if (exces > 0.03) return '💨 Un petit peu plus fort : il monte doucement.';
-    return '💨 Il monte tout doucement.'; // flèches quasi égales : pas de mensonge
+    if (avant.alt >= ALT_ARRONDI && apres.alt < ALT_ARRONDI) {
+      return '🪶 Il sort ses roues pour se poser…';
+    }
+    // la vitesse a fondu jusqu'au plancher du plané : LA découverte
+    if (avant.v > VITESSE_PLANE + 0.01 && apres.v <= VITESSE_PLANE + 0.01) {
+      return '🍃 Un avion ne s’arrête pas en l’air : il plane !';
+    }
   }
-  if (etat.vz < -0.4) {
-    if (exces < -0.15) return '🍃 L’air porte moins : il descend en planant.';
-    if (exces < -0.03) return '🍃 Un petit peu moins fort : il descend doucement.';
-    return '🍃 Il descend tout doucement.';
-  }
-  // l'altitude ne bouge pas (ou pas encore) à l'œil
-  if (exces > 0.15) return '💨 L’air gagne : il va monter !';
-  if (exces < -0.15) return '🍃 L’air porte moins : il va descendre.';
-  return '⚖️ Les deux flèches sont égales !';
+  return null;
 }
 
 // ------------------------------------------------------------------ le jeu

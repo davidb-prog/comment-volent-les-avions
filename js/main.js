@@ -5,6 +5,7 @@
 
 import { VITESSE_MAX, REPERE_DECOLLAGE, TOUR_DUREE,
          etatInitial, pas, cibleAuto, MOMENTS, etapeMoment, phraseEtat, PHRASE_TENUE,
+         evenementVol, EVENEMENT_TENUE, EVENEMENT_MINI,
          PIECES, formatVitesse, borne01,
          DEFIS, JEU_FENETRE, JEU_SORTIE, JEU_TENUE, defiDansFenetre,
          consignePiece, bravoPiece, ratePiece } from './model.js';
@@ -163,34 +164,51 @@ function poseTexte(cle, el, valeur) {
 let tPhraseAffichee = -1e9; // la première phrase s'affiche tout de suite
 let phraseCandidate = '', tPhraseCandidate = 0; // l'anti-hoquet (voir majTextes)
 let phraseEnAttente = false; // la boucle ne s'endort pas tant qu'une phrase attend
+let evenementAttente = null; // le dernier événement détecté, pas encore affiché
+let evenementEnCours = false; // un événement occupe la ligne (tenue en cours)
 
 function majTextes() {
   poseTexte('vitesse', $('vitesse-txt'), formatVitesse(sim.etat.v));
   // (l'altitude en chiffres est partie — on voit l'avion voler ; la suite
   //  Playwright lit l'état par window.etatLabo, ci-dessous)
   window.etatLabo = sim.etat;
-  // la phrase d'état reste affichée le temps d'être LUE (PHRASE_TENUE) : sur
-  // une transition rapide (décollage, arrondi), on ne fait pas clignoter les
-  // micro-états — on saute directement à la phrase du moment présent, qui
-  // n'est donc jamais vieille de plus d'une tenue (retour de David 2026-09-04).
-  // Et l'anti-hoquet : une NOUVELLE phrase doit être vraie depuis 0,6 s avant
-  // de remplacer l'ancienne — au bord d'un seuil, le texte n'alterne pas.
-  const phrase = phraseEtat(sim.etat, sim.cible);
+  // LE NARRATEUR D'ÉVÉNEMENTS (décision David 2026-09-04) : un événement
+  // (envol, roues, toucher, plancher du plané) est prioritaire — il
+  // interrompt la phrase en place dès qu'elle a été lisible (1,5 s), tient
+  // EVENEMENT_TENUE, puis la ligne revient à la phrase d'état… qui se TAIT
+  // en vol : entre deux événements, les flèches racontent seules.
   const tMaintenant = performance.now();
+  if (evenementAttente) {
+    const minRequis = evenementEnCours ? EVENEMENT_MINI * 1000 : 1500;
+    if (!cache.etat || tMaintenant - tPhraseAffichee >= minRequis) {
+      poseTexte('etat', $('phrase-etat'), evenementAttente);
+      tPhraseAffichee = tMaintenant;
+      evenementEnCours = true;
+      evenementAttente = null;
+    }
+  }
+  if (evenementEnCours && tMaintenant - tPhraseAffichee >= EVENEMENT_TENUE * 1000) {
+    evenementEnCours = false;
+  }
+  // la phrase d'état (leçons du sol, silence en vol) reste affichée le temps
+  // d'être LUE (PHRASE_TENUE) — on saute les micro-états au lieu de les faire
+  // clignoter, elle n'est jamais vieille de plus d'une tenue. Anti-hoquet :
+  // une NOUVELLE phrase doit être vraie depuis 0,6 s avant de s'afficher.
+  const phrase = evenementEnCours ? cache.etat : phraseEtat(sim.etat, sim.cible);
   if (phrase !== phraseCandidate) {
     phraseCandidate = phrase;
     tPhraseCandidate = tMaintenant;
   }
-  if (phrase !== cache.etat &&
+  if (!evenementEnCours && phrase !== cache.etat &&
       tMaintenant - tPhraseAffichee >= PHRASE_TENUE * 1000 &&
       tMaintenant - tPhraseCandidate >= 600) {
     poseTexte('etat', $('phrase-etat'), phrase);
     tPhraseAffichee = tMaintenant;
   }
-  // tant que la phrase affichée n'est pas celle du moment (tenue ou anti-hoquet
-  // en cours), la garde batterie ne doit PAS endormir la boucle — sinon la
-  // dernière phrase (« il freine… ») resterait pour toujours après l'arrêt
-  phraseEnAttente = phrase !== cache.etat;
+  // tant que la ligne n'est pas à jour (tenue, anti-hoquet, événement en
+  // attente ou en cours d'expiration), la garde batterie ne doit PAS endormir
+  // la boucle — sinon « il freine… » resterait affiché pour toujours à l'arrêt
+  phraseEnAttente = phrase !== cache.etat || evenementAttente !== null || evenementEnCours;
   // un bouton-moment se grise quand il n'a pas de sens (décoller en vol,
   // atterrir déjà posé) — sauf celui du moment en cours, qui reste allumé
   for (const moment of MOMENTS) {
@@ -231,7 +249,12 @@ function image(ms) {
       phraseEnAttente || !cache.premierDessin;
     if (vif) {
       cache.premierDessin = true;
+      const etatAvant = sim.etat;
       sim.etat = pas(sim.etat, sim.cible, dt);
+      // un événement est un INSTANT : détecté sur la transition entre deux
+      // pas — seul le dernier attend son tour d'affichage
+      const evenement = evenementVol(etatAvant, sim.etat);
+      if (evenement) evenementAttente = evenement;
       majJeu(dt);
       const invite = jeu.actif
         ? { id: DEFIS[jeu.indice].id, altitude: DEFIS[jeu.indice].altitude, gagne: jeu.gagne }

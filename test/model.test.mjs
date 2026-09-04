@@ -8,7 +8,7 @@ import {
   TAU, borne, borne01,
   VITESSE_MAX, VITESSE_DECOLLAGE, POIDS, ALTITUDE_MAX,
   VZ_MONTEE_MAX, VZ_DESCENTE_MAX, VZ_SOL, ALT_ARRONDI,
-  VITESSE_PLANE, ALT_AIR_LEGER, DENSITE_PLAFOND,
+  VITESSE_PLANE, ALT_AIR_LEGER, DENSITE_PLAFOND, evenementVol,
   REPERE_DECOLLAGE, TOUR_DUREE,
   COULEUR_AIR, COULEUR_POIDS, COULEUR_AVION,
   portance, densiteAir, portanceEnVol, plafondDescente, etatInitial, pas,
@@ -328,61 +328,81 @@ verifie('au sol aussi, LE MOUVEMENT décide : en pleine accélération la flèch
   })());
 verifie('le drapeau à damier a disparu du roulage (il dit « arrivée ! », pas « ça roule »)',
   phraseEtat({ v: 30, alt: 0, vz: 0, auSol: true, distance: 0 }, 1).indexOf('🏁') === -1);
-verifie('en montée : l’air pousse plus fort que le poids',
-  phraseEtat({ v: 80, alt: 40, vz: 5, auSol: false, distance: 0 }).indexOf('monte') !== -1);
-verifie('vitesse réduite : il plane, il ne tombe pas',
-  phraseEtat({ v: 40, alt: 50, vz: -4, auSol: false, distance: 0 }).indexOf('plane') !== -1);
-verifie('curseur à zéro en vol : la phrase explique l’élan (« un avion ne s’arrête pas en l’air »)',
-  phraseEtat({ v: VITESSE_PLANE, alt: 50, vz: -4, auSol: false, distance: 0 })
+console.log('Le narrateur d’événements — en vol, la ligne se tait');
+verifie('EN VOL, phraseEtat se TAIT : montée, descente, équilibre, plafond — chaîne vide ' +
+  '(décision David 2026-09-04 : le ticker continu répétait ce que le dessin montre)',
+  (() => {
+    const airs = [
+      { v: 80, alt: 40, vz: 5, auSol: false, distance: 0 },   // pleine montée
+      { v: 40, alt: 50, vz: -4, auSol: false, distance: 0 },  // plané
+      { v: VITESSE_DECOLLAGE, alt: 50, vz: 0, auSol: false, distance: 0 }, // équilibre
+      { v: 56, alt: 2, vz: 0.6, auSol: false, distance: 0 },  // juste après l'envol
+      { v: VITESSE_MAX, alt: 99, vz: -0.5, auSol: false, distance: 0 },   // calage au plafond
+    ];
+    for (const e of airs) { if (phraseEtat(e) !== '') return false; }
+    return true;
+  })());
+verifie('l’envol est un ÉVÉNEMENT qui dit le refrain : « … parce que l’air pousse ! »',
+  (() => {
+    const sol = { v: 55, alt: 0, vz: 0, auSol: true, distance: 0 };
+    const air = { v: 55.2, alt: 0.1, vz: 0.5, auSol: false, distance: 1 };
+    const ev = evenementVol(sol, air);
+    return ev !== null && ev.indexOf('s’envole') !== -1 && ev.indexOf('l’air pousse') !== -1;
+  })());
+verifie('le toucher est un événement tout doux, les roues se racontent PILE au ' +
+  'franchissement du seuil du dessin (rangées en montant, sorties en descendant)',
+  (() => {
+    const toucher = evenementVol(
+      { v: 40, alt: 0.2, vz: -1, auSol: false, distance: 0 },
+      { v: 40, alt: 0, vz: 0, auSol: true, distance: 1 });
+    const rangees = evenementVol(
+      { v: 80, alt: ALT_ARRONDI - 0.2, vz: 3, auSol: false, distance: 0 },
+      { v: 80, alt: ALT_ARRONDI + 0.1, vz: 3, auSol: false, distance: 1 });
+    const sorties = evenementVol(
+      { v: 50, alt: ALT_ARRONDI + 0.2, vz: -2, auSol: false, distance: 0 },
+      { v: 50, alt: ALT_ARRONDI - 0.1, vz: -2, auSol: false, distance: 1 });
+    return toucher.indexOf('Toucher tout doux') !== -1 &&
+      rangees.indexOf('se rangent') !== -1 &&
+      sorties.indexOf('sort ses roues') !== -1;
+  })());
+verifie('l’élan du plané est un événement : la vitesse fond jusqu’au plancher — ' +
+  '« un avion ne s’arrête pas en l’air »',
+  evenementVol(
+    { v: VITESSE_PLANE + 1, alt: 50, vz: -4, auSol: false, distance: 0 },
+    { v: VITESSE_PLANE, alt: 49.8, vz: -4, auSol: false, distance: 1 })
     .indexOf('s’arrête pas en l’air') !== -1);
-verifie('en équilibre : les deux flèches sont égales',
-  phraseEtat({ v: VITESSE_DECOLLAGE, alt: 50, vz: 0, auSol: false, distance: 0 })
-    .indexOf('égales') !== -1);
-verifie('la phrase ne contredit JAMAIS le mouvement : petit excès = « il monte doucement », ' +
-  'petit manque = « il descend » — « égales » réservé au vrai équilibre',
+verifie('pas d’événement sans transition : un vol qui continue, un roulage qui continue ' +
+  'et un calage au plafond rendent null — le texte redevient un SIGNAL',
   (() => {
-    // alt 40 : hors de la bande où la phrase raconte les roues qui se rangent
-    const monteDoucement = phraseEtat({ v: 56, alt: 40, vz: 0.9, auSol: false, distance: 0 });
-    const descendDoucement = phraseEtat({ v: 54, alt: 40, vz: -0.9, auSol: false, distance: 0 });
-    return monteDoucement.indexOf('monte doucement') !== -1 &&
-      monteDoucement.indexOf('égales') === -1 &&
-      descendDoucement.indexOf('descend') !== -1 &&
-      descendDoucement.indexOf('égales') === -1;
+    const vole = evenementVol(
+      { v: 80, alt: 40, vz: 3, auSol: false, distance: 0 },
+      { v: 80, alt: 40.2, vz: 3, auSol: false, distance: 1 });
+    const roule = evenementVol(
+      { v: 30, alt: 0, vz: 0, auSol: true, distance: 0 },
+      { v: 31, alt: 0, vz: 0, auSol: true, distance: 1 });
+    const plafonne = evenementVol(
+      { v: VITESSE_MAX, alt: 99.4, vz: -0.5, auSol: false, distance: 0 },
+      { v: VITESSE_MAX, alt: 99.3, vz: -0.4, auSol: false, distance: 1 });
+    return vole === null && roule === null && plafonne === null;
   })());
-verifie('JAMAIS « égales » pendant que ça bouge : juste après l’envol, l’excès est ' +
-  'minuscule mais l’avion monte — la phrase le dit (retour de David 2026-09-04)',
+verifie('les événements aussi sont courts (≤ 50 signes) et typographiés « ’ »',
   (() => {
-    // le mouvement d'abord : « égales » exige une altitude qui ne bouge pas
-    const envol = phraseEtat({ v: 56, alt: 2, vz: 0.6, auSol: false, distance: 0 });
-    const petitEnvol = phraseEtat({ v: 55.4, alt: 3, vz: 0.5, auSol: false, distance: 0 });
-    const glisse = phraseEtat({ v: 54.6, alt: 30, vz: -0.5, auSol: false, distance: 0 });
-    const calme = phraseEtat({ v: VITESSE_DECOLLAGE, alt: 3, vz: 0.1, auSol: false, distance: 0 });
-    return envol.indexOf('monte') !== -1 && envol.indexOf('égales') === -1 &&
-      petitEnvol.indexOf('monte') !== -1 && petitEnvol.indexOf('égales') === -1 &&
-      glisse.indexOf('descend') !== -1 && glisse.indexOf('égales') === -1 &&
-      calme.indexOf('égales') !== -1;
-  })());
-verifie('la phrase raconte les roues PILE quand le dessin les bouge : rangées juste ' +
-  'au-dessus du seuil en montée, sorties sous le seuil en descente — jamais ailleurs',
-  (() => {
-    // le dessin rentre les roues dès ALT_ARRONDI : la phrase doit dire vrai
-    const range = phraseEtat({ v: 80, alt: ALT_ARRONDI + 4, vz: 2, auSol: false, distance: 0 });
-    const sort = phraseEtat({ v: 50, alt: ALT_ARRONDI - 3, vz: -1.5, auSol: false, distance: 0 });
-    const hautEnMontee = phraseEtat({ v: 80, alt: 40, vz: 2, auSol: false, distance: 0 });
-    const hautEnDescente = phraseEtat({ v: 60, alt: 40, vz: -2, auSol: false, distance: 0 });
-    return range.indexOf('se rangent') !== -1 && range.indexOf('monte') !== -1 &&
-      sort.indexOf('sort ses roues') !== -1 &&
-      hautEnMontee.indexOf('roues') === -1 && hautEnDescente.indexOf('roues') === -1;
-  })());
-verifie('le plafond n’a plus de phrase à lui : tout en haut, l’équilibre se raconte ' +
-  'comme partout (« une vitesse = une altitude » — décision David 2026-09-04)',
-  (() => {
-    const e0 = { v: VITESSE_MAX, alt: 0, vz: 0, auSol: false, distance: 0 };
-    let e = e0;
-    for (let t = 0; t < 240; t += 0.05) e = pas(e, 1, 0.05); // il se cale au plafond
-    const phrase = phraseEtat(e);
-    return phrase.indexOf('Tout en haut') === -1 && phrase.indexOf('trop léger') === -1 &&
-      phrase.indexOf('égales') !== -1;
+    const evs = [
+      evenementVol({ v: 55, alt: 0, vz: 0, auSol: true, distance: 0 },
+        { v: 55.2, alt: 0.1, vz: 0.5, auSol: false, distance: 1 }),
+      evenementVol({ v: 40, alt: 0.2, vz: -1, auSol: false, distance: 0 },
+        { v: 40, alt: 0, vz: 0, auSol: true, distance: 1 }),
+      evenementVol({ v: 80, alt: 7.9, vz: 3, auSol: false, distance: 0 },
+        { v: 80, alt: 8.1, vz: 3, auSol: false, distance: 1 }),
+      evenementVol({ v: 50, alt: 8.1, vz: -2, auSol: false, distance: 0 },
+        { v: 50, alt: 7.9, vz: -2, auSol: false, distance: 1 }),
+      evenementVol({ v: 41, alt: 50, vz: -4, auSol: false, distance: 0 },
+        { v: 40, alt: 49.8, vz: -4, auSol: false, distance: 1 }),
+    ];
+    for (const ev of evs) {
+      if (!ev || ev.length > 50 || ev.indexOf("'") !== -1) return false;
+    }
+    return true;
   })());
 
 console.log('Le jeu « Rejoins-les là-haut ! » — les défis de la famille');
